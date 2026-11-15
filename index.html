@@ -44,13 +44,54 @@
   /* ── header ───────────────────────────── */
   .head{text-align:center; padding:26px 8px 10px;}
   .head .mark{
-    width:52px; height:52px; margin:0 auto 10px; border-radius:18px;
+    position:relative; width:52px; height:52px; margin:0 auto 10px; border-radius:18px;
     display:grid; place-items:center; font-size:26px;
     background:linear-gradient(160deg,#FFFFFF 0%, #F3EFE6 100%);
     box-shadow:0 8px 20px -12px rgba(35,38,43,.45), inset 0 0 0 1px rgba(255,255,255,.8);
+    border:0; padding:0; color:inherit; font-family:inherit; line-height:1; cursor:pointer;
+    transition:transform .16s ease, box-shadow .16s ease;
+  }
+  .head .mark:hover{box-shadow:0 10px 24px -12px rgba(35,38,43,.55), inset 0 0 0 1px rgba(255,255,255,.9);}
+  .head .mark:active{transform:scale(.96);}
+  .head .mark .badge-pen{
+    position:absolute; right:-5px; bottom:-5px; width:20px; height:20px; border-radius:50%;
+    display:grid; place-items:center; font-size:10px; color:var(--ink-2); background:#fff;
+    box-shadow:0 0 0 1px var(--line), 0 5px 12px -7px rgba(35,38,43,.85);
   }
   h1{font-size:21px; margin:0; letter-spacing:-.02em; font-weight:800;}
+  .head h1{display:inline-flex; align-items:center; justify-content:center; gap:3px; max-width:100%;}
+  .head h1 .title-text{overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:min(330px, 74vw);}
+  .head h1 .title-pen{
+    flex:none; border:0; background:transparent; color:var(--ink-3); font-family:inherit;
+    font-size:12px; line-height:1; padding:5px 4px; border-radius:9px; cursor:pointer; opacity:.7;
+  }
+  .head h1 .title-pen:hover{opacity:1; background:var(--line-2);}
   .sub{font-size:11.5px; color:var(--ink-3); margin:6px 0 0; letter-spacing:-.01em;}
+  /* 가계부 이름·이모지 설정 */
+  .brandprev{
+    display:flex; align-items:center; gap:9px; padding:11px 13px; margin:0 0 14px;
+    border-radius:15px; border:1px solid var(--line); background:#FCFAF6;
+  }
+  .brandprev .bp-emoji{
+    width:38px; height:38px; flex:none; border-radius:12px; display:grid; place-items:center;
+    font-size:21px; background:#fff; box-shadow:inset 0 0 0 1px var(--line);
+  }
+  .brandprev .bp-name{
+    font-size:14px; font-weight:800; letter-spacing:-.02em; overflow:hidden;
+    text-overflow:ellipsis; white-space:nowrap;
+  }
+  .brandprev .bp-cap{font-size:10px; font-weight:700; color:var(--ink-3); margin-left:auto; flex:none;}
+  .emojigrid{display:grid; grid-template-columns:repeat(6,1fr); gap:7px; margin:0 0 12px;}
+  .emojigrid button{
+    aspect-ratio:1; min-height:40px; padding:0; border-radius:13px; border:1px solid var(--line);
+    background:#FCFAF6; font-size:20px; line-height:1; cursor:pointer; display:grid; place-items:center;
+    transition:.14s ease;
+  }
+  .emojigrid button:hover{border-color:#D9EFE6; background:#fff;}
+  .emojigrid button.on{
+    border-color:var(--teal); background:var(--teal-soft);
+    box-shadow:0 0 0 2px rgba(47,143,123,.16);
+  }
   .toolbar{
     position:sticky; top:0; z-index:20; padding:8px 0 10px;
     background:linear-gradient(180deg, rgba(246,241,232,.96) 60%, rgba(246,241,232,.78) 100%);
@@ -462,8 +503,13 @@
 <body>
 <div class="app">
   <div class="head">
-    <div class="mark">🏠</div>
-    <h1>우리집 공동 가계부</h1>
+    <button class="mark" type="button" id="btnBrandBadge" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">
+      <span id="headEmoji">🏠</span><span class="badge-pen" aria-hidden="true">✎</span>
+    </button>
+    <h1>
+      <span class="title-text" id="headTitleText">우리집 공동 가계부</span>
+      <button class="title-pen" type="button" id="btnBrandPen" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">✎</button>
+    </h1>
     <p class="sub">샘플 프로토타입 · 마지막 업데이트 2026-11-16</p>
   </div>
 
@@ -779,6 +825,41 @@
         <button type="submit" class="btn primary">저장</button>
       </div>
       <button type="button" class="btn-link" id="mfixReset" hidden>규칙 금액으로 되돌리기</button>
+    </form>
+  </div>
+</div>
+
+<!-- 가계부 이름·이모지 설정 모달 -->
+<div class="modal" id="brandModal" hidden>
+  <div class="bd" data-close-brand></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="brandTitle">
+    <div class="grab"></div>
+    <h2 id="brandTitle">가계부 이름·이모지</h2>
+    <p class="hint">위에 보이는 이름을 바꿔요. 바꾸면 주소창 제목과 피클에게 보내는 요약에도 그대로 담겨요.</p>
+    <div class="brandprev">
+      <span class="bp-emoji" id="brandPrevEmoji">🏠</span>
+      <span class="bp-name" id="brandPrevName">우리집 공동 가계부</span>
+      <span class="bp-cap">미리보기</span>
+    </div>
+    <form id="brandForm" novalidate>
+      <div class="field">
+        <label>추천 이모지</label>
+        <div class="emojigrid" id="brandEmojiGrid" role="group" aria-label="추천 이모지"></div>
+      </div>
+      <div class="field">
+        <label for="bEmoji">직접 입력</label>
+        <input type="text" id="bEmoji" maxlength="8" placeholder="쓰고 싶은 이모지 1개 (예: 💰)" />
+      </div>
+      <div class="field">
+        <label for="bName">가계부 이름</label>
+        <input type="text" id="bName" maxlength="20" placeholder="예: 쫑부인네 가계부" />
+      </div>
+      <p class="err" id="brandErr" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-brand>취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+      <button type="button" class="btn-link" id="brandDefault">기본값으로 되돌리기</button>
     </form>
   </div>
 </div>
@@ -1133,6 +1214,7 @@
 
   /* ────────────── 2. 상태 & 저장 ────────────── */
   const STORE_KEY = 'jjong-couple-ledger-v1';
+  const BRAND_DEFAULT = { emoji: '🏠', name: '우리집 공동 가계부' };
   const state = {
     ym: '2026-11',
     tab: 'asset',
@@ -1145,7 +1227,8 @@
     rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
     overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
     range: '6m',      // 6m | 1y | all
-    pickerYear: 2026
+    pickerYear: 2026,
+    brand: { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name }   // 가계부 이름·이모지
   };
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -1160,6 +1243,10 @@
         if (s.range === '6m' || s.range === '1y' || s.range === 'all') state.range = s.range;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
+        if (s.brand && typeof s.brand === 'object') {
+          if (typeof s.brand.emoji === 'string' && s.brand.emoji.trim()) state.brand.emoji = s.brand.emoji.trim();
+          if (typeof s.brand.name === 'string' && s.brand.name.trim()) state.brand.name = s.brand.name.trim().slice(0, 20);
+        }
       }
     }
   } catch (e) { /* 저장소를 못 쓰면 메모리 상태로만 동작 */ }
@@ -1169,7 +1256,8 @@
       localStorage.setItem(STORE_KEY, JSON.stringify({
         ym: state.ym, tab: state.tab, excluded: state.excluded,
         added: state.added, addedIncome: state.addedIncome,
-        rules: state.rules, overrides: state.overrides, range: state.range
+        rules: state.rules, overrides: state.overrides, range: state.range,
+        brand: state.brand
       }));
     } catch (e) {}
   }
@@ -1305,6 +1393,7 @@
   const el = function (id) { return document.getElementById(id); };
 
   function renderHead() {
+    renderBrand();
     const ongoing = LEDGER[state.ym].status === 'ongoing';
     el('mPickLabel').textContent = state.ym.slice(0, 4) + '년 ' + (+state.ym.slice(5, 7)) + '월';
     el('mPickDot').style.display = ongoing ? 'inline-block' : 'none';
@@ -1323,6 +1412,68 @@
     });
     el('view-asset').hidden = state.tab !== 'asset';
     el('view-spend').hidden = state.tab !== 'spend';
+  }
+
+  /* ── 가계부 이름·이모지 ── */
+  const EMOJI_PRESETS = ['🏠', '🏡', '💰', '🧾', '💎', '💛', '🐻', '🐶', '🌿', '✨', '🪙', '📒'];
+  let brandDraft = null;
+
+  function firstGrapheme(v) {
+    v = String(v == null ? '' : v).trim();
+    if (!v) return '';
+    try {
+      if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+        const it = new Intl.Segmenter('ko', { granularity: 'grapheme' }).segment(v)[Symbol.iterator]();
+        const f = it.next();
+        if (!f.done && f.value && f.value.segment) return f.value.segment;
+      }
+    } catch (e) {}
+    return Array.from(v)[0] || '';
+  }
+  function isEmojiGlyph(ch) {
+    if (!ch) return false;
+    try { return /\p{Extended_Pictographic}/u.test(ch); }
+    catch (e) { return Array.from(ch).some(function(c){ return c.codePointAt(0) > 0x2190; }); }
+  }
+  function renderBrand() {
+    const b = state.brand;
+    el('headEmoji').textContent = b.emoji;
+    el('headTitleText').textContent = b.name;
+    document.title = b.emoji + ' ' + b.name + ' · 샘플 프로토타입';
+    const lbl = '가계부 이름·이모지 바꾸기 (' + b.emoji + ' ' + b.name + ')';
+    ['btnBrandBadge', 'btnBrandPen'].forEach(function(id) {
+      el(id).setAttribute('aria-label', lbl);
+      el(id).setAttribute('title', lbl);
+    });
+  }
+  function renderBrandGrid() {
+    el('brandEmojiGrid').innerHTML = EMOJI_PRESETS.map(function(e) {
+      const on = !!(brandDraft && brandDraft.emoji === e);
+      return '<button type="button" data-emoji="' + e + '" class="' + (on ? 'on' : '') +
+        '" aria-pressed="' + (on ? 'true' : 'false') + '" aria-label="이모지 ' + e + '">' + e + '</button>';
+    }).join('');
+  }
+  function syncBrandPreview() {
+    if (!brandDraft) return;
+    el('brandPrevEmoji').textContent = brandDraft.emoji || BRAND_DEFAULT.emoji;
+    const nm = el('bName').value.trim();
+    el('brandPrevName').textContent = nm || brandDraft.name || BRAND_DEFAULT.name;
+  }
+  function openBrandModal() {
+    brandDraft = { emoji: state.brand.emoji, name: state.brand.name };
+    el('bName').value = state.brand.name;
+    el('bEmoji').value = '';
+    el('brandErr').hidden = true;
+    renderBrandGrid();
+    syncBrandPreview();
+    el('brandModal').hidden = false;
+  }
+  function closeBrandModal() { el('brandModal').hidden = true; brandDraft = null; }
+  function applyBrand(emoji, name) {
+    state.brand = { emoji: emoji, name: name };
+    save();
+    closeBrandModal();
+    renderBrand();
   }
 
   /* ── 연/월 피커 ── */
@@ -2124,7 +2275,7 @@
     const invTxt = (inv.g >= 0 ? '+' : '−') + won(Math.abs(inv.g)) + ' (' + pct(inv.rate) + '%)';
 
     const L = [];
-    L.push('[' + ymLabel(ym) + ' 공동 가계부 · ' + (ongoing ? meta.elapsed + '일까지' : '마감') + ']');
+    L.push('[' + state.brand.emoji + ' ' + state.brand.name + ' · ' + ymLabel(ym) + ' · ' + (ongoing ? meta.elapsed + '일까지' : '마감') + ']');
     L.push('· 공동 수입 ' + won(inc) + ' (' + incList.length + '건) / 고정 저축 ' + won(meta.save));
     if (incList.length) {
       L.push('· 수입 구성: ' + INCOME_CATS.filter(function(c){ return icur[c.id]; })
@@ -2344,7 +2495,7 @@
   });
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
-    closeModal(); closeRuleModal(); closeMonthFix(); closePicker();
+    closeModal(); closeRuleModal(); closeMonthFix(); closeBrandModal(); closePicker();
   });
 
   el('addForm').addEventListener('submit', function(e) {
@@ -2431,9 +2582,66 @@
     state.overrides = JSON.parse(JSON.stringify(FIXED_OVERRIDE));
     state.cat = null;
     state.icat = null;
+    state.brand = { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name };
     save();
     renderAll();
-    toast('샘플 데이터로 되돌렸어요');
+    toast('샘플 데이터로 되돌렸어요 · 이름도 기본값이에요');
+  });
+
+  /* ────────────── 11-2. 가계부 이름·이모지 설정 ────────────── */
+  el('btnBrandBadge').addEventListener('click', openBrandModal);
+  el('btnBrandPen').addEventListener('click', openBrandModal);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-brand]'), function(b) {
+    b.addEventListener('click', closeBrandModal);
+  });
+  el('brandEmojiGrid').addEventListener('click', function(e) {
+    const b = e.target.closest('[data-emoji]');
+    if (!b || !brandDraft) return;
+    brandDraft.emoji = b.getAttribute('data-emoji');
+    el('bEmoji').value = '';
+    el('brandErr').hidden = true;
+    renderBrandGrid();
+    syncBrandPreview();
+  });
+  el('bEmoji').addEventListener('input', function() {
+    if (!brandDraft) return;
+    const g = firstGrapheme(el('bEmoji').value);
+    if (g) brandDraft.emoji = g;
+    el('brandErr').hidden = true;
+    renderBrandGrid();
+    syncBrandPreview();
+  });
+  el('bName').addEventListener('input', function() {
+    el('brandErr').hidden = true;
+    syncBrandPreview();
+  });
+  el('brandForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const err = el('brandErr');
+    const raw = el('bEmoji').value.trim();
+    const name = el('bName').value.trim();
+    const emoji = raw ? firstGrapheme(raw) : ((brandDraft && brandDraft.emoji) || state.brand.emoji);
+    if (raw && !isEmojiGlyph(emoji)) {
+      err.textContent = '이모지를 1개만 넣어주세요. (예: 💰)';
+      err.hidden = false;
+      return;
+    }
+    if (!name) {
+      err.textContent = '가계부 이름을 적어주세요.';
+      err.hidden = false;
+      return;
+    }
+    if (!emoji) {
+      err.textContent = '이모지를 하나 골라주세요.';
+      err.hidden = false;
+      return;
+    }
+    applyBrand(emoji, name.slice(0, 20));
+    toast('이름을 바꿨어요 · ' + emoji + ' ' + name);
+  });
+  el('brandDefault').addEventListener('click', function() {
+    applyBrand(BRAND_DEFAULT.emoji, BRAND_DEFAULT.name);
+    toast('기본값으로 되돌렸어요 · ' + BRAND_DEFAULT.emoji + ' ' + BRAND_DEFAULT.name);
   });
 
   /* ────────────── 11-1. 월 네비게이터 · 기간 토글 ────────────── */
