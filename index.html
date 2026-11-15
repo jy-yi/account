@@ -441,10 +441,21 @@
     border:0; background:transparent; color:var(--ink-3); font:inherit; font-size:10.5px;
     font-weight:700; text-decoration:underline; text-underline-offset:3px; cursor:pointer; padding:8px;
   }
-  @media (max-width:380px){
+  @media (max-width:540px){
     .net-amount{font-size:29px;}
-    .donutwrap{flex-direction:column; align-items:stretch;}
-    .donutwrap svg{margin:0 auto;}
+    .donutwrap{flex-direction:column; align-items:stretch; gap:12px;}
+    .donutwrap svg{width:168px; height:168px; margin:2px auto 0;}
+    .catlist{width:100%;}
+    .crow{font-size:12.5px; padding:8px 2px; gap:8px;}
+    .crow .cn{flex:1; min-width:0; white-space:nowrap; overflow:visible; text-overflow:clip;}
+    .crow .cm{width:auto; flex:none; margin-left:auto; white-space:nowrap;}
+    .crow .ca{white-space:nowrap; flex:none;}
+    .crow .cp{width:32px; flex:none;}
+  }
+  @media (max-width:380px){
+    .net-amount{font-size:26px;}
+    .crow{font-size:11.5px; gap:6px;}
+    .crow .cp{width:28px;}
   }
 </style>
 </head>
