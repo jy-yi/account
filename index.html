@@ -83,6 +83,35 @@
   }
   .seg button.on{background:#fff; color:var(--teal); box-shadow:0 6px 16px -12px rgba(35,38,43,.7), inset 0 0 0 1px var(--line-2);}
   .seg button:last-child.on{color:var(--orange);}
+  /* 월 네비게이터 · 연/월 피커 */
+  .toolbar{position:relative;}
+  .monthnav{display:flex; align-items:center; gap:8px; justify-content:center; margin-bottom:10px;}
+  .mnav{width:34px; height:34px; border-radius:12px; border:1px solid var(--line); background:rgba(255,255,255,.82); font:inherit; font-size:15px; font-weight:800; color:var(--ink-2); cursor:pointer; display:grid; place-items:center; padding:0;}
+  .mnav:disabled{opacity:.32; cursor:default;}
+  .mpick{flex:none; min-width:148px; display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--ink); background:var(--ink); color:#fff; font:inherit; font-size:13.5px; font-weight:800; padding:9px 16px; border-radius:999px; cursor:pointer; letter-spacing:-.01em; box-shadow:0 10px 18px -14px rgba(35,38,43,.9);}
+  .mpick i{font-style:normal; font-size:9px; opacity:.7;}
+  .mpick .dot{width:5px; height:5px; border-radius:50%; background:#8CF0CB;}
+  .picker{position:absolute; left:50%; transform:translateX(-50%); top:calc(100% - 2px); width:min(420px, calc(100vw - 32px)); z-index:40; background:#fff; border:1px solid var(--line); border-radius:18px; box-shadow:0 24px 48px -24px rgba(35,38,43,.5); padding:14px;}
+  .picker[hidden]{display:none;}
+  .ychips{display:flex; gap:6px; margin-bottom:12px;}
+  .ychip{flex:1; border:1px solid var(--line); background:#FBF8F1; color:var(--ink-2); font:inherit; font-size:12px; font-weight:800; padding:8px 4px; border-radius:10px; cursor:pointer;}
+  .ychip.on{background:var(--ink); color:#fff; border-color:var(--ink);}
+  .mgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:6px;}
+  .mcell{border:1px solid var(--line); background:#fff; color:var(--ink); font:inherit; font-size:12px; font-weight:700; padding:9px 4px; border-radius:10px; cursor:pointer;}
+  .mcell:hover{background:#FAF7F1;}
+  .mcell.on{background:var(--teal); color:#fff; border-color:var(--teal);}
+  .mcell.off{color:#C9CFD6; background:#FAF8F4; cursor:default;}
+  /* 차트 기간 토글 */
+  .rtoggle{display:flex; gap:3px; padding:3px; background:#F4F1EA; border-radius:11px; margin:0 0 8px; width:fit-content;}
+  .rtoggle button{border:0; background:transparent; font:inherit; font-size:11px; font-weight:800; color:var(--ink-3); padding:6px 12px; border-radius:8px; cursor:pointer; letter-spacing:-.01em;}
+  .rtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 4px 10px -8px rgba(35,38,43,.8), inset 0 0 0 1px var(--line-2);}
+  /* 연간 누적 */
+  .yearsum{margin-top:10px; padding:11px 12px; border-radius:14px; background:#F7F4EC; border:1px solid var(--line-2); font-size:10.5px; font-weight:700; color:#6B6355; line-height:1.65; letter-spacing:-.01em;}
+  .yearsum b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  /* 모바일에서 금액이 두 줄로 꺾이지 않게 */
+  .srow .val, .incrow .ia, .fixrow .fa, .tx .ta, .invest-h b, .netsplit b,
+  .incfoot b, .fixsub b, .net-amount, .net-delta, .yearsum b, .mcell, .mpick{white-space:nowrap; flex-shrink:0;}
+  .srow .lb, .incrow .in, .fixrow .fn, .tx .tm{min-width:0;}
   /* ── cards ────────────────────────────── */
   .card{
     background:var(--card); border-radius:var(--radius); padding:18px;
@@ -428,7 +457,17 @@
   </div>
 
   <div class="toolbar">
-    <div class="month-tabs" id="monthTabs" role="tablist" aria-label="월 선택"></div>
+    <div class="monthnav">
+      <button class="mnav" id="mPrev" aria-label="이전 달">‹</button>
+      <button class="mpick" id="mPick" aria-haspopup="true" aria-expanded="false">
+        <span id="mPickLabel">2026년 11월</span><span class="dot" id="mPickDot"></span><i>▾</i>
+      </button>
+      <button class="mnav" id="mNext" aria-label="다음 달">›</button>
+    </div>
+    <div class="picker" id="picker" hidden>
+      <div class="ychips" id="yearChips"></div>
+      <div class="mgrid" id="monthGrid"></div>
+    </div>
     <div class="seg" id="seg" role="tablist" aria-label="화면 전환">
       <button role="tab" data-tab="asset" class="on" aria-selected="true">💎 자산 &amp; 증식</button>
       <button role="tab" data-tab="spend" aria-selected="false">🧾 지출 &amp; 분석</button>
@@ -452,6 +491,11 @@
       <div class="card-head">
         <h2>월별 자산 증식 추이</h2>
         <span class="chip-mini" id="growthChip"></span>
+      </div>
+      <div class="rtoggle" id="rangeToggle" role="group" aria-label="차트 기간">
+        <button type="button" data-range="6m" class="on">6개월</button>
+        <button type="button" data-range="1y">1년</button>
+        <button type="button" data-range="all">전체</button>
       </div>
       <div class="legendline">
         <span><i style="background:#7FC8B3"></i>월 증식액</span>
@@ -505,6 +549,7 @@
       <div id="settleList"></div>
       <div class="incblock" id="incomeBlock"></div>
       <div class="allow" id="allowNote"></div>
+      <div class="yearsum" id="yearSum"></div>
     </div>
 
     <div class="card">
@@ -814,9 +859,19 @@
   };
   const SAVE_PLAN = [['정기적금',1000000], ['ETF 자동매수',700000], ['연금저축',350000], ['청약',250000]];
 
-  const MONTHS = ['2026-09','2026-10','2026-11'];
-  const CHART = ['2026-06','2026-07','2026-08','2026-09','2026-10','2026-11'];
-  const PREV = {'2026-09':'2026-08','2026-10':'2026-09','2026-11':'2026-10'};
+  // 2024.01 ~ 2026.11 (35개월) 가상 데이터
+  const MONTHS = (function() {
+    const out = [];
+    let y = 2024, m = 1;
+    while (y < 2026 || (y === 2026 && m <= 11)) {
+      out.push(y + '-' + String(m).padStart(2, '0'));
+      m++;
+      if (m > 12) { m = 1; y++; }
+    }
+    return out;
+  })();
+  const PREV = {};
+  MONTHS.forEach(function(ym, i) { if (i) PREV[ym] = MONTHS[i - 1]; });
 
   // 원 단위. d = 'MM-DD'
   const LEDGER = {
@@ -957,6 +1012,114 @@
     ]}
   };
 
+  /* ────────────── 1-1. 2024.01~2026.07 가상 데이터 생성 (시드 고정) ────────────── */
+  function seedOf(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return h >>> 0;
+  }
+  function rndOf(seed) {
+    let a = seed >>> 0;
+    return function() {
+      a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+  function daysIn(ym) { return new Date(+ym.slice(0, 4), +ym.slice(5, 7), 0).getDate(); }
+
+  const MERCH = {
+    food:    [['이마트 장보기',60000,150000], ['하나로마트',45000,110000], ['마켓컬리',50000,90000], ['홈플러스',55000,125000], ['GS25',5000,16000]],
+    dine:    [['배달의민족',19000,42000], ['쿠팡이츠',18000,36000], ['스타벅스',8000,16000], ['메가커피',4500,11000], ['고기집 외식',50000,95000], ['김밥집',15000,26000]],
+    util:    [['도시가스',14000,46000]],
+    living:  [['쿠팡',18000,62000], ['다이소',8000,31000], ['올리브영',18000,52000], ['오늘의집',28000,72000]],
+    transit: [['교통카드 충전',60000,60000], ['SK주유소',52000,76000], ['공영주차장',3000,11000]],
+    gift:    [['친구 생일 선물',25000,70000], ['결혼식 축의금',50000,100000]],
+    leisure: [['CGV',26000,36000], ['영화+팝콘',30000,46000], ['KTX 나들이',85000,130000]],
+    health:  [['병원·약국',14000,42000], ['약국',7000,26000]]
+  };
+  const LEDGER_BASE = {
+    '2024': {income: 5620000, save: 1700000},
+    '2025': {income: 6250000, save: 2000000},
+    '2026': {income: 6680000, save: 2250000}
+  };
+
+  function genIncomes(ym, total, r) {
+    const mm = ym.slice(5, 7);
+    const h = Math.round(total * (0.562 + r() * 0.018) / 10000) * 10000;
+    const w = Math.round(total * (0.378 + r() * 0.014) / 10000) * 10000;
+    const fin = Math.round((20000 + r() * 60000) / 1000) * 1000;
+    const side = Math.max(total - h - w - fin, 0);
+    const rows = [
+      [mm + '-25', '남편 급여', 'salary', '공동통장', h],
+      [mm + '-25', '아내 급여', 'salary', '공동통장', w]
+    ];
+    if (side > 0) rows.push([mm + '-15', '협찬·부수입', 'side', '공동통장', side]);
+    rows.push([mm + '-28', '배당·이자', 'finance', '증권계좌', fin]);
+    return rows;
+  }
+
+  function genLedger(ym) {
+    const r = rndOf(seedOf(ym));
+    const y = ym.slice(0, 4), m = +ym.slice(5, 7);
+    const base = LEDGER_BASE[y];
+    const income = base.income + Math.round(((m - 1) / 11) * 160000 / 10000) * 10000;
+    const days = daysIn(ym);
+    const cats = ['food','food','dine','dine','living','transit','gift','leisure','health','util'];
+    const n = 17 + Math.floor(r() * 8);
+    const txs = [];
+    for (let i = 0; i < n; i++) {
+      const cat = cats[Math.floor(r() * cats.length)];
+      const pool = MERCH[cat];
+      const p = pool[Math.floor(r() * pool.length)];
+      const amount = Math.round((p[1] + r() * (p[2] - p[1])) / 100) * 100;
+      const day = 1 + Math.floor(r() * days);
+      txs.push([ym.slice(5, 7) + '-' + String(day).padStart(2, '0'), p[0], cat, cat === 'util' ? '자동이체' : '공동카드', amount]);
+    }
+    txs.sort(function(a, b) { return a[0] < b[0] ? -1 : (a[0] > b[0] ? 1 : 0); });
+    return {
+      income: income, save: base.save, allowance: 600000,
+      days: days, elapsed: days, status: 'closed',
+      incomes: genIncomes(ym, income, r), txs: txs
+    };
+  }
+
+  /* 순자산 스냅샷 : 연도별 앵커 사이를 보간 (2026-05~11은 수작업 값 유지) */
+  const SNAP_ANCHOR = {
+    '2024-01': {cash:18000000, stock:8000000,  real:320000000, debt:210000000},
+    '2024-12': {cash:26500000, stock:24500000, real:322000000, debt:205500000},
+    '2025-06': {cash:33500000, stock:38000000, real:325000000, debt:203000000},
+    '2025-10': {cash:42500000, stock:55000000, real:330000000, debt:200500000},
+    '2025-11': {cash:44000000, stock:58000000, real:520000000, debt:328000000},
+    '2026-04': {cash:41200000, stock:60800000, real:520000000, debt:330200000}
+  };
+  (function buildSnap() {
+    const anchors = Object.keys(SNAP_ANCHOR).sort(function(a, b) { return MONTHS.indexOf(a) - MONTHS.indexOf(b); });
+    const ix = function(ym) { return MONTHS.indexOf(ym); };
+    MONTHS.forEach(function(ym) {
+      if (SNAP[ym]) return;
+      if (SNAP_ANCHOR[ym]) { SNAP[ym] = Object.assign({}, SNAP_ANCHOR[ym]); return; }
+      let a = anchors[0], b = anchors[anchors.length - 1];
+      for (let i = 0; i < anchors.length; i++) {
+        if (ix(anchors[i]) <= ix(ym)) a = anchors[i];
+        if (ix(anchors[i]) > ix(ym)) { b = anchors[i]; break; }
+      }
+      const t = ix(b) === ix(a) ? 0 : (ix(ym) - ix(a)) / (ix(b) - ix(a));
+      const A = SNAP_ANCHOR[a], B = SNAP_ANCHOR[b];
+      const lerp = function(p, q) { return Math.round((p + (q - p) * t) / 10000) * 10000; };
+      const j = 0.997 + rndOf(seedOf(ym + '-snap'))() * 0.006;
+      SNAP[ym] = {
+        cash: Math.round(lerp(A.cash, B.cash) * j / 10000) * 10000,
+        stock: Math.round(lerp(A.stock, B.stock) * j / 10000) * 10000,
+        real: lerp(A.real, B.real),
+        debt: Math.round(lerp(A.debt, B.debt) / 10000) * 10000
+      };
+    });
+  })();
+
+  MONTHS.forEach(function(ym) { if (!LEDGER[ym]) LEDGER[ym] = genLedger(ym); });
+
   /* ────────────── 2. 상태 & 저장 ────────────── */
   const STORE_KEY = 'jjong-couple-ledger-v1';
   const state = {
@@ -969,7 +1132,9 @@
     added: [],      // 지출 {id, ym, d, n, c, m, a}
     addedIncome: [],// 수입 {id, ym, d, n, c, m, a}
     rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
-    overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE))
+    overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
+    range: '6m',      // 6m | 1y | all
+    pickerYear: 2026
   };
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -981,6 +1146,7 @@
         if (Array.isArray(s.addedIncome)) state.addedIncome = s.addedIncome;
         if (Array.isArray(s.rules)) state.rules = s.rules;
         if (s.overrides && typeof s.overrides === 'object') state.overrides = s.overrides;
+        if (s.range === '6m' || s.range === '1y' || s.range === 'all') state.range = s.range;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
       }
@@ -992,7 +1158,7 @@
       localStorage.setItem(STORE_KEY, JSON.stringify({
         ym: state.ym, tab: state.tab, excluded: state.excluded,
         added: state.added, addedIncome: state.addedIncome,
-        rules: state.rules, overrides: state.overrides
+        rules: state.rules, overrides: state.overrides, range: state.range
       }));
     } catch (e) {}
   }
@@ -1128,21 +1294,12 @@
   const el = function (id) { return document.getElementById(id); };
 
   function renderHead() {
-    const tabs = el('monthTabs');
-    tabs.innerHTML = MONTHS.map(function(ym) {
-      const on = ym === state.ym ? ' on' : '';
-      const live = LEDGER[ym].status === 'ongoing' ? '<span class="dot"></span>' : '';
-      return '<button class="mtab' + on + '" role="tab" aria-selected="' + (on ? 'true' : 'false') +
-        '" data-ym="' + ym + '"><b>' + ymLabel(ym) + '</b>' + live + '</button>';
-    }).join('');
-    Array.prototype.forEach.call(tabs.querySelectorAll('.mtab'), function(b) {
-      b.addEventListener('click', function() {
-        state.ym = b.getAttribute('data-ym');
-        state.cat = null;
-        save();
-        renderAll();
-      });
-    });
+    const ongoing = LEDGER[state.ym].status === 'ongoing';
+    el('mPickLabel').textContent = state.ym.slice(0, 4) + '년 ' + (+state.ym.slice(5, 7)) + '월';
+    el('mPickDot').style.display = ongoing ? 'inline-block' : 'none';
+    const mi = MONTHS.indexOf(state.ym);
+    el('mPrev').disabled = mi <= 0;
+    el('mNext').disabled = mi >= MONTHS.length - 1;
     Array.prototype.forEach.call(el('seg').querySelectorAll('button'), function(b) {
       const on = b.getAttribute('data-tab') === state.tab;
       b.classList.toggle('on', on);
@@ -1155,6 +1312,41 @@
     });
     el('view-asset').hidden = state.tab !== 'asset';
     el('view-spend').hidden = state.tab !== 'spend';
+  }
+
+  /* ── 연/월 피커 ── */
+  function renderPicker() {
+    const years = [];
+    MONTHS.forEach(function(m) { const y = m.slice(0, 4); if (years.indexOf(y) < 0) years.push(y); });
+    el('yearChips').innerHTML = years.map(function(y) {
+      return '<button class="ychip' + (+y === state.pickerYear ? ' on' : '') + '" data-year="' + y + '">' + y + '년</button>';
+    }).join('');
+    el('monthGrid').innerHTML = Array.from({length: 12}, function(_, i) {
+      const ym = state.pickerYear + '-' + String(i + 1).padStart(2, '0');
+      const has = MONTHS.indexOf(ym) >= 0;
+      const on = ym === state.ym;
+      return '<button class="mcell' + (on ? ' on' : '') + (has ? '' : ' off') + '"' +
+        (has ? ' data-ym="' + ym + '"' : ' disabled') + '>' + (i + 1) + '월</button>';
+    }).join('');
+  }
+  function closePicker() {
+    el('picker').hidden = true;
+    el('mPick').setAttribute('aria-expanded', 'false');
+  }
+  function openPicker() {
+    state.pickerYear = +state.ym.slice(0, 4);
+    renderPicker();
+    el('picker').hidden = false;
+    el('mPick').setAttribute('aria-expanded', 'true');
+  }
+  function goMonth(ym) {
+    if (MONTHS.indexOf(ym) < 0) return;
+    state.ym = ym;
+    state.cat = null;
+    state.icat = null;
+    closePicker();
+    save();
+    renderAll();
   }
 
   /* ────────────── 6. 렌더 : 자산 탭 ────────────── */
@@ -1200,6 +1392,7 @@
 
     // 이번 달 증식 칩
     el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true}) + '';
+    syncRangeToggle();
 
     // 포트폴리오
     el('pfMonth').textContent = ymLabel(ym) + ' 기준';
@@ -1246,6 +1439,11 @@
   }
 
   /* ────────────── 6-1. 투자 상세 ────────────── */
+  function syncRangeToggle() {
+    Array.prototype.forEach.call(el('rangeToggle').querySelectorAll('button'), function(b) {
+      b.classList.toggle('on', b.getAttribute('data-range') === state.range);
+    });
+  }
   function investTotals(ym) {
     const base = SNAP[INVEST_BASE].stock;
     const target = SNAP[ym] ? SNAP[ym].stock : base;
@@ -1290,12 +1488,19 @@
   }
 
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
+  function chartMonths() {
+    const i = Math.max(MONTHS.indexOf(state.ym), 0);
+    if (state.range === 'all') return MONTHS.slice(0, i + 1);
+    const n = state.range === '1y' ? 12 : 6;
+    return MONTHS.slice(Math.max(0, i - n + 1), i + 1);
+  }
   function drawGrowth() {
+    const list = chartMonths();
     const W = 340, H = 196;
     const padL = 26, padR = 42, baseY = 152;
-    const slot = (W - padL - padR) / CHART.length;
-    const nets = CHART.map(netOf);
-    const deltas = CHART.map(function(ym) {
+    const slot = (W - padL - padR) / list.length;
+    const nets = list.map(netOf);
+    const deltas = list.map(function(ym) {
       const p = relYM(ym, -1);
       return SNAP[p] ? netOf(ym) - netOf(p) : 0;
     });
@@ -1327,7 +1532,7 @@
       const h = Math.max(Math.abs(d) / maxD * barMax, 2);
       const x = cx(i) - bw / 2;
       const y = baseY - h;
-      const on = CHART[i] === state.ym;
+      const on = list[i] === state.ym;
       s += '<rect class="bar" x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) +
         '" rx="' + (bw/2).toFixed(1) + '" fill="url(#barGrad)" opacity="' + (on ? 1 : .55) + '"/>';
     });
@@ -1335,21 +1540,27 @@
     const pts = nets.map(function(v, i) { return cx(i).toFixed(1) + ',' + lineY(v).toFixed(1); });
     s += '<polyline points="' + pts.join(' ') + '" fill="none" stroke="#E9834A" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>';
     nets.forEach(function(v, i) {
-      const on = CHART[i] === state.ym;
-      s += '<circle cx="' + cx(i).toFixed(1) + '" cy="' + lineY(v).toFixed(1) + '" r="' + (on ? 4.6 : 3.2) +
+      const on = list[i] === state.ym;
+      const rr = list.length > 12 ? (on ? 3.6 : 2) : (on ? 4.6 : 3.2);
+      s += '<circle cx="' + cx(i).toFixed(1) + '" cy="' + lineY(v).toFixed(1) + '" r="' + rr +
         '" fill="#fff" stroke="#E9834A" stroke-width="' + (on ? 2.6 : 2) + '"/>';
     });
     // x축 라벨
-    CHART.forEach(function(ym, i) {
-      s += '<text x="' + cx(i).toFixed(1) + '" y="' + (baseY + 17) + '" font-size="9" text-anchor="middle" fill="' +
+    list.forEach(function(ym, i) {
+      const show = list.length <= 12 || ym.slice(5, 7) === '01' || ym === state.ym || i === list.length - 1;
+      if (!show) return;
+      const lab = list.length > 12
+        ? ym.slice(2, 4) + '.' + (+ym.slice(5, 7))
+        : (+ym.slice(5, 7)) + '월';
+      s += '<text x="' + cx(i).toFixed(1) + '" y="' + (baseY + 17) + '" font-size="' + (list.length > 12 ? '7.5' : '9') + '" text-anchor="middle" fill="' +
         (ym === state.ym ? '#23262B' : '#A6ADB6') + '" font-weight="' + (ym === state.ym ? '800' : '600') + '">' +
-        (+ym.slice(5,7)) + '월</text>';
+        lab + '</text>';
     });
     // 기준선
     s += '<line x1="' + padL + '" y1="' + baseY + '" x2="' + (W - padR) + '" y2="' + baseY + '" stroke="#EDE7DC" stroke-width="1.2"/>';
 
     // hit 영역
-    CHART.forEach(function(ym, i) {
+    list.forEach(function(ym, i) {
       s += '<rect class="hit" data-i="' + i + '" x="' + (padL + slot * i).toFixed(1) + '" y="10" width="' + slot.toFixed(1) +
         '" height="' + (baseY - 6) + '" fill="transparent"/>';
     });
@@ -1364,7 +1575,7 @@
     const svg = el('growthChart');
     const wrap = svg.parentNode;
     function show(i) {
-      const ym = CHART[i];
+      const ym = list[i];
       const p = relYM(ym, -1);
       const d = SNAP[p] ? netOf(ym) - netOf(p) : 0;
       tip.innerHTML = '<b>' + ymLabel(ym) + ' 순자산</b>' +
@@ -1383,7 +1594,7 @@
     function hide() {
       tip.style.opacity = '0';
       Array.prototype.forEach.call(svg.querySelectorAll('.bar'), function(b, k) {
-        b.setAttribute('opacity', CHART[k] === state.ym ? '1' : '.55');
+        b.setAttribute('opacity', list[k] === state.ym ? '1' : '.55');
       });
     }
     Array.prototype.forEach.call(svg.querySelectorAll('.hit'), function(r) {
@@ -1424,13 +1635,17 @@
       row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') +
       row('📌','고정 지출','자동 규칙 ' + fixedList.length + '건' + (upcoming.length ? ' · 예정 ' + nf.format(upSum) + '원' : ''), '−' + won(fixedSpent) + '') +
       row('🧾','변동 생활비','줄일 수 있는 소비', '−' + won(spent) + '') +
-      '<div class="srow total"><span class="ico">✨</span><span class="lb">' +
-        (ongoing ? '남은 잉여금' : '남은 잉여금') +
+      '<div class="srow total"><span class="ico">✨</span><span class="lb">이번 달 남은 돈' +
         '<small>' + (upcoming.length
           ? '고정 예정 ' + nf.format(upSum) + '원 반영하면 ' + won(remainAfterFixed)
           : (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈')) + '</small></span>' +
         '<span class="val">' + won(remain) + '</span></div>';
     renderFixedCard(ym, fixedList, upcoming);
+
+    /* 선택 연도 누적 */
+    const ys = yearSummary(ym);
+    el('yearSum').innerHTML = '📅 <b>' + ym.slice(0, 4) + '년 ' + ys.n + '개월 누적</b> · 수입 <b>' + won(ys.inc) + '</b> · 고정 저축 <b>' + won(ys.save) + '</b><br>' +
+      '고정 지출 <b>' + won(ys.fixed) + '</b> · 변동 생활비 <b>' + won(ys.va) + '</b> · 남은 돈 <b>' + won(ys.remain) + '</b>';
 
     /* 이번 달 수입 내역 */
     const exInc = excludedIncome(ym);
@@ -1738,6 +1953,21 @@
     });
   }
 
+  /* ────────────── 8-0. 선택 연도 누적 ────────────── */
+  function yearSummary(ym) {
+    const y = ym.slice(0, 4);
+    const months = MONTHS.filter(function(m) { return m.slice(0, 4) === y && m <= ym; });
+    let inc = 0, saveSum = 0, fixed = 0, va = 0;
+    months.forEach(function(m) {
+      const v = visible(m);
+      inc += incomeTotal(m);
+      saveSum += LEDGER[m].save;
+      fixed += sum(v.filter(function(t) { return t.k === 'f'; }));
+      va += sum(v.filter(function(t) { return t.k !== 'f'; }));
+    });
+    return { n: months.length, inc: inc, save: saveSum, fixed: fixed, va: va, remain: inc - saveSum - fixed - va };
+  }
+
   /* ────────────── 8-1. 고정 지출 카드 ────────────── */
   function renderFixedCard(ym, fixedList, upcoming) {
     const rules = state.rules;
@@ -1891,7 +2121,7 @@
     L.push('· 고정 지출 ' + won(fixedSpent) + ' (' + fixedList.length + '건)' +
       (upcoming.length ? ' · 예정 ' + won(upSum) : ''));
     L.push('· 변동 생활비 ' + won(spent) + ' (변동 예산 ' + won(BUDGET_TOTAL) + '의 ' + pct(spent / BUDGET_TOTAL, 0) + '%)');
-    L.push('· 남은 잉여금 ' + won(remain) + (upcoming.length ? ' (고정 예정 ' + won(upSum) + ' 반영 시 ' + won(remain - upSum) + ')' : '') +
+    L.push('· 이번 달 남은 돈 ' + won(remain) + (upcoming.length ? ' (고정 예정 ' + won(upSum) + ' 반영 시 ' + won(remain - upSum) + ')' : '') +
       ' · 저축률 ' + pct(inc ? meta.save / inc : 0) + '%');
     if (prevTotal) {
       const rate = (spent - prevTotal) / prevTotal;
@@ -1908,7 +2138,7 @@
     if (exFixed.length) L.push('· 이번 달만 뺀 고정 지출 ' + exFixed.length + '건 ' + won(sum(exFixed)) + ' (' + exFixed.map(function(t){ return t.n; }).join(', ') + ')');
     if (added.length) L.push('· 새로 추가한 지출 ' + added.length + '건 ' + won(sum(added)) + ' (' + added.map(function(t){ return t.n; }).join(', ') + ')');
     L.push('— ' + (state.tab === 'asset'
-      ? '순자산 ' + won(netOf(ym)) + ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')'
+      ? '순자산 ' + won(netOf(ym)) + (PREV[ym] ? ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')' : '')
       : '지출 ' + allExp.length + '건 · 수입 ' + incList.length + '건'));
     return L.join('\n');
   }
@@ -1954,7 +2184,7 @@
     });
     el('sheetHint').textContent = exp
       ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
-      : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·잉여금·저축률이 바로 다시 계산돼요.';
+      : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·남은 돈·저축률이 바로 다시 계산돼요.';
     el('fAmount').placeholder = exp ? '32000' : '200000';
     el('addErr').hidden = true;
     setTimeout(function(){ (exp ? el('fName') : el('fIncName')).focus(); }, 40);
@@ -2102,7 +2332,7 @@
   });
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
-    closeModal(); closeRuleModal(); closeMonthFix();
+    closeModal(); closeRuleModal(); closeMonthFix(); closePicker();
   });
 
   el('addForm').addEventListener('submit', function(e) {
@@ -2192,6 +2422,41 @@
     save();
     renderAll();
     toast('샘플 데이터로 되돌렸어요');
+  });
+
+  /* ────────────── 11-1. 월 네비게이터 · 기간 토글 ────────────── */
+  el('mPrev').addEventListener('click', function() {
+    const i = MONTHS.indexOf(state.ym);
+    if (i > 0) goMonth(MONTHS[i - 1]);
+  });
+  el('mNext').addEventListener('click', function() {
+    const i = MONTHS.indexOf(state.ym);
+    if (i < MONTHS.length - 1) goMonth(MONTHS[i + 1]);
+  });
+  el('mPick').addEventListener('click', function(e) {
+    e.stopPropagation();
+    if (el('picker').hidden) openPicker(); else closePicker();
+  });
+  el('picker').addEventListener('click', function(e) { e.stopPropagation(); });
+  document.addEventListener('click', function() { if (!el('picker').hidden) closePicker(); });
+  el('yearChips').addEventListener('click', function(e) {
+    const b = e.target.closest('[data-year]');
+    if (!b) return;
+    state.pickerYear = +b.getAttribute('data-year');
+    renderPicker();
+  });
+  el('monthGrid').addEventListener('click', function(e) {
+    const b = e.target.closest('[data-ym]');
+    if (!b) return;
+    goMonth(b.getAttribute('data-ym'));
+  });
+  Array.prototype.forEach.call(el('rangeToggle').querySelectorAll('button'), function(b) {
+    b.addEventListener('click', function() {
+      state.range = b.getAttribute('data-range');
+      save();
+      syncRangeToggle();
+      drawGrowth();
+    });
   });
 
   /* ────────────── 12. 시작 ────────────── */
