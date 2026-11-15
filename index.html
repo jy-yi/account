@@ -307,6 +307,53 @@
   }
   .kindtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 6px 14px -12px rgba(35,38,43,.7), inset 0 0 0 1px var(--line-2);}
   .kindtoggle button.on[data-kind="inc"]{color:var(--teal);}
+  /* 투자 상세 */
+  .invest-sum{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 10px; border-radius:16px; background:#FBF8F1; border:1px solid var(--line-2); margin-bottom:12px;}
+  .invest-sum div{text-align:center;}
+  .invest-sum span{display:block; font-size:9.5px; color:var(--ink-3); font-weight:700; margin-bottom:3px;}
+  .invest-sum b{font-size:12px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.03em;}
+  .invest-sum b.up{color:#1F8A63;}
+  .invest-row{padding:9px 0; border-bottom:1px solid var(--line-2);}
+  .invest-row:last-child{border-bottom:0; padding-bottom:0;}
+  .invest-h{display:flex; align-items:baseline; gap:6px; font-size:12.5px; font-weight:800; letter-spacing:-.01em;}
+  .invest-h .iu{font-size:10px; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums;}
+  .invest-h b{margin-left:auto; font-size:13px; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+  .invest-f{display:flex; gap:10px; flex-wrap:wrap; font-size:10.5px; color:var(--ink-3); font-weight:700; margin-top:3px; font-variant-numeric:tabular-nums;}
+  .invest-f .up{color:#1F8A63;}
+  .invest-note{font-size:10px; color:var(--ink-3); line-height:1.55; margin-top:11px; padding-top:9px; border-top:1px dashed var(--line); font-weight:600; letter-spacing:-.01em;}
+  .invest-note b{color:var(--ink-2);}
+  /* 고정 지출 */
+  .fixday{font-size:9.5px; font-weight:800; color:#8A7A5E; background:#FBF7EF; border:1px solid #E9E0CD; padding:2px 6px; border-radius:6px; white-space:nowrap; flex:none;}
+  .fixrow{display:flex; align-items:center; gap:8px; padding:9px 0; border-bottom:1px solid var(--line-2);}
+  .fixrow:last-child{border-bottom:0;}
+  .fixrow .fe{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; font-size:14px; flex:none;}
+  .fixrow .fn{min-width:0; flex:1;}
+  .fixrow .fn b{display:block; font-size:12.5px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .fixrow .fn span{font-size:10px; color:var(--ink-3); font-weight:600;}
+  .fixrow .fa{font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .fixup{opacity:.6;}
+  .fixup .fa{color:var(--ink-3); font-weight:700;}
+  .fixsec{font-size:10px; font-weight:800; color:var(--ink-3); letter-spacing:.02em; margin:14px 0 2px;}
+  .fixsec:first-child{margin-top:0;}
+  .fixsub{display:flex; justify-content:space-between; font-size:11px; font-weight:800; color:var(--ink-2); margin-top:10px; padding-top:9px; border-top:1px dashed var(--line);}
+  .fixsub b{font-variant-numeric:tabular-nums; font-size:13px; color:var(--ink);}
+  .rule-row{display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--line-2);}
+  .rule-row:last-child{border-bottom:0;}
+  .rule-row .rn{flex:1; min-width:0; font-size:12px; font-weight:700; letter-spacing:-.01em;}
+  .rule-row .rn small{display:block; font-size:9.5px; color:var(--ink-3); font-weight:600;}
+  .rule-row .ra{font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .rule-row.off .rn, .rule-row.off .ra{color:var(--ink-3);}
+  .sw{position:relative; width:38px; height:22px; border-radius:99px; border:0; background:#E3DED4; cursor:pointer; flex:none; padding:0; transition:.16s ease;}
+  .sw i{position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.16s ease; box-shadow:0 1px 3px rgba(0,0,0,.25);}
+  .sw.on{background:var(--teal);}
+  .sw.on i{left:19px;}
+  .btn-ruleadd{margin-top:12px; width:100%; padding:12px; font-size:12px;}
+  .btn-link{display:block; width:100%; margin-top:8px; border:0; background:transparent; color:var(--red); font:inherit; font-size:11.5px; font-weight:800; padding:8px; cursor:pointer; text-decoration:underline; text-underline-offset:3px;}
+  .switchrow{display:flex; align-items:center; gap:8px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin:2px 0 0; cursor:pointer;}
+  .switchrow input{width:18px; height:18px; accent-color:#2F8F7B;}
+  .icon-btn{flex:none; width:24px; height:24px; border-radius:8px; border:1px solid var(--line); background:#fff; color:var(--ink-3); font-size:11px; cursor:pointer; display:grid; place-items:center; padding:0;}
+  .icon-btn:hover{border-color:var(--teal); color:var(--teal); background:var(--teal-soft);}
+  .icon-btn.del:hover{border-color:var(--red); color:var(--red); background:var(--red-soft);}
   /* dock */
   .dock{
     position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(560px,100%);
@@ -425,6 +472,18 @@
 
     <div class="card">
       <div class="card-head">
+        <h2>주식·투자 상세</h2>
+        <span class="muted" id="investNote"></span>
+      </div>
+      <div class="invest-sum" id="investSum"></div>
+      <div id="investList"></div>
+      <div class="invest-note">
+        미국주식 소수점은 토스증권 자동 모으기 기준 · 환율 <b>1,380원/달러</b> 가정 · 과거 월은 현재 보유 종목을 기준으로 평가액을 비례 환산한 참고값이에요.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h2>부채</h2>
         <span class="muted" id="debtNote"></span>
       </div>
@@ -449,6 +508,16 @@
 
     <div class="card">
       <div class="card-head">
+        <h2>고정 지출 · 자동 규칙</h2>
+        <span class="muted" id="fixedNote"></span>
+      </div>
+      <div id="fixedList"></div>
+      <div id="fixedFoot"></div>
+      <button class="btn ghost btn-ruleadd" id="btnRuleAdd">＋ 고정 지출 규칙 추가</button>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h2>어디를 줄여야 할까?</h2>
         <span class="chip-mini warn" id="insChip">전월 대비</span>
       </div>
@@ -458,19 +527,19 @@
 
     <div class="card">
       <div class="card-head">
-        <h2>카테고리별 지출 분포</h2>
+        <h2>변동 생활비 분포</h2>
         <span class="muted" id="donutNote"></span>
       </div>
       <div class="donutwrap">
         <svg id="donut" viewBox="0 0 180 180" role="img" aria-label="카테고리별 지출 도넛 차트"></svg>
         <div class="catlist" id="catList"></div>
       </div>
-      <div class="muted" style="margin-top:10px; font-size:10.5px;">카테고리를 누르면 아래 내역이 필터링돼요.</div>
+      <div class="muted" style="margin-top:10px; font-size:10.5px;">카테고리를 누르면 아래 내역이 필터링돼요. 고정 지출은 위 카드에서 따로 봐요.</div>
     </div>
 
     <div class="card">
       <div class="card-head">
-        <h2>카테고리 예산 진행률</h2>
+        <h2>변동 생활비 예산 진행률</h2>
         <span class="muted" id="budgetNote"></span>
       </div>
       <div id="budgetList"></div>
@@ -582,6 +651,81 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<!-- 고정 지출 규칙 모달 -->
+<div class="modal" id="ruleModal" hidden>
+  <div class="bd" data-close-rule></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="ruleTitle">
+    <div class="grab"></div>
+    <h2 id="ruleTitle">고정 지출 규칙 추가</h2>
+    <p class="hint">매달 같은 날 이번 달 내역에 자동으로 생겨요. 그 달만 금액이 다르면 내역에서 바로 고칠 수 있어요.</p>
+    <form id="ruleForm" novalidate>
+      <div class="field">
+        <label for="rName">항목명</label>
+        <input type="text" id="rName" maxlength="24" placeholder="예: 주담대 이자" />
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="rDay">이체일</label>
+          <input type="number" id="rDay" min="1" max="28" step="1" placeholder="25" />
+        </div>
+        <div class="field">
+          <label for="rAmount">금액 (원)</label>
+          <input type="number" id="rAmount" min="1" step="1" placeholder="640000" />
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="rCat">카테고리</label>
+          <select id="rCat"></select>
+        </div>
+        <div class="field">
+          <label for="rMethod">결제수단</label>
+          <select id="rMethod">
+            <option>자동이체</option>
+            <option>공동카드</option>
+            <option>공동 현금</option>
+          </select>
+        </div>
+      </div>
+      <label class="switchrow"><input type="checkbox" id="rOn" checked /> 이 규칙 켜기 (매월 자동 생성)</label>
+      <p class="err" id="ruleErr" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-rule>취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+      <button type="button" class="btn-link" id="ruleDelete" hidden>이 규칙 삭제</button>
+    </form>
+  </div>
+</div>
+
+<!-- 이번 달만 수정 모달 -->
+<div class="modal" id="monthFixModal" hidden>
+  <div class="bd" data-close-mfix></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="mfixTitle">
+    <div class="grab"></div>
+    <h2 id="mfixTitle">이번 달만 수정</h2>
+    <p class="hint" id="mfixHint">이 달 내역에만 적용되고, 규칙 자체는 그대로 둬요.</p>
+    <form id="mfixForm" novalidate>
+      <div class="frow">
+        <div class="field">
+          <label for="mDay">이체일</label>
+          <input type="number" id="mDay" min="1" max="28" step="1" />
+        </div>
+        <div class="field">
+          <label for="mAmount">이번 달 금액 (원)</label>
+          <input type="number" id="mAmount" min="1" step="1" />
+        </div>
+      </div>
+      <p class="err" id="mfixErr" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-mfix>취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+      <button type="button" class="btn-link" id="mfixReset" hidden>규칙 금액으로 되돌리기</button>
+    </form>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -613,6 +757,42 @@
   const INCAT = {};
   INCOME_CATS.forEach(function(c){ INCAT[c.id] = c; });
   const ACCOUNTS = ['공동통장','생활비 통장','증권계좌','기타'];
+
+  // 고정 지출 전용 가상 카테고리 (지출 카테고리 예산·분포에는 들어가지 않음)
+  const EXTRA_CATS = {
+    allow: {id:'allow', label:'용돈 이체', emoji:'👛', color:'#B08A5E'}
+  };
+  function catOf(id) { return CAT[id] || EXTRA_CATS[id] || {id:'etc', label:'기타', emoji:'🧩', color:'#94A85C'}; }
+
+  // 매달 반복되는 고정 지출 규칙 (가상 샘플) — day: 이체일, amount: 기본 금액
+  const FIXED_RULES = [
+    {id:'r1', name:'부부 각자 용돈 이체', cat:'allow', day:1,  amount:600000, method:'자동이체', on:true},
+    {id:'r2', name:'아파트 관리비',      cat:'home',  day:3,  amount:214600, method:'자동이체', on:true},
+    {id:'r3', name:'주담대 이자',        cat:'home',  day:25, amount:640000, method:'자동이체', on:true},
+    {id:'r4', name:'KT 통신비',          cat:'util',  day:7,  amount:89000,  method:'자동이체', on:true},
+    {id:'r5', name:'넷플릭스',           cat:'living',day:2,  amount:13500,  method:'공동카드', on:true},
+    {id:'r6', name:'부모님 용돈',        cat:'gift',  day:5,  amount:400000, method:'자동이체', on:true},
+    {id:'r7', name:'실손보험',           cat:'health',day:10, amount:78000,  method:'자동이체', on:true}
+  ];
+  // 달별 금액 변동 예시 (관리비·대출이자는 매달 조금씩 달라짐)
+  const FIXED_OVERRIDE = {
+    '2026-08': {r2:{a:312600}, r3:{a:652000}},
+    '2026-09': {r2:{a:198400}, r3:{a:648000}},
+    '2026-10': {r2:{a:208900}, r3:{a:644000}},
+    '2026-11': {r2:{a:214600}, r3:{a:640000}}
+  };
+
+  // 주식·투자 상세 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
+  const INVEST = [
+    {name:'VOO',                 sub:'토스증권 · 미국주식 소수점', units:'4.3821주',  principal:3150000,  value:3749000},
+    {name:'QQQM',                sub:'토스증권 · 미국주식 소수점', units:'2.1540주',  principal:660000,   value:773000},
+    {name:'SCHD',                sub:'토스증권 · 미국 배당',       units:'31.0000주', principal:10800000, value:12028000},
+    {name:'TIGER 미국S&P500',    sub:'국내 ETF',                  units:'—',         principal:24300000, value:26900000},
+    {name:'KODEX 미국나스닥100', sub:'국내 ETF',                  units:'—',         principal:9600000,  value:10400000},
+    {name:'TIGER 미국채10년선물',sub:'국내 ETF',                  units:'—',         principal:3000000,  value:3150000},
+    {name:'ISA (ETF·TDF)',       sub:'절세 계좌',                 units:'—',         principal:16200000, value:17500000}
+  ];
+  const INVEST_BASE = '2026-11';
 
   // 자산 스냅샷 (원). real 은 신혼집 시세, debt 는 주담대+마이너스통장 합계
   const SNAP = {
@@ -646,9 +826,6 @@
       ['08-28','배당·이자','finance','증권계좌',90000]
     ], txs:[
       ['08-01','이마트 장보기','food','공동카드',118700],
-      ['08-02','아파트 관리비','home','자동이체',312600],
-      ['08-03','넷플릭스','living','공동카드',13500],
-      ['08-04','KT 통신비','util','자동이체',89000],
       ['08-05','배달의민족','dine','공동카드',26400],
       ['08-06','교통카드 충전','transit','공동카드',60000],
       ['08-07','쿠팡','living','공동카드',41200],
@@ -679,11 +856,8 @@
       ['09-28','배당·이자','finance','증권계좌',90000]
     ], txs:[
       ['09-01','이마트 장보기','food','공동카드',132600],
-      ['09-01','아파트 관리비','home','자동이체',198400],
-      ['09-02','넷플릭스','living','공동카드',13500],
       ['09-02','배달의민족','dine','공동카드',28900],
       ['09-03','GS25','food','공동카드',9800],
-      ['09-04','KT 통신비','util','자동이체',89000],
       ['09-05','교통카드 충전','transit','공동카드',60000],
       ['09-06','하나로마트','food','공동카드',94300],
       ['09-07','메가커피','dine','공동카드',7800],
@@ -716,11 +890,8 @@
       ['10-28','배당·이자','finance','증권계좌',60000]
     ], txs:[
       ['10-01','이마트 장보기','food','공동카드',124800],
-      ['10-01','아파트 관리비','home','자동이체',208900],
-      ['10-02','넷플릭스','living','공동카드',13500],
       ['10-02','배달의민족','dine','공동카드',31200],
       ['10-03','GS25','food','공동카드',8400],
-      ['10-03','KT 통신비','util','자동이체',89000],
       ['10-04','교통카드 충전','transit','공동카드',60000],
       ['10-05','쿠팡이츠','dine','공동카드',27600],
       ['10-05','하나로마트','food','공동카드',82300],
@@ -762,13 +933,10 @@
       ['11-01','이마트 장보기','food','공동카드',138400],
       ['11-01','쿠팡이츠','dine','공동카드',24900],
       ['11-02','GS25','food','공동카드',12300],
-      ['11-03','아파트 관리비','home','자동이체',214600],
-      ['11-04','넷플릭스','living','공동카드',13500],
       ['11-05','교통카드 충전','transit','공동카드',60000],
       ['11-05','배달의민족','dine','공동카드',32800],
       ['11-06','하나로마트','food','공동카드',87600],
       ['11-07','메가커피','dine','공동카드',8900],
-      ['11-07','KT 통신비','util','자동이체',89000],
       ['11-08','고기집 외식','dine','공동카드',76000],
       ['11-09','홈플러스','food','공동카드',64300],
       ['11-09','병원·약국','health','공동카드',18700],
@@ -798,7 +966,9 @@
     kind: 'all',    // all | exp | inc
     excluded: {},   // id -> true
     added: [],      // 지출 {id, ym, d, n, c, m, a}
-    addedIncome: [] // 수입 {id, ym, d, n, c, m, a}
+    addedIncome: [],// 수입 {id, ym, d, n, c, m, a}
+    rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
+    overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE))
   };
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -808,6 +978,8 @@
         if (s.excluded && typeof s.excluded === 'object') state.excluded = s.excluded;
         if (Array.isArray(s.added)) state.added = s.added;
         if (Array.isArray(s.addedIncome)) state.addedIncome = s.addedIncome;
+        if (Array.isArray(s.rules)) state.rules = s.rules;
+        if (s.overrides && typeof s.overrides === 'object') state.overrides = s.overrides;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
       }
@@ -818,7 +990,8 @@
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         ym: state.ym, tab: state.tab, excluded: state.excluded,
-        added: state.added, addedIncome: state.addedIncome
+        added: state.added, addedIncome: state.addedIncome,
+        rules: state.rules, overrides: state.overrides
       }));
     } catch (e) {}
   }
@@ -852,6 +1025,47 @@
   function ymLabel(ym) { return ym.slice(0, 4) + '.' + ym.slice(5, 7); }
 
   /* ────────────── 4. 데이터 계산 ────────────── */
+  function dayLimit(ym) {
+    const meta = LEDGER[ym];
+    if (!meta) return 31;
+    return meta.status === 'ongoing' ? meta.elapsed : meta.days;
+  }
+  function ruleOverride(rule, ym) {
+    return (state.overrides[ym] && state.overrides[ym][rule.id]) || null;
+  }
+  function ruleAmount(rule, ym) {
+    const o = ruleOverride(rule, ym);
+    return (o && o.a) ? o.a : rule.amount;
+  }
+  function ruleDay(rule, ym) {
+    const o = ruleOverride(rule, ym);
+    return (o && o.d) ? o.d : rule.day;
+  }
+  /* 활성 규칙으로 그 달에 생기는 고정 지출 (이미 발생한 날짜만) */
+  function fixedTxs(ym) {
+    if (!LEDGER[ym]) return [];
+    const lim = dayLimit(ym);
+    const out = [];
+    state.rules.forEach(function(r) {
+      if (!r.on) return;
+      const day = ruleDay(r, ym);
+      if (day > lim) return;
+      out.push({
+        id: 'fix#' + r.id + '#' + ym, ym: ym, ruleId: r.id,
+        d: ym.slice(5, 7) + '-' + String(day).padStart(2, '0'),
+        n: r.name, c: r.cat, m: r.method, a: ruleAmount(r, ym), k: 'f'
+      });
+    });
+    return out;
+  }
+  /* 이번 달 아직 발생하지 않은 고정 지출 (예정) */
+  function upcomingFixed(ym) {
+    const meta = LEDGER[ym];
+    if (!meta || meta.status !== 'ongoing') return [];
+    const lim = meta.elapsed;
+    return state.rules.filter(function(r){ return r.on && ruleDay(r, ym) > lim; })
+      .map(function(r){ return { rule: r, day: ruleDay(r, ym), a: ruleAmount(r, ym) }; });
+  }
   function monthTxs(ym) {
     const meta = LEDGER[ym];
     if (!meta) return [];
@@ -859,7 +1073,7 @@
       return { id: ym + '#' + i, ym: ym, d: t[0], n: t[1], c: t[2], m: t[3], a: t[4], k:'e' };
     });
     const extra = state.added.filter(function(t){ return t.ym === ym; });
-    return base.concat(extra);
+    return fixedTxs(ym).concat(base, extra);
   }
   function visible(ym) {
     return monthTxs(ym).filter(function(t){ return !state.excluded[t.id]; });
@@ -905,7 +1119,7 @@
   }
   function sameWindow(ym, days) {
     const lim = Math.min(days, LEDGER[ym].days);
-    return visible(ym).filter(function(t){ return dayOf(t) <= lim; });
+    return visible(ym).filter(function(t){ return t.k !== 'f' && dayOf(t) <= lim; });
   }
   function spentOf(ym) { return sum(visible(ym)); }
 
@@ -994,14 +1208,18 @@
       {key:'real',  name:'부동산',       color:'#7C6FD1', v:snap.real}
     ];
     const pv = hasPrev ? SNAP[prevYm] : null;
+    const inv = investTotals(ym);
     el('pfList').innerHTML = rows.map(function(r) {
       const share = total ? r.v / total : 0;
       const d = pv ? r.v - pv[r.key] : 0;
       const cls = d > 0 ? 'up' : (d < 0 ? 'down' : '');
       const dtxt = !pv ? '—' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d)) + '');
-      const sub = (ym === '2026-11' && SUBS[r.key] && r.key !== 'real')
-        ? '<div class="psub">' + SUBS[r.key].map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
-        : (r.key === 'real' ? '<div class="psub">신혼집 시세 기준 (부동산 시세는 월 1회 반영)</div>' : '');
+      const sub = (r.key === 'stock')
+        ? '<div class="psub">투자원금 ' + won(inv.p) + ' · 평가 ' + won(inv.v) + ' · 평가수익 ' +
+          (inv.g >= 0 ? '+' : '−') + won(Math.abs(inv.g)) + ' (' + pct(inv.rate) + '%)</div>'
+        : ((ym === '2026-11' && SUBS[r.key] && r.key !== 'real')
+          ? '<div class="psub">' + SUBS[r.key].map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
+          : (r.key === 'real' ? '<div class="psub">신혼집 시세 기준 (부동산 시세는 월 1회 반영)</div>' : ''));
       return '<div class="prow">' +
         '<div class="prow-h"><span class="pdot" style="background:' + r.color + '"></span>' + r.name +
         '<b>' + won(r.v) + '</b></div>' +
@@ -1022,7 +1240,52 @@
       : '<div class="debtrow"><span>부채 합계</span><b>' + won(snap.debt) + '</b></div>';
     el('debtFoot').textContent = '총부채 ' + won(snap.debt) + ' · ' + (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 줄었어요' : '이번 달 ' + won(debtD) + ' 늘었어요');
 
+    renderInvest(ym);
     drawGrowth();
+  }
+
+  /* ────────────── 6-1. 투자 상세 ────────────── */
+  function investTotals(ym) {
+    const base = SNAP[INVEST_BASE].stock;
+    const target = SNAP[ym] ? SNAP[ym].stock : base;
+    const f = target / base;
+    const items = INVEST.map(function(it) {
+      return {
+        name: it.name, sub: it.sub, units: it.units,
+        p: Math.round(it.principal * f / 1000) * 1000,
+        v: Math.round(it.value * f / 1000) * 1000
+      };
+    });
+    const tv = items.reduce(function(s,i){ return s + i.v; }, 0);
+    if (items.length && tv !== target) items[items.length - 1].v += (target - tv);
+    items.forEach(function(i) {
+      i.g = i.v - i.p;
+      i.rate = i.p ? i.g / i.p : 0;
+    });
+    const tp = items.reduce(function(s,i){ return s + i.p; }, 0);
+    return {
+      items: items, p: tp, v: target, g: target - tp,
+      rate: tp ? (target - tp) / tp : 0, scaled: Math.abs(f - 1) > 1e-9
+    };
+  }
+  function renderInvest(ym) {
+    const t = investTotals(ym);
+    el('investNote').textContent = ymLabel(ym) + ' 평가 기준';
+    el('investSum').innerHTML =
+      '<div><span>투자 원금</span><b>' + won(t.p) + '</b></div>' +
+      '<div><span>평가금액</span><b>' + won(t.v) + '</b></div>' +
+      '<div><span>평가수익</span><b class="' + (t.g >= 0 ? 'up' : '') + '">' +
+        (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g), {unit:false}) + ' (' + pct(t.rate) + '%)</b></div>';
+    el('investList').innerHTML = t.items.map(function(i) {
+      return '<div class="invest-row">' +
+        '<div class="invest-h"><span>' + esc(i.name) + '</span>' +
+          (i.units !== '—' ? '<span class="iu">' + i.units + '</span>' : '') +
+          '<b>' + won(i.v) + '</b></div>' +
+        '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
+          '<span class="' + (i.g >= 0 ? 'up' : '') + '">' + (i.g >= 0 ? '+' : '−') + won(Math.abs(i.g)) +
+          ' (' + pct(i.rate) + '%)</span></div>' +
+      '</div>';
+    }).join('');
   }
 
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
@@ -1136,8 +1399,13 @@
   function renderSpend() {
     const ym = state.ym;
     const meta = LEDGER[ym];
-    const list = visible(ym);
+    const allExp = visible(ym);
+    const list = allExp.filter(function(t){ return t.k !== 'f'; });      // 변동 생활비
+    const fixedList = allExp.filter(function(t){ return t.k === 'f'; });  // 고정 지출
     const spent = sum(list);
+    const fixedSpent = sum(fixedList);
+    const upcoming = upcomingFixed(ym);
+    const upSum = upcoming.reduce(function(s,u){ return s + u.a; }, 0);
     const incList = visibleIncome(ym);
     const inc = sum(incList);
     const prevYm = PREV[ym];
@@ -1148,15 +1416,20 @@
 
     /* 결산 요약 */
     el('settleNote').textContent = ongoing ? (meta.elapsed + '일까지 누적') : '월 마감';
-    const remain = inc - meta.save - meta.allowance - spent;
+    const remain = inc - meta.save - fixedSpent - spent;
+    const remainAfterFixed = remain - upSum;
     el('settleList').innerHTML =
       row('💰','공동 수입', incList.length + '건 · 부부 합산 세후', won(inc) + '') +
       row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') +
-      row('🧾','공동 생활비','카테고리 지출 합계', '−' + won(spent) + '') +
+      row('📌','고정 지출','자동 규칙 ' + fixedList.length + '건' + (upcoming.length ? ' · 예정 ' + nf.format(upSum) + '원' : ''), '−' + won(fixedSpent) + '') +
+      row('🧾','변동 생활비','줄일 수 있는 소비', '−' + won(spent) + '') +
       '<div class="srow total"><span class="ico">✨</span><span class="lb">' +
         (ongoing ? '남은 잉여금' : '남은 잉여금') +
-        '<small>' + (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈') + '</small></span>' +
+        '<small>' + (upcoming.length
+          ? '고정 예정 ' + nf.format(upSum) + '원 반영하면 ' + won(remainAfterFixed)
+          : (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈')) + '</small></span>' +
         '<span class="val">' + won(remain) + '</span></div>';
+    renderFixedCard(ym, fixedList, upcoming);
 
     /* 이번 달 수입 내역 */
     const exInc = excludedIncome(ym);
@@ -1187,7 +1460,7 @@
 
     el('allowNote').innerHTML =
       '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance) + '</b> (각 ' +
-      won(meta.allowance/2) + ')은 공동 생활비 계산에서 빼뒀어요.<br>' +
+      won(meta.allowance/2) + ')은 위 <b>고정 지출</b>에 포함돼 있어요.<br>' +
       '개인 용돈 사용 내역은 서로 보지 않기로 해서 이 가계부에 아예 담지 않아요.' +
       '<div style="margin-top:6px;color:#8A7A5E;font-size:10.5px;">내 고정 저축 구성: ' +
       SAVE_PLAN.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>';
@@ -1279,7 +1552,7 @@
       off += len;
     });
     const sel = state.cat ? entries.filter(function(e){ return e.c.id === state.cat; })[0] : null;
-    const centerTop = sel ? sel.c.label : '공동 생활비';
+    const centerTop = sel ? sel.c.label : '변동 생활비';
     const centerVal = sel ? won(sel.v) + '' : won(spent) + '';
     const centerSub = sel ? pct(sel.share) + '% · ' + meta.elapsed + '일'
                           : (ongoing ? meta.elapsed + '일까지 · ' + entries.length + '곳' : '월 합계 · ' + entries.length + '곳');
@@ -1298,7 +1571,7 @@
       });
     });
 
-    el('donutNote').textContent = sel ? sel.c.label + '만 보는 중' : '전체';
+    el('donutNote').textContent = sel ? sel.c.label + '만 보는 중' : '변동 생활비 전체';
 
     /* 카테고리 리스트 */
     el('catList').innerHTML = entries.sort(function(a,b){ return b.v - a.v; }).map(function(e) {
@@ -1322,7 +1595,7 @@
     });
 
     /* 예산 진행률 */
-    el('budgetNote').textContent = '예산 ' + won(BUDGET_TOTAL) + ' · ' + pct(budgetPct, 0) + '% 사용';
+    el('budgetNote').textContent = '변동 예산 ' + won(BUDGET_TOTAL) + ' · ' + pct(budgetPct, 0) + '% 사용';
     el('budgetList').innerHTML = CATS.map(function(c) {
       const v = cur[c.id] || 0;
       const p = Math.min(v / c.budget, 1);
@@ -1357,7 +1630,7 @@
 
     const rows = [];
     if (kind !== 'inc') {
-      list.filter(function(t){ return !state.cat || t.c === state.cat; }).forEach(function(t){ rows.push(t); });
+      allExp.filter(function(t){ return !state.cat || t.c === state.cat; }).forEach(function(t){ rows.push(t); });
     }
     if (kind !== 'exp') {
       incList.filter(function(t){ return !state.icat || t.c === state.icat; }).forEach(function(t){ rows.push(t); });
@@ -1417,10 +1690,10 @@
           '<button class="tx-btn" data-id="' + t.id + '" data-k="i" title="공동 수입에서 제외" aria-label="' + esc(t.n) + ' 공동 수입에서 제외">−</button>' +
           '</div>';
       }
-      const c = CAT[t.c];
+      const c = catOf(t.c);
       return '<div class="tx">' +
         '<span class="te" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
-        '<span class="tm"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(t.m) + '</span></span>' +
+        '<span class="tm"><b>' + (t.k === 'f' ? '<span class="ttag exp">고정</span>' : '') + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(t.m) + '</span></span>' +
         '<span class="ta">' + nf.format(t.a) + '원</span>' +
         '<button class="tx-btn" data-id="' + t.id + '" data-k="e" title="공동 지출에서 제외" aria-label="' + esc(t.n) + ' 공동 지출에서 제외">−</button>' +
         '</div>';
@@ -1464,6 +1737,80 @@
     });
   }
 
+  /* ────────────── 8-1. 고정 지출 카드 ────────────── */
+  function renderFixedCard(ym, fixedList, upcoming) {
+    const rules = state.rules;
+    const onCount = rules.filter(function(r){ return r.on; }).length;
+    el('fixedNote').textContent = '규칙 ' + rules.length + '개 · 켜짐 ' + onCount;
+    const total = sum(fixedList);
+
+    let html = '<div class="fixsec">이번 달 발생한 고정 지출 · ' + fixedList.length + '건</div>';
+    html += fixedList.length ? fixedList.slice().sort(function(a,b){ return dayOf(b) - dayOf(a) || b.a - a.a; }).map(function(t) {
+      const c = catOf(t.c);
+      return '<div class="fixrow">' +
+        '<span class="fe" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
+        '<span class="fn"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + c.label + ' · ' + esc(t.m) + '</span></span>' +
+        '<span class="fa">' + nf.format(t.a) + '원</span>' +
+        '<button class="icon-btn" data-mfix="' + t.ruleId + '" title="이번 달만 수정" aria-label="' + esc(t.n) + ' 이번 달만 수정">✎</button>' +
+        '<button class="icon-btn del" data-fdel="' + t.id + '" title="이번 달에서 빼기" aria-label="' + esc(t.n) + ' 이번 달에서 빼기">−</button>' +
+      '</div>';
+    }).join('') : '<div class="tx-empty">이번 달에 발생한 고정 지출이 없어요.</div>';
+    html += '<div class="fixsub"><span>고정 지출 합계</span><b>' + nf.format(total) + '원</b></div>';
+
+    if (upcoming.length) {
+      html += '<div class="fixsec">아직 안 나간 고정 지출 (예정)</div>' +
+        upcoming.map(function(u) {
+          const c = catOf(u.rule.cat);
+          return '<div class="fixrow fixup">' +
+            '<span class="fe" style="background:' + hexA(c.color, .1) + '">' + c.emoji + '</span>' +
+            '<span class="fn"><b>' + esc(u.rule.name) + '</b><span>' + ym.slice(5, 7) + '.' + String(u.day).padStart(2, '0') + ' 예정 · ' + esc(u.rule.method) + '</span></span>' +
+            '<span class="fa">' + nf.format(u.a) + '원</span>' +
+            '<button class="icon-btn" data-mfix="' + u.rule.id + '" title="이번 달만 수정" aria-label="' + esc(u.rule.name) + ' 이번 달만 수정">✎</button>' +
+          '</div>';
+        }).join('');
+    }
+
+    html += '<div class="fixsec">반복 규칙 (켜두면 매월 자동으로 생겨요)</div>';
+    html += rules.length ? rules.map(function(r) {
+      const c = catOf(r.cat);
+      return '<div class="rule-row' + (r.on ? '' : ' off') + '">' +
+        '<span class="fe" style="width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:13px; flex:none; background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
+        '<span class="rn">' + esc(r.name) + '<small>매월 ' + r.day + '일 · ' + c.label + ' · ' + esc(r.method) + '</small></span>' +
+        '<span class="ra">' + nf.format(r.amount) + '원</span>' +
+        '<button class="sw' + (r.on ? ' on' : '') + '" data-rule-on="' + r.id + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
+        '<button class="icon-btn" data-rule-edit="' + r.id + '" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
+      '</div>';
+    }).join('') : '<div class="tx-empty">등록된 고정 지출 규칙이 없어요.</div>';
+
+    el('fixedList').innerHTML = html;
+
+    Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-fdel]'), function(b) {
+      b.addEventListener('click', function() {
+        state.excluded[b.getAttribute('data-fdel')] = true;
+        save();
+        renderAll();
+        toast('이번 달 고정 지출에서 뺐어요 · 규칙은 그대로예요');
+      });
+    });
+    Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-mfix]'), function(b) {
+      b.addEventListener('click', function(){ openMonthFix(b.getAttribute('data-mfix')); });
+    });
+    Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-rule-on]'), function(b) {
+      b.addEventListener('click', function() {
+        const id = b.getAttribute('data-rule-on');
+        const r = state.rules.filter(function(x){ return x.id === id; })[0];
+        if (!r) return;
+        r.on = !r.on;
+        save();
+        renderAll();
+        toast(r.on ? r.name + ' 규칙을 켰어요 · 매월 자동으로 생겨요' : r.name + ' 규칙을 껐어요 · 이제 안 생겨요');
+      });
+    });
+    Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-rule-edit]'), function(b) {
+      b.addEventListener('click', function(){ openRuleModal(b.getAttribute('data-rule-edit')); });
+    });
+  }
+
   function row(ico, label, sub, val) {
     return '<div class="srow"><span class="ico">' + ico + '</span>' +
       '<span class="lb">' + label + '<small>' + sub + '</small></span>' +
@@ -1503,8 +1850,13 @@
   function buildMessage() {
     const ym = state.ym;
     const meta = LEDGER[ym];
-    const list = visible(ym);
+    const allExp = visible(ym);
+    const list = allExp.filter(function(t){ return t.k !== 'f'; });      // 변동 생활비
+    const fixedList = allExp.filter(function(t){ return t.k === 'f'; });  // 고정 지출
     const spent = sum(list);
+    const fixedSpent = sum(fixedList);
+    const upcoming = upcomingFixed(ym);
+    const upSum = upcoming.reduce(function(s,u){ return s + u.a; }, 0);
     const incList = visibleIncome(ym);
     const inc = sum(incList);
     const ongoing = meta.status === 'ongoing';
@@ -1518,34 +1870,45 @@
       return {c:c, d:a-b};
     }).filter(function(x){ return x.d > 0; }).sort(function(a,b){ return b.d - a.d; }).slice(0,3);
     const ex = excludedTxs(ym);
+    const exFixed = ex.filter(function(t){ return t.k === 'f'; });
+    const exVar = ex.filter(function(t){ return t.k !== 'f'; });
     const exI = excludedIncome(ym);
     const added = state.added.filter(function(t){ return t.ym === ym; });
     const addedInc = state.addedIncome.filter(function(t){ return t.ym === ym; });
     const icur = byIncomeCat(incList);
-    const remain = inc - meta.save - meta.allowance - spent;
+    const remain = inc - meta.save - fixedSpent - spent;
+    const inv = investTotals(ym);
+    const invTxt = (inv.g >= 0 ? '+' : '−') + won(Math.abs(inv.g)) + ' (' + pct(inv.rate) + '%)';
 
     const L = [];
     L.push('[' + ymLabel(ym) + ' 공동 가계부 · ' + (ongoing ? meta.elapsed + '일까지' : '마감') + ']');
-    L.push('· 공동 수입 ' + won(inc) + ' (' + incList.length + '건) / 고정 저축 ' + won(meta.save) + ' / 용돈 이체 ' + won(meta.allowance));
+    L.push('· 공동 수입 ' + won(inc) + ' (' + incList.length + '건) / 고정 저축 ' + won(meta.save));
     if (incList.length) {
       L.push('· 수입 구성: ' + INCOME_CATS.filter(function(c){ return icur[c.id]; })
         .map(function(c){ return c.label + ' ' + won(icur[c.id]); }).join(', '));
     }
-    L.push('· 공동 생활비 ' + won(spent) + ' (예산 ' + won(BUDGET_TOTAL) + '의 ' + pct(spent / BUDGET_TOTAL, 0) + '%)');
-    L.push('· 남은 잉여금 ' + won(remain) + ' · 저축률 ' + pct(inc ? meta.save / inc : 0) + '%');
+    L.push('· 고정 지출 ' + won(fixedSpent) + ' (' + fixedList.length + '건)' +
+      (upcoming.length ? ' · 예정 ' + won(upSum) : ''));
+    L.push('· 변동 생활비 ' + won(spent) + ' (변동 예산 ' + won(BUDGET_TOTAL) + '의 ' + pct(spent / BUDGET_TOTAL, 0) + '%)');
+    L.push('· 남은 잉여금 ' + won(remain) + (upcoming.length ? ' (고정 예정 ' + won(upSum) + ' 반영 시 ' + won(remain - upSum) + ')' : '') +
+      ' · 저축률 ' + pct(inc ? meta.save / inc : 0) + '%');
     if (prevTotal) {
       const rate = (spent - prevTotal) / prevTotal;
       L.push('· ' + (ongoing ? '전월 1~' + days + '일(' + won(prevTotal) + ') 대비 ' : '전월(' + won(prevTotal) + ') 대비 ') +
-        (rate >= 0 ? '+' : '−') + pct(rate) + '%');
+        (rate >= 0 ? '+' : '−') + pct(rate) + '% (변동 생활비 기준)');
     }
     if (changes.length) {
       L.push('· 늘어난 곳: ' + changes.map(function(x){ return x.c.label + ' +' + won(x.d) + ''; }).join(', '));
     }
+    L.push('· 주식·투자: 원금 ' + won(inv.p) + ' / 평가 ' + won(inv.v) + ' / 평가수익 ' + invTxt);
     if (addedInc.length) L.push('· 새로 추가한 수입 ' + addedInc.length + '건 +' + won(sum(addedInc)) + ' (' + addedInc.map(function(t){ return t.n; }).join(', ') + ')');
     if (exI.length) L.push('· 수입에서 뺀 내역 ' + exI.length + '건 ' + won(sum(exI)) + ' (' + exI.map(function(t){ return t.n; }).join(', ') + ')');
-    if (ex.length) L.push('· 공동 지출에서 뺀 내역 ' + ex.length + '건 ' + won(sum(ex)) + ' (' + ex.map(function(t){ return t.n; }).join(', ') + ')');
+    if (exVar.length) L.push('· 변동 지출에서 뺀 내역 ' + exVar.length + '건 ' + won(sum(exVar)) + ' (' + exVar.map(function(t){ return t.n; }).join(', ') + ')');
+    if (exFixed.length) L.push('· 이번 달만 뺀 고정 지출 ' + exFixed.length + '건 ' + won(sum(exFixed)) + ' (' + exFixed.map(function(t){ return t.n; }).join(', ') + ')');
     if (added.length) L.push('· 새로 추가한 지출 ' + added.length + '건 ' + won(sum(added)) + ' (' + added.map(function(t){ return t.n; }).join(', ') + ')');
-    L.push('— ' + (state.tab === 'asset' ? '순자산 ' + won(netOf(ym)) + ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')' : '지출 ' + list.length + '건 · 수입 ' + incList.length + '건'));
+    L.push('— ' + (state.tab === 'asset'
+      ? '순자산 ' + won(netOf(ym)) + ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')'
+      : '지출 ' + allExp.length + '건 · 수입 ' + incList.length + '건'));
     return L.join('\n');
   }
 
@@ -1613,13 +1976,133 @@
     el('modal').hidden = false;
     setModalKind(state.kind === 'inc' ? 'inc' : 'exp');
   }
+  /* ── 고정 지출 규칙 / 이번 달만 수정 ── */
+  let ruleEditingId = null;
+  let mfixRuleId = null;
+
+  function ruleCatOptions() {
+    const opts = CATS.map(function(c){ return '<option value="' + c.id + '">' + c.emoji + ' ' + c.label + '</option>'; });
+    opts.push('<option value="allow">👛 용돈 이체</option>');
+    return opts.join('');
+  }
+  function openRuleModal(id) {
+    ruleEditingId = id || null;
+    const r = id ? state.rules.filter(function(x){ return x.id === id; })[0] : null;
+    el('ruleTitle').textContent = r ? '고정 지출 규칙 수정' : '고정 지출 규칙 추가';
+    el('rName').value = r ? r.name : '';
+    el('rDay').value = r ? r.day : 25;
+    el('rAmount').value = r ? r.amount : '';
+    el('rCat').innerHTML = ruleCatOptions();
+    el('rCat').value = r ? r.cat : 'home';
+    el('rMethod').value = r ? r.method : '자동이체';
+    el('rOn').checked = r ? !!r.on : true;
+    el('ruleErr').hidden = true;
+    el('ruleDelete').hidden = !r;
+    el('ruleModal').hidden = false;
+    setTimeout(function(){ el('rName').focus(); }, 40);
+  }
+  function closeRuleModal() { el('ruleModal').hidden = true; }
+
+  function openMonthFix(id) {
+    const r = state.rules.filter(function(x){ return x.id === id; })[0];
+    if (!r) return;
+    mfixRuleId = id;
+    el('mfixTitle').textContent = r.name + ' · 이번 달만 수정';
+    el('mfixHint').textContent = ymLabel(state.ym) + ' 내역에만 적용되고, 규칙(' + nf.format(r.amount) + '원)은 그대로 둬요.';
+    el('mDay').value = ruleDay(r, state.ym);
+    el('mAmount').value = ruleAmount(r, state.ym);
+    el('mfixReset').hidden = !ruleOverride(r, state.ym);
+    el('mfixErr').hidden = true;
+    el('monthFixModal').hidden = false;
+    setTimeout(function(){ el('mAmount').focus(); }, 40);
+  }
+  function closeMonthFix() { el('monthFixModal').hidden = true; }
+
+  el('btnRuleAdd').addEventListener('click', function(){ openRuleModal(null); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-rule]'), function(b) {
+    b.addEventListener('click', closeRuleModal);
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-mfix]'), function(b) {
+    b.addEventListener('click', closeMonthFix);
+  });
+
+  el('ruleForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const name = el('rName').value.trim();
+    const day = parseInt(el('rDay').value, 10);
+    const amount = parseInt(el('rAmount').value, 10);
+    const err = el('ruleErr');
+    if (!name) { err.textContent = '항목명을 적어주세요.'; err.hidden = false; return; }
+    if (!day || day < 1 || day > 28) { err.textContent = '이체일은 1~28일로 정해주세요.'; err.hidden = false; return; }
+    if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
+    const data = {
+      name: name, cat: el('rCat').value, day: day, amount: amount,
+      method: el('rMethod').value, on: el('rOn').checked
+    };
+    const editing = !!ruleEditingId;
+    if (editing) {
+      const r = state.rules.filter(function(x){ return x.id === ruleEditingId; })[0];
+      if (r) Object.assign(r, data);
+    } else {
+      data.id = 'r' + Date.now();
+      state.rules.push(data);
+    }
+    save();
+    closeRuleModal();
+    renderAll();
+    toast(editing ? '규칙을 수정했어요' : '규칙을 추가했어요 · 매월 자동으로 생겨요');
+  });
+
+  el('ruleDelete').addEventListener('click', function() {
+    if (!ruleEditingId) return;
+    const r = state.rules.filter(function(x){ return x.id === ruleEditingId; })[0];
+    state.rules = state.rules.filter(function(x){ return x.id !== ruleEditingId; });
+    Object.keys(state.overrides).forEach(function(k) {
+      if (state.overrides[k]) delete state.overrides[k][ruleEditingId];
+    });
+    Object.keys(state.excluded).forEach(function(id) {
+      if (id.indexOf('fix#' + ruleEditingId + '#') === 0) delete state.excluded[id];
+    });
+    save();
+    closeRuleModal();
+    renderAll();
+    toast((r ? r.name : '규칙') + ' 규칙을 삭제했어요');
+  });
+
+  el('mfixForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!mfixRuleId) return;
+    const day = parseInt(el('mDay').value, 10);
+    const amount = parseInt(el('mAmount').value, 10);
+    const err = el('mfixErr');
+    if (!day || day < 1 || day > 28) { err.textContent = '이체일은 1~28일로 정해주세요.'; err.hidden = false; return; }
+    if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
+    if (!state.overrides[state.ym]) state.overrides[state.ym] = {};
+    state.overrides[state.ym][mfixRuleId] = { d: day, a: amount };
+    save();
+    closeMonthFix();
+    renderAll();
+    toast(ymLabel(state.ym) + '만 ' + nf.format(amount) + '원으로 바꿨어요 · 규칙은 그대로');
+  });
+  el('mfixReset').addEventListener('click', function() {
+    if (!mfixRuleId) return;
+    if (state.overrides[state.ym]) delete state.overrides[state.ym][mfixRuleId];
+    save();
+    closeMonthFix();
+    renderAll();
+    toast('규칙 금액으로 되돌렸어요');
+  });
+
   function closeModal() { el('modal').hidden = true; }
 
   el('btnAdd').addEventListener('click', openModal);
   Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function(b) {
     b.addEventListener('click', closeModal);
   });
-  document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
+  document.addEventListener('keydown', function(e) {
+    if (e.key !== 'Escape') return;
+    closeModal(); closeRuleModal(); closeMonthFix();
+  });
 
   el('addForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -1701,6 +2184,8 @@
     state.excluded = {};
     state.added = [];
     state.addedIncome = [];
+    state.rules = FIXED_RULES.map(function(r){ return Object.assign({}, r); });
+    state.overrides = JSON.parse(JSON.stringify(FIXED_OVERRIDE));
     state.cat = null;
     state.icat = null;
     save();
