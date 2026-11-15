@@ -272,6 +272,41 @@
     margin-left:auto; border:0; background:#fff; border:1px solid #E4DBC9; color:#8A7A5E;
     font:inherit; font-size:10px; font-weight:800; padding:4px 9px; border-radius:8px; cursor:pointer;
   }
+  /* income block (결산 카드) */
+  .incblock{margin-top:12px; padding:13px 13px 8px; border-radius:16px; background:#F6FAF8; border:1px solid #DFEDE7;}
+  .incblock h3{margin:0; font-size:11px; font-weight:800; color:#20735F; letter-spacing:-.01em; display:flex; align-items:center; gap:6px;}
+  .incblock h3 span{margin-left:auto; font-size:10px; color:#5D8F80; font-weight:700;}
+  .incrow{display:flex; align-items:center; gap:9px; padding:9px 0; border-bottom:1px solid #E7F1EC;}
+  .incrow:last-child{border-bottom:0;}
+  .incrow .ie{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; font-size:14px; background:#E7F3EE; flex:none;}
+  .incrow .in{min-width:0; flex:1;}
+  .incrow .in b{display:block; font-size:12.5px; font-weight:700; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .incrow .in span{font-size:10px; color:var(--ink-3); font-weight:600;}
+  .incrow .ia{font-size:13px; font-weight:800; color:#1F8A63; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .incrow .inc-del{
+    flex:none; width:24px; height:24px; border-radius:8px; border:1px solid #D9E8E2;
+    background:#fff; color:#8CA79C; font-size:14px; font-weight:700; line-height:1; cursor:pointer;
+    display:grid; place-items:center; padding:0;
+  }
+  .incrow .inc-del:hover{border-color:var(--red); color:var(--red); background:var(--red-soft);}
+  .incfoot{display:flex; align-items:center; justify-content:space-between; margin-top:6px; padding-top:9px; border-top:1px dashed #D7E8E1; font-size:11px; font-weight:800; color:#3F7565;}
+  .incfoot b{font-size:13.5px; color:var(--teal); font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+  .netnote{margin-top:10px; font-size:10.5px; color:var(--ink-3); font-weight:700; line-height:1.55; letter-spacing:-.01em;}
+  .netnote b{color:#20735F;}
+  .tx .ta.inc{color:#1F8A63;}
+  .tx .ttag{
+    display:inline-block; font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:5px;
+    background:var(--teal-soft); color:#20735F; margin-right:4px; vertical-align:1px;
+  }
+  .tx .ttag.exp{background:#F3F0E9; color:#8A8175;}
+  /* modal kind toggle */
+  .kindtoggle{display:flex; gap:4px; padding:4px; background:#F4F1EA; border-radius:14px; margin:0 0 14px;}
+  .kindtoggle button{
+    flex:1; border:0; background:transparent; font:inherit; font-size:13px; font-weight:800;
+    color:var(--ink-3); padding:10px 8px; border-radius:11px; cursor:pointer; letter-spacing:-.01em; transition:.16s ease;
+  }
+  .kindtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 6px 14px -12px rgba(35,38,43,.7), inset 0 0 0 1px var(--line-2);}
+  .kindtoggle button.on[data-kind="inc"]{color:var(--teal);}
   /* dock */
   .dock{
     position:fixed; left:50%; transform:translateX(-50%); bottom:0; width:min(560px,100%);
@@ -362,6 +397,7 @@
       <div class="net-amount" id="netAmount"></div>
       <div class="net-delta" id="netDelta"></div>
       <div class="netsplit" id="netSplit"></div>
+      <div class="netnote" id="incomeHint"></div>
     </div>
 
     <div class="card">
@@ -407,6 +443,7 @@
         <span class="muted" id="settleNote"></span>
       </div>
       <div id="settleList"></div>
+      <div class="incblock" id="incomeBlock"></div>
       <div class="allow" id="allowNote"></div>
     </div>
 
@@ -441,14 +478,15 @@
 
     <div class="card">
       <div class="card-head">
-        <h2>공동 지출 상세</h2>
+        <h2>공동 내역 상세</h2>
         <span class="muted" id="txCount"></span>
       </div>
+      <div class="chips" id="txKindChips"></div>
       <div class="chips" id="txChips"></div>
       <div id="txList"></div>
       <div id="exclBox"></div>
       <div class="muted" style="margin-top:10px; font-size:10.5px; line-height:1.6;">
-        실수로 공동카드에 긁힌 개인 지출은 <b>－ 버튼</b>으로 빼면 합계·차트·예산이 바로 다시 계산돼요.
+        실수로 공동카드에 긁힌 개인 지출이나 잘못 적은 수입은 <b>－ 버튼</b>으로 빼면 합계·차트·예산·저축률이 바로 다시 계산돼요.
       </div>
     </div>
 
@@ -459,7 +497,7 @@
 <div class="dock">
   <div class="dock-in">
     <button class="btn ghost" id="btnCopy">📋 피클에게 보내기</button>
-    <button class="btn primary" id="btnAdd">＋ 지출 빠른 추가</button>
+    <button class="btn primary" id="btnAdd">＋ 내역 추가</button>
   </div>
 </div>
 
@@ -468,8 +506,12 @@
   <div class="bd" data-close></div>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
     <div class="grab"></div>
-    <h2 id="sheetTitle">지출 빠른 추가</h2>
-    <p class="hint" id="sheetHint">공동카드로 결제한 내역만 적어요. 개인 용돈은 넣지 않아요.</p>
+    <h2 id="sheetTitle">내역 추가</h2>
+    <p class="hint" id="sheetHint">공동 가계부에 넣을 지출이나 수입을 적어요. 개인 용돈은 넣지 않아요.</p>
+    <div class="kindtoggle" id="kindToggle" role="tablist" aria-label="지출 또는 수입">
+      <button type="button" role="tab" data-kind="exp" class="on" aria-selected="true">🧾 지출</button>
+      <button type="button" role="tab" data-kind="inc" aria-selected="false">💰 수입</button>
+    </div>
     <form id="addForm" novalidate>
       <div class="frow">
         <div class="field">
@@ -481,22 +523,52 @@
           <input type="number" id="fAmount" inputmode="numeric" placeholder="32000" min="1" step="1" required />
         </div>
       </div>
-      <div class="field">
-        <label for="fName">가맹점</label>
-        <input type="text" id="fName" placeholder="예: 이마트 장보기" maxlength="30" required />
-      </div>
-      <div class="frow">
+      <div id="expFields">
         <div class="field">
-          <label for="fCat">카테고리</label>
-          <select id="fCat"></select>
+          <label for="fName">가맹점</label>
+          <input type="text" id="fName" placeholder="예: 이마트 장보기" maxlength="30" required />
         </div>
+        <div class="frow">
+          <div class="field">
+            <label for="fCat">카테고리</label>
+            <select id="fCat"></select>
+          </div>
+          <div class="field">
+            <label for="fMethod">결제수단</label>
+            <select id="fMethod">
+              <option>공동카드</option>
+              <option>자동이체</option>
+              <option>공동 현금</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div id="incFields" hidden>
         <div class="field">
-          <label for="fMethod">결제수단</label>
-          <select id="fMethod">
-            <option>공동카드</option>
-            <option>자동이체</option>
-            <option>공동 현금</option>
-          </select>
+          <label for="fIncName">항목명</label>
+          <input type="text" id="fIncName" placeholder="예: 부부 월급" maxlength="30" list="incNameList" />
+          <datalist id="incNameList">
+            <option value="부부 월급"></option>
+            <option value="상여·성과급"></option>
+            <option value="협찬·부수입"></option>
+            <option value="배당·이자"></option>
+            <option value="기타 수입"></option>
+          </datalist>
+        </div>
+        <div class="frow">
+          <div class="field">
+            <label for="fIncCat">수입 카테고리</label>
+            <select id="fIncCat"></select>
+          </div>
+          <div class="field">
+            <label for="fAccount">입금처</label>
+            <select id="fAccount">
+              <option>공동통장</option>
+              <option>생활비 통장</option>
+              <option>증권계좌</option>
+              <option>기타</option>
+            </select>
+          </div>
         </div>
       </div>
       <p class="err" id="addErr" hidden></p>
@@ -530,6 +602,18 @@
   CATS.forEach(function(c){ CAT[c.id] = c; });
   const BUDGET_TOTAL = CATS.reduce(function(s,c){ return s + c.budget; }, 0);
 
+  // 수입 카테고리 5종
+  const INCOME_CATS = [
+    {id:'salary',  label:'급여',           emoji:'💼', color:'#2F8F7B'},
+    {id:'bonus',   label:'상여·인센티브', emoji:'🎯', color:'#4E9BD6'},
+    {id:'side',    label:'부수입·협찬',   emoji:'✨', color:'#E9834A'},
+    {id:'finance', label:'금융·배당',     emoji:'📈', color:'#7C6FD1'},
+    {id:'etc',     label:'기타 수입',     emoji:'🧩', color:'#94A85C'}
+  ];
+  const INCAT = {};
+  INCOME_CATS.forEach(function(c){ INCAT[c.id] = c; });
+  const ACCOUNTS = ['공동통장','생활비 통장','증권계좌','기타'];
+
   // 자산 스냅샷 (원). real 은 신혼집 시세, debt 는 주담대+마이너스통장 합계
   const SNAP = {
     '2026-05': {cash:42400000, stock:62800000, real:520000000, debt:329200000},
@@ -555,7 +639,12 @@
 
   // 원 단위. d = 'MM-DD'
   const LEDGER = {
-    '2026-08': { income:6780000, save:2200000, allowance:600000, days:31, elapsed:31, status:'closed', txs:[
+    '2026-08': { income:6780000, save:2200000, allowance:600000, days:31, elapsed:31, status:'closed', incomes:[
+      ['08-25','남편 급여','salary','공동통장',3930000],
+      ['08-25','아내 급여','salary','공동통장',2600000],
+      ['08-12','협찬 정산','side','공동통장',160000],
+      ['08-28','배당·이자','finance','증권계좌',90000]
+    ], txs:[
       ['08-01','이마트 장보기','food','공동카드',118700],
       ['08-02','아파트 관리비','home','자동이체',312600],
       ['08-03','넷플릭스','living','공동카드',13500],
@@ -583,7 +672,12 @@
       ['08-28','이마트 장보기','food','공동카드',88200],
       ['08-30','영화 관람','leisure','공동카드',28000]
     ]},
-    '2026-09': { income:6780000, save:2300000, allowance:600000, days:30, elapsed:30, status:'closed', txs:[
+    '2026-09': { income:6780000, save:2300000, allowance:600000, days:30, elapsed:30, status:'closed', incomes:[
+      ['09-25','남편 급여','salary','공동통장',3930000],
+      ['09-25','아내 급여','salary','공동통장',2600000],
+      ['09-18','협찬 정산','side','공동통장',160000],
+      ['09-28','배당·이자','finance','증권계좌',90000]
+    ], txs:[
       ['09-01','이마트 장보기','food','공동카드',132600],
       ['09-01','아파트 관리비','home','자동이체',198400],
       ['09-02','넷플릭스','living','공동카드',13500],
@@ -614,7 +708,13 @@
       ['09-28','헬스장 3개월','health','공동카드',90000],
       ['09-29','SK주유소','transit','공동카드',58000]
     ]},
-    '2026-10': { income:6850000, save:2300000, allowance:600000, days:31, elapsed:31, status:'closed', txs:[
+    '2026-10': { income:6850000, save:2300000, allowance:600000, days:31, elapsed:31, status:'closed', incomes:[
+      ['10-25','남편 급여','salary','공동통장',3930000],
+      ['10-25','아내 급여','salary','공동통장',2600000],
+      ['10-05','추석 상여','bonus','공동통장',150000],
+      ['10-16','협찬 정산','side','공동통장',110000],
+      ['10-28','배당·이자','finance','증권계좌',60000]
+    ], txs:[
       ['10-01','이마트 장보기','food','공동카드',124800],
       ['10-01','아파트 관리비','home','자동이체',208900],
       ['10-02','넷플릭스','living','공동카드',13500],
@@ -653,7 +753,12 @@
       ['10-30','배달의민족','dine','공동카드',33400],
       ['10-31','이마트 장보기','food','공동카드',92700]
     ]},
-    '2026-11': { income:6850000, save:2300000, allowance:600000, days:30, elapsed:16, status:'ongoing', txs:[
+    '2026-11': { income:6850000, save:2300000, allowance:600000, days:30, elapsed:16, status:'ongoing', incomes:[
+      ['11-10','남편 급여','salary','공동통장',3930000],
+      ['11-10','아내 급여','salary','공동통장',2600000],
+      ['11-08','협찬 정산','side','공동통장',240000],
+      ['11-12','배당·이자','finance','증권계좌',80000]
+    ], txs:[
       ['11-01','이마트 장보기','food','공동카드',138400],
       ['11-01','쿠팡이츠','dine','공동카드',24900],
       ['11-02','GS25','food','공동카드',12300],
@@ -689,8 +794,11 @@
     ym: '2026-11',
     tab: 'asset',
     cat: null,
+    icat: null,
+    kind: 'all',    // all | exp | inc
     excluded: {},   // id -> true
-    added: []       // {id, ym, d, n, c, m, a}
+    added: [],      // 지출 {id, ym, d, n, c, m, a}
+    addedIncome: [] // 수입 {id, ym, d, n, c, m, a}
   };
   try {
     const raw = localStorage.getItem(STORE_KEY);
@@ -699,6 +807,7 @@
       if (s && typeof s === 'object') {
         if (s.excluded && typeof s.excluded === 'object') state.excluded = s.excluded;
         if (Array.isArray(s.added)) state.added = s.added;
+        if (Array.isArray(s.addedIncome)) state.addedIncome = s.addedIncome;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
       }
@@ -708,7 +817,8 @@
   function save() {
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
-        ym: state.ym, tab: state.tab, excluded: state.excluded, added: state.added
+        ym: state.ym, tab: state.tab, excluded: state.excluded,
+        added: state.added, addedIncome: state.addedIncome
       }));
     } catch (e) {}
   }
@@ -746,7 +856,7 @@
     const meta = LEDGER[ym];
     if (!meta) return [];
     const base = meta.txs.map(function(t, i) {
-      return { id: ym + '#' + i, ym: ym, d: t[0], n: t[1], c: t[2], m: t[3], a: t[4] };
+      return { id: ym + '#' + i, ym: ym, d: t[0], n: t[1], c: t[2], m: t[3], a: t[4], k:'e' };
     });
     const extra = state.added.filter(function(t){ return t.ym === ym; });
     return base.concat(extra);
@@ -756,6 +866,28 @@
   }
   function excludedTxs(ym) {
     return monthTxs(ym).filter(function(t){ return !!state.excluded[t.id]; });
+  }
+  /* ── 수입 내역 ── */
+  function monthIncomeTxs(ym) {
+    const meta = LEDGER[ym];
+    if (!meta) return [];
+    const base = (meta.incomes || []).map(function(t, i) {
+      return { id: ym + '@' + i, ym: ym, d: t[0], n: t[1], c: t[2], m: t[3], a: t[4], k:'i' };
+    });
+    const extra = state.addedIncome.filter(function(t){ return t.ym === ym; });
+    return base.concat(extra);
+  }
+  function visibleIncome(ym) {
+    return monthIncomeTxs(ym).filter(function(t){ return !state.excluded[t.id]; });
+  }
+  function excludedIncome(ym) {
+    return monthIncomeTxs(ym).filter(function(t){ return !!state.excluded[t.id]; });
+  }
+  function incomeTotal(ym) { return sum(visibleIncome(ym)); }
+  function byIncomeCat(list) {
+    const m = {};
+    list.forEach(function(t){ m[t.c] = (m[t.c] || 0) + t.a; });
+    return m;
   }
   function sum(list) {
     return list.reduce(function(s,t){ return s + t.a; }, 0);
@@ -841,11 +973,15 @@
       '<em>' + (up ? '+' : '−') + pct(rate) + '%</em>' +
       '<span>전월 대비</span>';
 
-    const saveRate = LEDGER[ym] ? LEDGER[ym].save / LEDGER[ym].income : 0;
+    const incNow = incomeTotal(ym);
+    const saveNow = LEDGER[ym] ? LEDGER[ym].save : 0;
+    const saveRate = incNow ? saveNow / incNow : 0;
     el('netSplit').innerHTML =
       '<div><span>총자산</span><b>' + won(total) + '</b></div>' +
       '<div><span>총부채</span><b>' + won(snap.debt) + '</b></div>' +
       '<div><span>저축률</span><b>' + pct(saveRate) + '%</b></div>';
+    el('incomeHint').innerHTML = '이번 달 공동 수입 <b>' + won(incNow) + '</b> (' + visibleIncome(ym).length + '건) · 고정 저축 ' +
+      won(saveNow) + ' → 저축률 ' + pct(saveRate) + '%';
 
     // 이번 달 증식 칩
     el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true}) + '';
@@ -1002,6 +1138,8 @@
     const meta = LEDGER[ym];
     const list = visible(ym);
     const spent = sum(list);
+    const incList = visibleIncome(ym);
+    const inc = sum(incList);
     const prevYm = PREV[ym];
     const ongoing = meta.status === 'ongoing';
     const days = cmpDays(ym);
@@ -1010,15 +1148,42 @@
 
     /* 결산 요약 */
     el('settleNote').textContent = ongoing ? (meta.elapsed + '일까지 누적') : '월 마감';
-    const remain = meta.income - meta.save - meta.allowance - spent;
+    const remain = inc - meta.save - meta.allowance - spent;
     el('settleList').innerHTML =
-      row('💰','공동 수입','부부 합산 세후', won(meta.income) + '') +
+      row('💰','공동 수입', incList.length + '건 · 부부 합산 세후', won(inc) + '') +
       row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') +
       row('🧾','공동 생활비','카테고리 지출 합계', '−' + won(spent) + '') +
       '<div class="srow total"><span class="ico">✨</span><span class="lb">' +
         (ongoing ? '남은 잉여금' : '남은 잉여금') +
         '<small>' + (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈') + '</small></span>' +
         '<span class="val">' + won(remain) + '</span></div>';
+
+    /* 이번 달 수입 내역 */
+    const exInc = excludedIncome(ym);
+    const incSorted = incList.slice().sort(function(a,b){ return dayOf(b) - dayOf(a) || b.a - a.a; });
+    el('incomeBlock').innerHTML =
+      '<h3>💰 이번 달 수입 내역<span>' + incList.length + '건</span></h3>' +
+      (incSorted.length ? incSorted.map(function(t) {
+        const ic = INCAT[t.c] || INCOME_CATS[4];
+        return '<div class="incrow">' +
+          '<span class="ie" style="background:' + hexA(ic.color, .14) + '">' + ic.emoji + '</span>' +
+          '<span class="in"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + ic.label + ' · ' + esc(t.m) + '</span></span>' +
+          '<span class="ia">' + nf.format(t.a) + '원</span>' +
+          '<button class="inc-del" data-id="' + t.id + '" title="공동 수입에서 제외" aria-label="' + esc(t.n) + ' 공동 수입에서 제외">−</button>' +
+        '</div>';
+      }).join('') : '<div class="tx-empty">이 달에 잡힌 수입이 없어요. ＋ 내역 추가 → 수입으로 넣어보세요.</div>') +
+      '<div class="incfoot"><span>공동 수입 합계</span><b>' + nf.format(inc) + '원</b></div>' +
+      (exInc.length ? '<div style="font-size:10px; color:#8B939E; font-weight:700; margin-top:5px;">수입에서 뺀 내역 ' +
+        exInc.length + '건 · ' + nf.format(sum(exInc)) + '원 (아래 상세에서 되돌릴 수 있어요)</div>' : '');
+    Array.prototype.forEach.call(el('incomeBlock').querySelectorAll('.inc-del'), function(b) {
+      b.addEventListener('click', function() {
+        const id = b.getAttribute('data-id');
+        state.excluded[id] = true;
+        save();
+        renderAll();
+        toast('공동 수입에서 뺐어요 · 공동 수입과 저축률을 다시 계산했어요');
+      });
+    });
 
     el('allowNote').innerHTML =
       '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance) + '</b> (각 ' +
@@ -1128,6 +1293,7 @@
       c.addEventListener('click', function() {
         const id = c.getAttribute('data-cat');
         state.cat = (state.cat === id) ? null : id;
+        state.kind = 'exp';
         renderSpend();
       });
     });
@@ -1150,6 +1316,7 @@
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-cat');
         state.cat = (state.cat === id) ? null : id;
+        state.kind = 'exp';
         renderSpend();
       });
     });
@@ -1174,61 +1341,125 @@
         '</div>';
     }).join('');
 
-    /* 상세 내역 */
-    const filtered = state.cat ? list.filter(function(t){ return t.c === state.cat; }) : list;
-    filtered.sort(function(a,b){ return dayOf(b) - dayOf(a); });
-    el('txCount').textContent = filtered.length + '건 · ' + won(sum(filtered)) + '';
-
-    const chips = ['<button class="chip' + (state.cat ? '' : ' on') + '" data-cat="">전체</button>'];
-    CATS.forEach(function(c) {
-      if (!cur[c.id]) return;
-      chips.push('<button class="chip' + (state.cat === c.id ? ' on' : '') + '" data-cat="' + c.id + '">' +
-        c.emoji + ' ' + c.label + '</button>');
-    });
-    el('txChips').innerHTML = chips.join('');
-    Array.prototype.forEach.call(el('txChips').querySelectorAll('.chip'), function(b) {
+    /* 상세 내역 : 전체 / 지출 / 수입 */
+    const kind = state.kind || 'all';
+    el('txKindChips').innerHTML = [['all','전체'],['exp','🧾 지출'],['inc','💰 수입']].map(function(x) {
+      return '<button class="chip' + (kind === x[0] ? ' on' : '') + '" data-kind="' + x[0] + '">' + x[1] + '</button>';
+    }).join('');
+    Array.prototype.forEach.call(el('txKindChips').querySelectorAll('.chip'), function(b) {
       b.addEventListener('click', function() {
-        const id = b.getAttribute('data-cat');
-        state.cat = id || null;
+        state.kind = b.getAttribute('data-kind');
+        if (state.kind !== 'exp') state.cat = null;
+        if (state.kind !== 'inc') state.icat = null;
         renderSpend();
       });
     });
 
-    el('txList').innerHTML = filtered.length ? filtered.map(function(t) {
+    const rows = [];
+    if (kind !== 'inc') {
+      list.filter(function(t){ return !state.cat || t.c === state.cat; }).forEach(function(t){ rows.push(t); });
+    }
+    if (kind !== 'exp') {
+      incList.filter(function(t){ return !state.icat || t.c === state.icat; }).forEach(function(t){ rows.push(t); });
+    }
+    rows.sort(function(a, b) {
+      const dd = dayOf(b) - dayOf(a);
+      if (dd) return dd;
+      if (a.k !== b.k) return a.k === 'i' ? -1 : 1;
+      return b.a - a.a;
+    });
+    const rowsExp = rows.filter(function(t){ return t.k === 'e'; });
+    const rowsInc = rows.filter(function(t){ return t.k === 'i'; });
+    if (kind === 'all') {
+      el('txCount').textContent = '지출 ' + nf.format(sum(rowsExp)) + '원 · 수입 ' + nf.format(sum(rowsInc)) + '원';
+    } else if (kind === 'inc') {
+      el('txCount').textContent = rowsInc.length + '건 · ' + won(sum(rowsInc)) + '';
+    } else {
+      el('txCount').textContent = rowsExp.length + '건 · ' + won(sum(rowsExp)) + '';
+    }
+
+    let chips = [];
+    if (kind === 'exp') {
+      chips = ['<button class="chip' + (state.cat ? '' : ' on') + '" data-cat="">전체</button>'];
+      CATS.forEach(function(c) {
+        if (!cur[c.id]) return;
+        chips.push('<button class="chip' + (state.cat === c.id ? ' on' : '') + '" data-cat="' + c.id + '">' +
+          c.emoji + ' ' + c.label + '</button>');
+      });
+    } else if (kind === 'inc') {
+      const icur = byIncomeCat(incList);
+      chips = ['<button class="chip' + (state.icat ? '' : ' on') + '" data-icat="">전체</button>'];
+      INCOME_CATS.forEach(function(c) {
+        if (!icur[c.id]) return;
+        chips.push('<button class="chip' + (state.icat === c.id ? ' on' : '') + '" data-icat="' + c.id + '">' +
+          c.emoji + ' ' + c.label + '</button>');
+      });
+    }
+    el('txChips').innerHTML = chips.join('');
+    Array.prototype.forEach.call(el('txChips').querySelectorAll('.chip'), function(b) {
+      b.addEventListener('click', function() {
+        if (b.hasAttribute('data-icat')) {
+          state.icat = b.getAttribute('data-icat') || null;
+        } else {
+          state.cat = b.getAttribute('data-cat') || null;
+        }
+        renderSpend();
+      });
+    });
+
+    el('txList').innerHTML = rows.length ? rows.map(function(t) {
+      if (t.k === 'i') {
+        const ic = INCAT[t.c] || INCOME_CATS[4];
+        return '<div class="tx">' +
+          '<span class="te" style="background:' + hexA(ic.color, .13) + '">' + ic.emoji + '</span>' +
+          '<span class="tm"><b><span class="ttag">수입</span>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + ic.label + ' · ' + esc(t.m) + '</span></span>' +
+          '<span class="ta inc">+' + nf.format(t.a) + '원</span>' +
+          '<button class="tx-btn" data-id="' + t.id + '" data-k="i" title="공동 수입에서 제외" aria-label="' + esc(t.n) + ' 공동 수입에서 제외">−</button>' +
+          '</div>';
+      }
       const c = CAT[t.c];
       return '<div class="tx">' +
         '<span class="te" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
         '<span class="tm"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(t.m) + '</span></span>' +
         '<span class="ta">' + nf.format(t.a) + '원</span>' +
-        '<button class="tx-btn" data-id="' + t.id + '" title="공동 지출에서 제외" aria-label="' + esc(t.n) + ' 공동 지출에서 제외">−</button>' +
+        '<button class="tx-btn" data-id="' + t.id + '" data-k="e" title="공동 지출에서 제외" aria-label="' + esc(t.n) + ' 공동 지출에서 제외">−</button>' +
         '</div>';
-    }).join('') : '<div class="tx-empty">이 카테고리에는 지출이 없어요.</div>';
+    }).join('') : '<div class="tx-empty">이 필터에는 내역이 없어요.</div>';
 
     Array.prototype.forEach.call(el('txList').querySelectorAll('.tx-btn'), function(b) {
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
+        const k = b.getAttribute('data-k');
         state.excluded[id] = true;
         save();
-        renderSpend();
-        const t = monthTxs(ym).filter(function(x){ return x.id === id; })[0];
-        toast('공동 지출에서 뺐어요 · ' + nf.format(t ? t.a : 0) + '원 (합계·차트 다시 계산됨)');
+        renderAll();
+        const t = (k === 'i' ? monthIncomeTxs(ym) : monthTxs(ym)).filter(function(x){ return x.id === id; })[0];
+        toast((k === 'i' ? '공동 수입에서 뺐어요 · ' : '공동 지출에서 뺐어요 · ') +
+          nf.format(t ? t.a : 0) + '원 (합계·저축률 다시 계산됨)');
       });
     });
 
     /* 제외 목록 */
     const ex = excludedTxs(ym);
-    el('exclBox').innerHTML = ex.length ? '<div class="exclbox">' +
-      '<h3>공동 지출에서 제외됨 · ' + ex.length + '건 · ' + nf.format(sum(ex)) + '원</h3>' +
-      ex.map(function(t) {
-        return '<div class="exrow"><span>' + t.d.replace('-', '.') + '</span><s>' + esc(t.n) + ' ' + nf.format(t.a) + '원</s>' +
+    const exI = excludedIncome(ym);
+    const exAll = ex.concat(exI);
+    el('exclBox').innerHTML = exAll.length ? '<div class="exclbox">' +
+      '<h3>공동 가계부에서 제외됨 · ' + exAll.length + '건' +
+        (ex.length ? ' · 지출 ' + nf.format(sum(ex)) + '원' : '') +
+        (exI.length ? ' · 수입 ' + nf.format(sum(exI)) + '원' : '') + '</h3>' +
+      exAll.map(function(t) {
+        return '<div class="exrow"><span class="ttag' + (t.k === 'i' ? '' : ' exp') + '">' + (t.k === 'i' ? '수입' : '지출') + '</span>' +
+          '<span>' + t.d.replace('-', '.') + '</span><s>' + esc(t.n) + ' ' + nf.format(t.a) + '원</s>' +
           '<button data-id="' + t.id + '">되돌리기</button></div>';
       }).join('') + '</div>' : '';
     Array.prototype.forEach.call(el('exclBox').querySelectorAll('button'), function(b) {
       b.addEventListener('click', function() {
-        delete state.excluded[b.getAttribute('data-id')];
+        const id = b.getAttribute('data-id');
+        const wasIncome = /@|^iadd/.test(id) || monthIncomeTxs(ym).some(function(x){ return x.id === id; });
+        delete state.excluded[id];
         save();
-        renderSpend();
-        toast('다시 공동 지출로 넣었어요');
+        renderAll();
+        toast(wasIncome ? '다시 공동 수입으로 넣었어요' : '다시 공동 지출로 넣었어요');
       });
     });
   }
@@ -1274,6 +1505,8 @@
     const meta = LEDGER[ym];
     const list = visible(ym);
     const spent = sum(list);
+    const incList = visibleIncome(ym);
+    const inc = sum(incList);
     const ongoing = meta.status === 'ongoing';
     const days = cmpDays(ym);
     const prevYm = PREV[ym];
@@ -1285,13 +1518,21 @@
       return {c:c, d:a-b};
     }).filter(function(x){ return x.d > 0; }).sort(function(a,b){ return b.d - a.d; }).slice(0,3);
     const ex = excludedTxs(ym);
+    const exI = excludedIncome(ym);
     const added = state.added.filter(function(t){ return t.ym === ym; });
+    const addedInc = state.addedIncome.filter(function(t){ return t.ym === ym; });
+    const icur = byIncomeCat(incList);
+    const remain = inc - meta.save - meta.allowance - spent;
 
     const L = [];
     L.push('[' + ymLabel(ym) + ' 공동 가계부 · ' + (ongoing ? meta.elapsed + '일까지' : '마감') + ']');
-    L.push('· 공동 수입 ' + won(meta.income) + ' / 고정 저축 ' + won(meta.save) + ' / 용돈 이체 ' + won(meta.allowance));
+    L.push('· 공동 수입 ' + won(inc) + ' (' + incList.length + '건) / 고정 저축 ' + won(meta.save) + ' / 용돈 이체 ' + won(meta.allowance));
+    if (incList.length) {
+      L.push('· 수입 구성: ' + INCOME_CATS.filter(function(c){ return icur[c.id]; })
+        .map(function(c){ return c.label + ' ' + won(icur[c.id]); }).join(', '));
+    }
     L.push('· 공동 생활비 ' + won(spent) + ' (예산 ' + won(BUDGET_TOTAL) + '의 ' + pct(spent / BUDGET_TOTAL, 0) + '%)');
-    L.push('· 남은 잉여금 ' + won(meta.income - meta.save - meta.allowance - spent));
+    L.push('· 남은 잉여금 ' + won(remain) + ' · 저축률 ' + pct(inc ? meta.save / inc : 0) + '%');
     if (prevTotal) {
       const rate = (spent - prevTotal) / prevTotal;
       L.push('· ' + (ongoing ? '전월 1~' + days + '일(' + won(prevTotal) + ') 대비 ' : '전월(' + won(prevTotal) + ') 대비 ') +
@@ -1300,9 +1541,11 @@
     if (changes.length) {
       L.push('· 늘어난 곳: ' + changes.map(function(x){ return x.c.label + ' +' + won(x.d) + ''; }).join(', '));
     }
+    if (addedInc.length) L.push('· 새로 추가한 수입 ' + addedInc.length + '건 +' + won(sum(addedInc)) + ' (' + addedInc.map(function(t){ return t.n; }).join(', ') + ')');
+    if (exI.length) L.push('· 수입에서 뺀 내역 ' + exI.length + '건 ' + won(sum(exI)) + ' (' + exI.map(function(t){ return t.n; }).join(', ') + ')');
     if (ex.length) L.push('· 공동 지출에서 뺀 내역 ' + ex.length + '건 ' + won(sum(ex)) + ' (' + ex.map(function(t){ return t.n; }).join(', ') + ')');
     if (added.length) L.push('· 새로 추가한 지출 ' + added.length + '건 ' + won(sum(added)) + ' (' + added.map(function(t){ return t.n; }).join(', ') + ')');
-    L.push('— ' + (state.tab === 'asset' ? '순자산 ' + won(netOf(ym)) + ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')' : '지출 상세 ' + list.length + '건'));
+    L.push('— ' + (state.tab === 'asset' ? '순자산 ' + won(netOf(ym)) + ' (전월 ' + won(netOf(ym) - netOf(PREV[ym])) + ')' : '지출 ' + list.length + '건 · 수입 ' + incList.length + '건'));
     return L.join('\n');
   }
 
@@ -1328,9 +1571,33 @@
   }
 
   /* ────────────── 10. 모달 ────────────── */
+  let modalKind = 'exp';
   function catOptions() {
     return CATS.map(function(c) { return '<option value="' + c.id + '">' + c.emoji + ' ' + c.label + '</option>'; }).join('');
   }
+  function incomeCatOptions() {
+    return INCOME_CATS.map(function(c) { return '<option value="' + c.id + '">' + c.emoji + ' ' + c.label + '</option>'; }).join('');
+  }
+  function setModalKind(k) {
+    modalKind = k;
+    const exp = k === 'exp';
+    el('expFields').hidden = !exp;
+    el('incFields').hidden = exp;
+    Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
+      const on = b.getAttribute('data-kind') === k;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    el('sheetHint').textContent = exp
+      ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
+      : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·잉여금·저축률이 바로 다시 계산돼요.';
+    el('fAmount').placeholder = exp ? '32000' : '200000';
+    el('addErr').hidden = true;
+    setTimeout(function(){ (exp ? el('fName') : el('fIncName')).focus(); }, 40);
+  }
+  Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
+    b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
+  });
   function openModal() {
     const meta = LEDGER[state.ym];
     const lastDay = Math.min(meta.elapsed, meta.days);
@@ -1338,12 +1605,13 @@
     el('fDate').min = state.ym + '-01';
     el('fDate').max = state.ym + '-' + String(meta.days).padStart(2, '0');
     el('fName').value = '';
+    el('fIncName').value = '';
     el('fAmount').value = '';
     el('fCat').innerHTML = catOptions();
+    el('fIncCat').innerHTML = incomeCatOptions();
     el('addErr').hidden = true;
-    el('sheetHint').textContent = ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.';
     el('modal').hidden = false;
-    setTimeout(function(){ el('fName').focus(); }, 60);
+    setModalKind(state.kind === 'inc' ? 'inc' : 'exp');
   }
   function closeModal() { el('modal').hidden = true; }
 
@@ -1357,17 +1625,49 @@
     e.preventDefault();
     const v = el('fDate').value;
     const amt = parseInt(el('fAmount').value, 10);
-    const name = el('fName').value.trim();
-    const cat = el('fCat').value;
-    const method = el('fMethod').value;
     const errEl = el('addErr');
-    if (!v || !amt || amt <= 0 || !name) {
-      errEl.textContent = '날짜·금액·가맹점을 모두 채워주세요.';
+    if (!v || !amt || amt <= 0) {
+      errEl.textContent = '날짜와 금액을 먼저 채워주세요.';
       errEl.hidden = false;
       return;
     }
     if (v.slice(0, 7) !== state.ym) {
       errEl.textContent = ymLabel(state.ym) + ' 날짜로 넣어주세요.';
+      errEl.hidden = false;
+      return;
+    }
+    if (modalKind === 'inc') {
+      const iname = el('fIncName').value.trim();
+      if (!iname) {
+        errEl.textContent = '항목명을 적어주세요. (예: 부부 월급, 협찬·부수입)';
+        errEl.hidden = false;
+        return;
+      }
+      state.addedIncome.push({
+        id: 'iadd#' + Date.now() + '#' + Math.floor(Math.random() * 1000),
+        ym: state.ym,
+        d: v.slice(5, 10),
+        n: iname,
+        c: el('fIncCat').value,
+        m: el('fAccount').value,
+        a: amt,
+        k: 'i'
+      });
+      save();
+      closeModal();
+      state.tab = 'spend';
+      state.kind = 'inc';
+      state.cat = null;
+      state.icat = null;
+      renderAll();
+      toast('수입 추가했어요 · 공동 수입 +' + nf.format(amt) + '원 · 저축률 다시 계산됨');
+      return;
+    }
+    const name = el('fName').value.trim();
+    const cat = el('fCat').value;
+    const method = el('fMethod').value;
+    if (!name) {
+      errEl.textContent = '가맹점을 적어주세요.';
       errEl.hidden = false;
       return;
     }
@@ -1383,6 +1683,7 @@
     save();
     closeModal();
     state.tab = 'spend';
+    state.kind = 'exp';
     renderAll();
     toast('추가했어요 · 공동 생활비 ' + nf.format(amt) + '원 반영');
   });
@@ -1399,6 +1700,9 @@
   el('btnReset').addEventListener('click', function() {
     state.excluded = {};
     state.added = [];
+    state.addedIncome = [];
+    state.cat = null;
+    state.icat = null;
     save();
     renderAll();
     toast('샘플 데이터로 되돌렸어요');
