@@ -498,6 +498,8 @@
     .crow{font-size:11.5px; gap:6px;}
     .crow .cp{width:28px;}
   }
+  .brandreset{color:var(--ink-3);}
+  .brandreset:hover{color:var(--ink-2);}
 </style>
 </head>
 <body>
@@ -506,7 +508,7 @@
     <button class="mark" type="button" id="btnBrandBadge" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">
       <span id="headEmoji">🏠</span><span class="badge-pen" aria-hidden="true">✎</span>
     </button>
-    <h1>
+    <h1 id="headTitle">
       <span class="title-text" id="headTitleText">우리집 공동 가계부</span>
       <button class="title-pen" type="button" id="btnBrandPen" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">✎</button>
     </h1>
@@ -859,7 +861,7 @@
         <button type="button" class="btn ghost" data-close-brand>취소</button>
         <button type="submit" class="btn primary">저장</button>
       </div>
-      <button type="button" class="btn-link" id="brandDefault">기본값으로 되돌리기</button>
+      <button type="button" class="btn-link brandreset" id="brandDefault">기본값으로 되돌리기</button>
     </form>
   </div>
 </div>
@@ -1439,6 +1441,7 @@
     const b = state.brand;
     el('headEmoji').textContent = b.emoji;
     el('headTitleText').textContent = b.name;
+    el('headTitle').setAttribute('aria-label', b.name);
     document.title = b.emoji + ' ' + b.name + ' · 샘플 프로토타입';
     const lbl = '가계부 이름·이모지 바꾸기 (' + b.emoji + ' ' + b.name + ')';
     ['btnBrandBadge', 'btnBrandPen'].forEach(function(id) {
