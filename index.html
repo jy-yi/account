@@ -114,7 +114,7 @@
   }
   .pill-soft.live{color:#20735F; background:var(--teal-soft); border-color:#CFE7DE;}
   .net-amount{
-    font-size:33px; font-weight:850; letter-spacing:-.03em; margin:12px 0 2px;
+    font-size:clamp(22px, 7vw, 31px); font-weight:850; letter-spacing:-.03em; margin:12px 0 2px;
     font-variant-numeric:tabular-nums; position:relative;
   }
   .net-amount .unit{font-size:17px; font-weight:700; color:var(--ink-2); margin-left:2px;}
@@ -890,7 +890,7 @@
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
   function drawGrowth() {
     const W = 340, H = 196;
-    const padL = 26, padR = 34, baseY = 152;
+    const padL = 26, padR = 42, baseY = 152;
     const slot = (W - padL - padR) / CHART.length;
     const nets = CHART.map(netOf);
     const deltas = CHART.map(function(ym) {
@@ -915,8 +915,9 @@
         '" stroke="#F0EBE1" stroke-width="1" stroke-dasharray="3 4"/>';
     });
     // 축 (순자산)
-    s += '<text x="' + (W - padR + 4) + '" y="' + (lineTop + 4) + '" font-size="8" fill="#A6ADB6" text-anchor="start">' + won(maxN, {unit:false}) + '</text>';
-    s += '<text x="' + (W - padR + 4) + '" y="' + (lineBot + 3) + '" font-size="8" fill="#A6ADB6" text-anchor="start">' + won(minN, {unit:false}) + '</text>';
+    function axisWon(n) { return (n / 1e8).toFixed(2) + '억'; }
+    s += '<text x="' + (W - padR + 4) + '" y="' + (lineTop + 4) + '" font-size="8" fill="#A6ADB6" text-anchor="start">' + axisWon(maxN) + '</text>';
+    s += '<text x="' + (W - padR + 4) + '" y="' + (lineBot + 3) + '" font-size="8" fill="#A6ADB6" text-anchor="start">' + axisWon(minN) + '</text>';
 
     // 막대
     const bw = Math.min(22, slot * 0.46);
