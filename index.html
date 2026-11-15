@@ -147,8 +147,21 @@
   .rtoggle button{border:0; background:transparent; font:inherit; font-size:11px; font-weight:800; color:var(--ink-3); padding:6px 12px; border-radius:8px; cursor:pointer; letter-spacing:-.01em;}
   .rtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 4px 10px -8px rgba(35,38,43,.8), inset 0 0 0 1px var(--line-2);}
   /* 연간 누적 */
-  .yearsum{margin-top:10px; padding:11px 12px; border-radius:14px; background:#F7F4EC; border:1px solid var(--line-2); font-size:10.5px; font-weight:700; color:#6B6355; line-height:1.65; letter-spacing:-.01em;}
-  .yearsum b{color:var(--ink); font-variant-numeric:tabular-nums;}
+  .yearsum{margin-top:12px; padding:12px 12px 11px; border-radius:16px; background:#F8F5ED; border:1px solid var(--line-2);}
+  .ys-head{display:flex; align-items:baseline; gap:5px; font-size:11.5px; font-weight:850; color:var(--ink-2); letter-spacing:-.02em; margin-bottom:9px;}
+  .ys-head span{font-size:10px; font-weight:700; color:var(--ink-3);}
+  .ys-grid{display:grid; grid-template-columns:1fr 1fr; gap:6px;}
+  .ys-cell{display:flex; flex-direction:column; gap:3px; padding:8px 10px; border-radius:11px; background:#fff; border:1px solid var(--line-2); min-width:0;}
+  .ys-lb{font-size:10px; font-weight:800; color:var(--ink-3); letter-spacing:-.01em; white-space:nowrap;}
+  .ys-v{font-size:12.5px; font-weight:850; color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:-.02em; white-space:nowrap;}
+  .ys-cell.wide{grid-column:1 / -1; flex-direction:row; align-items:baseline; justify-content:space-between; gap:8px; border-color:#DCEBE3; background:#FBFEFC;}
+  .ys-cell.wide .ys-lb{color:var(--ink-2); font-size:10.5px;}
+  .ys-cell.wide .ys-v{color:#1F7A64; font-size:13.5px;}
+  @media (max-width:380px){
+    .ys-v{font-size:11.5px;}
+    .ys-cell{padding:7px 8px;}
+  }
+  .yearsum b{font-variant-numeric:tabular-nums;}
   /* 모바일에서 금액이 두 줄로 꺾이지 않게 */
   .srow .val, .incrow .ia, .fixrow .fa, .tx .ta, .invest-h b, .netsplit b,
   .incfoot b, .fixsub b, .net-amount, .net-delta, .yearsum b, .mcell, .mpick{white-space:nowrap; flex-shrink:0;}
@@ -1810,8 +1823,15 @@
 
     /* 선택 연도 누적 */
     const ys = yearSummary(ym);
-    el('yearSum').innerHTML = '📅 <b>' + ym.slice(0, 4) + '년 ' + ys.n + '개월 누적</b> · 수입 <b>' + won(ys.inc) + '</b> · 고정 저축 <b>' + won(ys.save) + '</b><br>' +
-      '고정 지출 <b>' + won(ys.fixed) + '</b> · 변동 생활비 <b>' + won(ys.va) + '</b> · 남은 돈 <b>' + won(ys.remain) + '</b>';
+    el('yearSum').innerHTML =
+      '<div class="ys-head">📅 ' + ym.slice(0, 4) + '년 연간 누적 <span>(' + (ys.n > 1 ? '1~' + ys.n + '월' : '1월') + ')</span></div>' +
+      '<div class="ys-grid">' +
+        ysCell('공동 수입', won(ys.inc)) +
+        ysCell('고정 저축', won(ys.save)) +
+        ysCell('고정 지출', won(ys.fixed)) +
+        ysCell('변동 생활비', won(ys.va)) +
+        '<div class="ys-cell wide"><span class="ys-lb">남은 돈</span><b class="ys-v">' + won(ys.remain) + '</b></div>' +
+      '</div>';
 
     /* 이번 달 수입 내역 */
     const exInc = excludedIncome(ym);
@@ -2120,6 +2140,9 @@
   }
 
   /* ────────────── 8-0. 선택 연도 누적 ────────────── */
+  function ysCell(label, val) {
+    return '<div class="ys-cell"><span class="ys-lb">' + label + '</span><b class="ys-v">' + val + '</b></div>';
+  }
   function yearSummary(ym) {
     const y = ym.slice(0, 4);
     const months = MONTHS.filter(function(m) { return m.slice(0, 4) === y && m <= ym; });
