@@ -1242,7 +1242,7 @@
     const sign = d > 0 ? '+' : '−';
     if (a >= 10000) {
       const m = a / 10000;
-      return sign + (m >= 10 ? Math.round(m) + '만' : m.toFixed(1) + '만');
+      return sign + (Math.abs(m - Math.round(m)) < 0.05 ? Math.round(m) : m.toFixed(1)) + '만';
     }
     return sign + nf.format(a);
   }
