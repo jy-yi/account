@@ -1580,6 +1580,7 @@
       '<defs><linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">' +
       '<stop offset="0%" stop-color="#9FDCc9"/><stop offset="100%" stop-color="#4FAE96"/>' +
       '</linearGradient></defs>' + s;
+    el('growthChart').setAttribute('aria-label', '순자산 추이 차트 · ' + list.length + '개월 · ' + ymLabel(list[0]) + '~' + ymLabel(list[list.length - 1]));
 
     // 툴팁
     const tip = el('growthTip');
