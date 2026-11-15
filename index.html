@@ -194,7 +194,7 @@
   }
   .insrow.hot{background:var(--red-soft); border-color:#F7DAD6;}
   .insrow.warm{background:var(--orange-soft); border-color:#F8E3D3;}
-  .insrow .ie{font-size:15px;}
+  .insrow .ie{font-size:14px; width:28px; height:28px; border-radius:9px; display:grid; place-items:center; flex:none;}
   .insrow .il{font-size:12.5px; font-weight:800; letter-spacing:-.01em;}
   .insrow .il small{display:block; font-size:10px; font-weight:600; color:var(--ink-3); margin-top:1px;}
   .insrow .iv{margin-left:auto; text-align:right; font-size:12.5px; font-weight:850; font-variant-numeric:tabular-nums;}
@@ -213,9 +213,9 @@
   /* donut */
   .donutwrap{display:flex; align-items:center; gap:14px;}
   .donutwrap svg{width:150px; height:150px; flex:none;}
-  .donut-center-l{font-size:9px; fill:#8B939E; font-weight:700;}
-  .donut-center-v{font-size:14px; fill:#23262B; font-weight:800;}
-  .donut-center-s{font-size:8.5px; fill:#A6ADB6; font-weight:700;}
+  .donut-center-l{font-size:8px; fill:#8B939E; font-weight:700;}
+  .donut-center-v{font-size:11.5px; fill:#23262B; font-weight:800;}
+  .donut-center-s{font-size:7.2px; fill:#A6ADB6; font-weight:700;}
   .segcircle{cursor:pointer; transition:opacity .18s ease, stroke-width .18s ease;}
   .segcircle.dim{opacity:.28;}
   .catlist{flex:1; min-width:0;}
@@ -229,7 +229,7 @@
   .crow .cn{white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .crow .ca{margin-left:auto; font-variant-numeric:tabular-nums; font-weight:800;}
   .crow .cp{width:38px; text-align:right; color:var(--ink-3); font-size:10px; font-weight:700; font-variant-numeric:tabular-nums;}
-  .crow .cm{font-size:9.5px; font-weight:800; color:var(--red); width:52px; text-align:right; font-variant-numeric:tabular-nums;}
+  .crow .cm{font-size:9px; font-weight:800; color:var(--red); width:44px; text-align:right; font-variant-numeric:tabular-nums; flex:none;}
   .crow .cm.zero{color:#C9CFD6;}
   /* budget bars */
   .brow{padding:9px 0;}
@@ -837,18 +837,18 @@
     const up = diff >= 0;
     dEl.className = 'net-delta ' + (up ? 'up' : 'down');
     dEl.innerHTML =
-      (up ? '▲ ' : '▼ ') + won(Math.abs(diff), {unit:false}) + '원 ' +
+      (up ? '▲ ' : '▼ ') + won(Math.abs(diff)) + ' ' +
       '<em>' + (up ? '+' : '−') + pct(rate) + '%</em>' +
       '<span>전월 대비</span>';
 
     const saveRate = LEDGER[ym] ? LEDGER[ym].save / LEDGER[ym].income : 0;
     el('netSplit').innerHTML =
-      '<div><span>총자산</span><b>' + won(total, {unit:false}) + '원</b></div>' +
-      '<div><span>총부채</span><b>' + won(snap.debt, {unit:false}) + '원</b></div>' +
+      '<div><span>총자산</span><b>' + won(total) + '</b></div>' +
+      '<div><span>총부채</span><b>' + won(snap.debt) + '</b></div>' +
       '<div><span>저축률</span><b>' + pct(saveRate) + '%</b></div>';
 
     // 이번 달 증식 칩
-    el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true, unit:false}) + '원';
+    el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true}) + '';
 
     // 포트폴리오
     el('pfMonth').textContent = ymLabel(ym) + ' 기준';
@@ -862,13 +862,13 @@
       const share = total ? r.v / total : 0;
       const d = pv ? r.v - pv[r.key] : 0;
       const cls = d > 0 ? 'up' : (d < 0 ? 'down' : '');
-      const dtxt = !pv ? '—' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d), {unit:false}) + '원');
+      const dtxt = !pv ? '—' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d)) + '');
       const sub = (ym === '2026-11' && SUBS[r.key] && r.key !== 'real')
-        ? '<div class="psub">' + SUBS[r.key].map(function(s){ return s[0] + ' ' + won(s[1], {unit:false}) + '원'; }).join(' · ') + '</div>'
+        ? '<div class="psub">' + SUBS[r.key].map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
         : (r.key === 'real' ? '<div class="psub">신혼집 시세 기준 (부동산 시세는 월 1회 반영)</div>' : '');
       return '<div class="prow">' +
         '<div class="prow-h"><span class="pdot" style="background:' + r.color + '"></span>' + r.name +
-        '<b>' + won(r.v, {unit:false}) + '원</b></div>' +
+        '<b>' + won(r.v) + '</b></div>' +
         '<div class="pbar"><i style="width:' + (share*100).toFixed(1) + '%;background:' + r.color + '"></i></div>' +
         '<div class="prow-f"><span class="' + cls + '">' + dtxt + '</span><span>비중 ' + pct(share) + '%</span></div>' +
         sub + '</div>';
@@ -877,12 +877,12 @@
     // 부채
     const debtD = pv ? snap.debt - pv.debt : 0;
     el('debtNote').textContent = hasPrev
-      ? (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD), {unit:false}) + '원 상환' : '이번 달 ' + won(debtD, {unit:false}) + '원 증가')
+      ? (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 상환' : '이번 달 ' + won(debtD) + ' 증가')
       : '';
     el('debtList').innerHTML = SUBS.debt.map(function(d) {
-      return '<div class="debtrow"><span>' + d[0] + '</span><b>' + won(d[1], {unit:false}) + '원</b></div>';
+      return '<div class="debtrow"><span>' + d[0] + '</span><b>' + won(d[1]) + '</b></div>';
     }).join('');
-    el('debtFoot').textContent = '총부채 ' + won(snap.debt, {unit:false}) + '원 · ' + (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD), {unit:false}) + '원 줄었어요' : '이번 달 ' + won(debtD, {unit:false}) + '원 늘었어요');
+    el('debtFoot').textContent = '총부채 ' + won(snap.debt) + ' · ' + (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 줄었어요' : '이번 달 ' + won(debtD) + ' 늘었어요');
 
     drawGrowth();
   }
@@ -966,8 +966,8 @@
       const p = relYM(ym, -1);
       const d = SNAP[p] ? netOf(ym) - netOf(p) : 0;
       tip.innerHTML = '<b>' + ymLabel(ym) + ' 순자산</b>' +
-        '<div class="tnum">' + won(netOf(ym), {unit:false}) + '원</div>' +
-        '<div class="tnum ' + (d >= 0 ? 'tup' : 'tdown') + '">' + (d >= 0 ? '▲ ' : '▼ ') + won(Math.abs(d), {unit:false}) + '원</div>';
+        '<div class="tnum">' + won(netOf(ym)) + '</div>' +
+        '<div class="tnum ' + (d >= 0 ? 'tup' : 'tdown') + '">' + (d >= 0 ? '▲ ' : '▼ ') + won(Math.abs(d)) + '</div>';
       const rect = svg.getBoundingClientRect();
       const wRect = wrap.getBoundingClientRect();
       const scale = rect.width / W;
@@ -1010,20 +1010,20 @@
     el('settleNote').textContent = ongoing ? (meta.elapsed + '일까지 누적') : '월 마감';
     const remain = meta.income - meta.save - meta.allowance - spent;
     el('settleList').innerHTML =
-      row('💰','공동 수입','부부 합산 세후', won(meta.income, {unit:false}) + '원') +
-      row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save, {unit:false}) + '원') +
-      row('🧾','공동 생활비','카테고리 지출 합계', '−' + won(spent, {unit:false}) + '원') +
+      row('💰','공동 수입','부부 합산 세후', won(meta.income) + '') +
+      row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') +
+      row('🧾','공동 생활비','카테고리 지출 합계', '−' + won(spent) + '') +
       '<div class="srow total"><span class="ico">✨</span><span class="lb">' +
         (ongoing ? '남은 잉여금' : '남은 잉여금') +
         '<small>' + (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈') + '</small></span>' +
-        '<span class="val">' + won(remain, {unit:false}) + '원</span></div>';
+        '<span class="val">' + won(remain) + '</span></div>';
 
     el('allowNote').innerHTML =
-      '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance, {unit:false}) + '원</b> (각 ' +
-      won(meta.allowance/2, {unit:false}) + '원)은 공동 생활비 계산에서 빼뒀어요.<br>' +
+      '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance) + '</b> (각 ' +
+      won(meta.allowance/2) + ')은 공동 생활비 계산에서 빼뒀어요.<br>' +
       '개인 용돈 사용 내역은 서로 보지 않기로 해서 이 가계부에 아예 담지 않아요.' +
       '<div style="margin-top:6px;color:#8A7A5E;font-size:10.5px;">내 고정 저축 구성: ' +
-      SAVE_PLAN.map(function(s){ return s[0] + ' ' + won(s[1], {unit:false}) + '원'; }).join(' · ') + '</div>';
+      SAVE_PLAN.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>';
 
     /* 인사이트 */
     const cur = byCat(list);
@@ -1043,13 +1043,13 @@
       el('insList').innerHTML = '<div class="insrow"><span class="ie">🌿</span><span class="il">전월보다 늘어난 카테고리가 없어요<small>이 흐름이면 예산 안에서 마무리돼요</small></span><span class="iv">안정</span></div>';
     } else {
       el('insList').innerHTML = changes.map(function(x, i) {
-        const hot = x.rate >= .5 || (x.cur > x.c.budget * (days / meta.days) * 1.15);
-        const cls = hot ? 'hot' : (x.rate >= .15 ? 'warm' : '');
+        const hot = x.rate >= .5;
+        const cls = (i === 0 && hot) ? 'hot' : ((hot || x.rate >= .15) ? 'warm' : '');
         return '<div class="insrow ' + cls + '">' +
-          '<span class="ie">' + x.c.emoji + '</span>' +
+          '<span class="ie" style="background:' + hexA(x.c.color, .16) + '">' + x.c.emoji + '</span>' +
           '<span class="il">' + x.c.label +
             '<small>' + (x.rate >= .15 ? '전월보다 눈에 띄게 늘었어요' : '조금 늘었어요') + '</small></span>' +
-          '<span class="iv">+' + won(x.d, {unit:false}) + '원<small>+' + pct(x.rate, 0) + '%</small></span>' +
+          '<span class="iv">+' + won(x.d) + '<small>+' + pct(x.rate, 0) + '%</small></span>' +
           '</div>';
       }).join('');
     }
@@ -1069,27 +1069,27 @@
         '<b>남은 ' + remainDays + '일 플랜</b>' +
         '<p>' +
         (overPace > 0
-          ? '기간 대비 예산을 <b>' + won(overPace, {unit:false}) + '원</b> 더 썼어요. '
-          : '기간 대비 예산보다 <b>' + won(Math.abs(overPace), {unit:false}) + '원</b> 덜 썼어요. ') +
+          ? '기간 대비 예산을 <b>' + won(overPace) + '</b> 더 썼어요. '
+          : '기간 대비 예산보다 <b>' + won(Math.abs(overPace)) + '</b> 덜 썼어요. ') +
         (top ? '가장 크게 늘어난 <b>' + top.c.label + '</b>만 줄여도 분위기가 바뀌어요.' : '') +
         '</p>' +
         '<div class="pace">' +
-          '<div><span>하루 평균 (현재)</span><b>' + won(Math.round(dailyNow), {unit:false}) + '원</b></div>' +
-          '<div><span>남은 기간 하루 허용</span><b>' + won(Math.round(allowedPerDay), {unit:false}) + '원</b></div>' +
+          '<div><span>하루 평균 (현재)</span><b>' + won(Math.round(dailyNow)) + '</b></div>' +
+          '<div><span>남은 기간 하루 허용</span><b>' + won(Math.round(allowedPerDay)) + '</b></div>' +
         '</div>';
     } else {
       const over = spent - BUDGET_TOTAL;
       const top = changes.length ? changes[0] : null;
       plan.innerHTML =
         '<b>' + ymLabel(ym) + ' 마감 결과</b>' +
-        '<p>예산 ' + won(BUDGET_TOTAL, {unit:false}) + '원 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요. ' +
+        '<p>예산 ' + won(BUDGET_TOTAL) + ' 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요. ' +
         (over > 0
-          ? '예산을 <b>' + won(over, {unit:false}) + '원</b> 넘었어요.'
-          : '<b>' + won(-over, {unit:false}) + '원</b> 남겼어요.') +
+          ? '예산을 <b>' + won(over) + '</b> 넘었어요.'
+          : '<b>' + won(-over) + '</b> 남겼어요.') +
         (top ? ' 다음 달엔 <b>' + top.c.label + '</b>을 먼저 봐요.' : '') +
         '</p>' +
         '<div class="pace">' +
-          '<div><span>총 지출</span><b>' + won(spent, {unit:false}) + '원</b></div>' +
+          '<div><span>총 지출</span><b>' + won(spent) + '</b></div>' +
           '<div><span>예산 대비</span><b>' + pct(budgetPct, 0) + '%</b></div>' +
         '</div>';
     }
@@ -1113,14 +1113,14 @@
     });
     const sel = state.cat ? entries.filter(function(e){ return e.c.id === state.cat; })[0] : null;
     const centerTop = sel ? sel.c.label : '공동 생활비';
-    const centerVal = sel ? won(sel.v, {unit:false}) + '원' : won(spent, {unit:false}) + '원';
-    const centerSub = sel ? pct(sel.share) + '% · ' + Math.round(sel.v / Math.max(days,1) / 1000) + '천원/일'
-                          : (ongoing ? meta.elapsed + '일까지 · ' + entries.length + '개 카테고리' : '월 합계 · ' + entries.length + '개 카테고리');
+    const centerVal = sel ? won(sel.v) + '' : won(spent) + '';
+    const centerSub = sel ? pct(sel.share) + '% · ' + meta.elapsed + '일'
+                          : (ongoing ? meta.elapsed + '일까지 · ' + entries.length + '곳' : '월 합계 · ' + entries.length + '곳');
 
     el('donut').innerHTML = segs +
-      '<text class="donut-center-l" x="90" y="76" text-anchor="middle">' + centerTop + '</text>' +
-      '<text class="donut-center-v" x="90" y="95" text-anchor="middle">' + centerVal + '</text>' +
-      '<text class="donut-center-s" x="90" y="110" text-anchor="middle">' + centerSub + '</text>';
+      '<text class="donut-center-l" x="90" y="79" text-anchor="middle">' + centerTop + '</text>' +
+      '<text class="donut-center-v" x="90" y="94" text-anchor="middle">' + centerVal + '</text>' +
+      '<text class="donut-center-s" x="90" y="106" text-anchor="middle">' + centerSub + '</text>';
 
     Array.prototype.forEach.call(el('donut').querySelectorAll('.segcircle'), function(c) {
       c.addEventListener('click', function() {
@@ -1135,7 +1135,7 @@
     /* 카테고리 리스트 */
     el('catList').innerHTML = entries.sort(function(a,b){ return b.v - a.v; }).map(function(e) {
       const on = state.cat === e.c.id;
-      const dm = e.d > 0 ? '+' + won(e.d, {unit:false}) : (e.d < 0 ? '−' + won(-e.d, {unit:false}) : '—');
+      const dm = deltaShort(e.d);
       return '<button class="crow' + (on ? ' on' : '') + '" data-cat="' + e.c.id + '">' +
         '<span class="cd" style="background:' + e.c.color + '"></span>' +
         '<span class="cn">' + e.c.label + '</span>' +
@@ -1153,19 +1153,20 @@
     });
 
     /* 예산 진행률 */
-    el('budgetNote').textContent = '예산 ' + won(BUDGET_TOTAL, {unit:false}) + '원 · ' + pct(budgetPct, 0) + '% 사용';
+    el('budgetNote').textContent = '예산 ' + won(BUDGET_TOTAL) + ' · ' + pct(budgetPct, 0) + '% 사용';
     el('budgetList').innerHTML = CATS.map(function(c) {
       const v = cur[c.id] || 0;
       const p = Math.min(v / c.budget, 1);
       const over = v > c.budget;
       const pace = v - c.budget * pacePct;
+      const expected = c.budget * pacePct;
       const flag = !ongoing
         ? (over ? '<span class="flag">초과</span>' : '')
-        : (pace > 0 && !c.fixed ? '<span class="flag">빠름</span>' : (pace <= 0 ? '<span class="flag ok">여유</span>' : ''));
+        : (c.fixed ? '' : (v > expected * 1.1 ? '<span class="flag">빠름</span>' : (v < expected * 0.9 ? '<span class="flag ok">여유</span>' : '')));
       const color = over ? '#D8544F' : c.color;
       return '<div class="brow">' +
         '<div class="brow-top"><span class="bn">' + c.emoji + ' ' + c.label + '</span>' + flag +
-          '<span class="bv"><b>' + won(v, {unit:false}) + '</b> / ' + won(c.budget, {unit:false}) + '원</span></div>' +
+          '<span class="bv"><b>' + won(v, {unit:false}) + '</b> / ' + won(c.budget) + '</span></div>' +
         '<div class="bbar"><i style="width:' + (p*100).toFixed(1) + '%;background:' + color + '"></i>' +
         (ongoing ? '<u style="left:' + (pacePct*100).toFixed(1) + '%"></u>' : '') + '</div>' +
         '</div>';
@@ -1174,7 +1175,7 @@
     /* 상세 내역 */
     const filtered = state.cat ? list.filter(function(t){ return t.c === state.cat; }) : list;
     filtered.sort(function(a,b){ return dayOf(b) - dayOf(a); });
-    el('txCount').textContent = filtered.length + '건 · ' + won(sum(filtered), {unit:false}) + '원';
+    el('txCount').textContent = filtered.length + '건 · ' + won(sum(filtered)) + '';
 
     const chips = ['<button class="chip' + (state.cat ? '' : ' on') + '" data-cat="">전체</button>'];
     CATS.forEach(function(c) {
@@ -1235,6 +1236,16 @@
       '<span class="lb">' + label + '<small>' + sub + '</small></span>' +
       '<span class="val">' + val + '</span></div>';
   }
+  function deltaShort(d) {
+    const a = Math.abs(d);
+    if (!a) return '—';
+    const sign = d > 0 ? '+' : '−';
+    if (a >= 10000) {
+      const m = a / 10000;
+      return sign + (m >= 10 ? Math.round(m) + '만' : m.toFixed(1) + '만');
+    }
+    return sign + nf.format(a);
+  }
   function hexA(hex, a) {
     const h = hex.replace('#', '');
     const r = parseInt(h.slice(0,2), 16), g = parseInt(h.slice(2,4), 16), b = parseInt(h.slice(4,6), 16);
@@ -1285,7 +1296,7 @@
         (rate >= 0 ? '+' : '−') + pct(rate) + '%');
     }
     if (changes.length) {
-      L.push('· 늘어난 곳: ' + changes.map(function(x){ return x.c.label + ' +' + won(x.d, {unit:false}) + '원'; }).join(', '));
+      L.push('· 늘어난 곳: ' + changes.map(function(x){ return x.c.label + ' +' + won(x.d) + ''; }).join(', '));
     }
     if (ex.length) L.push('· 공동 지출에서 뺀 내역 ' + ex.length + '건 ' + won(sum(ex)) + ' (' + ex.map(function(t){ return t.n; }).join(', ') + ')');
     if (added.length) L.push('· 새로 추가한 지출 ' + added.length + '건 ' + won(sum(added)) + ' (' + added.map(function(t){ return t.n; }).join(', ') + ')');
