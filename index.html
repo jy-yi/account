@@ -879,9 +879,11 @@
     el('debtNote').textContent = hasPrev
       ? (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 상환' : '이번 달 ' + won(debtD) + ' 증가')
       : '';
-    el('debtList').innerHTML = SUBS.debt.map(function(d) {
-      return '<div class="debtrow"><span>' + d[0] + '</span><b>' + won(d[1]) + '</b></div>';
-    }).join('');
+    el('debtList').innerHTML = (ym === '2026-11')
+      ? SUBS.debt.map(function(d) {
+          return '<div class="debtrow"><span>' + d[0] + '</span><b>' + won(d[1]) + '</b></div>';
+        }).join('')
+      : '<div class="debtrow"><span>부채 합계</span><b>' + won(snap.debt) + '</b></div>';
     el('debtFoot').textContent = '총부채 ' + won(snap.debt) + ' · ' + (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 줄었어요' : '이번 달 ' + won(debtD) + ' 늘었어요');
 
     drawGrowth();
