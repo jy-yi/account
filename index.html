@@ -4558,7 +4558,7 @@
         ? '시세 서버가 인증을 거부했어요 · get-quotes 의 Verify JWT 설정을 확인해 주세요'
         : '샘플 모드에서는 시세를 받아올 수 없어요 · 로그인하면 바로 반영돼요');
       else if (st) toast('시세를 가져오지 못했어요 · 서버 오류(' + st + ')');
-      else toast('시세를 가져오지 못했어요 · 네트워크를 확인해 주세요');
+      else toast('시세 서버에 연결하지 못했어요 · Supabase에 get-quotes Edge Function을 배포했는지 확인해 주세요');
     } finally {
       quoteBusy = false;
       setQuoteButtons(false);
