@@ -371,7 +371,7 @@
   .bfr:last-child{border-bottom:0;}
   .bfr-top{display:flex; align-items:center; gap:6px;}
   .bfdot{width:8px; height:8px; border-radius:99px; flex:none;}
-  .bfe{width:38px; flex:none; text-align:center; font:inherit; font-size:14px; padding:7px 2px; border-radius:10px; border:1px solid var(--line); background:#FCFAF6; -webkit-appearance:none; appearance:none;}
+  .bfe{width:40px; height:36px; flex:none; text-align:center; font:inherit; font-size:15px; line-height:1.45; padding:0; border-radius:10px; border:1px solid var(--line); background:#FCFAF6; -webkit-appearance:none; appearance:none;}
   .bfn{flex:1; min-width:0; font:inherit; font-size:12.5px; font-weight:700; letter-spacing:-.01em; padding:8px 10px; border-radius:10px; border:1px solid var(--line); background:#FCFAF6; color:var(--ink);}
   .bfe:focus, .bfn:focus{outline:2px solid #CFE7DE; border-color:#B9DCCF; background:#fff;}
   .bftag{flex:none; font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:5px; background:#F3F0E9; color:#8A8175;}
@@ -2111,7 +2111,7 @@
   function propSubText(ym) {
     const v = propView(ym);
     return esc(state.prop.name) + ' · 매수가 대비 ' +
-      (v.preBuy ? '—' : signedWon(v.gain) + '원 (' + signedPct(v.rate) + ')');
+      (v.preBuy ? '—' : signedWon(v.gain) + ' 원 (' + signedPct(v.rate) + ')');
   }
 
   /* ────────────── 6-1. 투자 상세 ────────────── */
@@ -2189,7 +2189,7 @@
         '<div class="acchead"><b>' + esc(acct) + '</b>' +
           '<span class="accbadge">' + (pension ? '절세' : list.length + '종목') + '</span>' +
           '<span class="accsum">' + won(t.v) +
-            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + '원 (' + pct(t.rate) + '%)</small>' +
+            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + ' 원 (' + pct(t.rate) + '%)</small>' +
           '</span>' +
         '</div>' +
         list.map(function(i) {
@@ -2198,7 +2198,7 @@
               (i.units !== '—' ? '<span class="iu">' + i.units + '</span>' : '') +
               '<b>' + won(i.v) + '</b></div>' +
             '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
-              '<span class="' + (i.g >= 0 ? 'up' : 'down') + '">' + signedWon(i.g) + '원 (' + pct(i.rate) + '%)</span></div>' +
+              '<span class="' + (i.g >= 0 ? 'up' : 'down') + '">' + signedWon(i.g) + ' 원 (' + pct(i.rate) + '%)</span></div>' +
           '</div>';
         }).join('') +
         '</div>';
@@ -2228,7 +2228,7 @@
           (g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
           '<b>' + won(g.v) + '</b></div>' +
         '<div class="invest-f"><span>원금 ' + won(g.p) + '</span>' +
-          '<span class="' + (gain >= 0 ? 'up' : 'down') + '">' + signedWon(gain) + '원 (' + pct(rate) + '%)</span></div>' +
+          '<span class="' + (gain >= 0 ? 'up' : 'down') + '">' + signedWon(gain) + ' 원 (' + pct(rate) + '%)</span></div>' +
         '<div class="invest-f accts"><span class="ibadge">' + g.accts.length + '계좌</span>' +
           '<span>' + g.accts.map(esc).join(' · ') + '</span></div>' +
         '</div>';
@@ -2970,7 +2970,7 @@
       investItems(ym).forEach(function(i){ if (i.type === 'pension' && a.indexOf(i.acct) < 0) a.push(i.acct); });
       return a.length + '개(' + a.join(', ') + ')';
     })() + ' · 원금 ' + won(pen.p) + ' / 평가 ' + won(pen.v) + ' / 평가수익 ' +
-      signedWon(pen.g) + '원 (' + signedPct(pen.rate) + ')');
+      signedWon(pen.g) + ' 원 (' + signedPct(pen.rate) + ')');
     L.push('· 자산 4영역: 현금·예적금 ' + won(SNAP[ym].cash) + ' / 주식·투자 ' + won(inv.v) +
       ' / 연금·절세 ' + won(pen.v) + ' / 부동산 ' + won(realOf(ym)) +
       ' (총자산 ' + won(SNAP[ym].cash + inv.v + pen.v + realOf(ym)) + ')');
