@@ -44,6 +44,11 @@
     --red:#D8544F;
     --red-soft:#FCEBE9;
     --blue:#4E9BD6;
+    /* 손익 색 : 한국 증시 기준 (상승·이익 빨강 / 하락·손실 파랑) */
+    --up:#DC2626;
+    --down:#2563EB;
+    --up-soft:#FCECEC;
+    --down-soft:#EAF1FC;
     --radius:22px;
     --shadow:0 1px 2px rgba(35,38,43,.04), 0 14px 30px -22px rgba(35,38,43,.38);
   }
@@ -240,10 +245,10 @@
     display:flex; align-items:center; gap:7px; flex-wrap:wrap;
     font-size:13px; font-weight:800; font-variant-numeric:tabular-nums;
   }
-  .net-delta.up{color:#1F8A63;}
-  .net-delta.down{color:var(--red);}
-  .net-delta em{font-style:normal; font-size:11.5px; font-weight:800; padding:3px 7px; border-radius:7px; background:rgba(31,138,99,.1);}
-  .net-delta.down em{background:rgba(216,84,79,.1);}
+  .net-delta.up{color:var(--up);}
+  .net-delta.down{color:var(--down);}
+  .net-delta em{font-style:normal; font-size:11.5px; font-weight:800; padding:3px 7px; border-radius:7px; background:var(--up-soft);}
+  .net-delta.down em{background:var(--down-soft);}
   .net-delta span{font-size:11px; font-weight:600; color:var(--ink-3); margin-left:auto;}
   .netsplit{
     display:grid; grid-template-columns:repeat(3,1fr); gap:8px;
@@ -272,17 +277,39 @@
   .tip .tup{color:#8CF0CB; font-weight:800;}
   .tip .tdown{color:#FFB3AE; font-weight:800;}
   /* portfolio */
-  .prow{padding:11px 0; border-bottom:1px solid var(--line-2);}
+  .prow{padding:12px 0 11px; border-bottom:1px solid var(--line-2);}
   .prow:last-child{border-bottom:0; padding-bottom:2px;}
   .prow-h{display:flex; align-items:center; gap:7px; font-size:13px; font-weight:700;}
-  .prow-h b{margin-left:auto; font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+  .prow-h b{margin-left:auto; font-size:13.5px; font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em; white-space:nowrap;}
   .pdot{width:9px; height:9px; border-radius:3px; flex:none;}
   .pbar{height:7px; border-radius:99px; background:#F3F0E9; margin:7px 0 6px; overflow:hidden;}
   .pbar i{display:block; height:100%; border-radius:99px; transition:width .4s ease;}
-  .prow-f{display:flex; justify-content:space-between; font-size:11px; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums;}
-  .prow-f .up{color:#1F8A63;}
-  .prow-f .down{color:var(--red);}
-  .psub{font-size:10.5px; color:var(--ink-3); margin-top:5px; letter-spacing:-.01em; line-height:1.5;}
+  .prow-f{display:flex; align-items:baseline; gap:8px; font-size:10.5px; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums; letter-spacing:-.01em;}
+  .prow-f .up{color:var(--up);}
+  .prow-f .down{color:var(--down);}
+  .prow-f .pct-share{margin-left:auto; color:var(--ink-2);}
+  /* 자산 포트폴리오 하위 상세 : 계좌/항목 행 */
+  .pdetail{margin-top:9px; border:1px solid #EFE9DC; border-radius:14px; background:#FCFAF5; padding:1px 11px;}
+  .pitem{display:flex; align-items:center; gap:9px; padding:8px 0; border-bottom:1px solid #F1ECE1; font-size:12px; letter-spacing:-.01em;}
+  .pitem:last-child{border-bottom:0;}
+  .pitem .pn{flex:1; min-width:0; color:var(--ink-2); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .pitem .pn.strong{color:var(--ink); font-weight:800; letter-spacing:-.02em;}
+  .pitem .pv{flex:none; color:var(--ink); font-weight:800; font-variant-numeric:tabular-nums; font-size:12.5px; letter-spacing:-.02em; white-space:nowrap;}
+  .pitem .pv.up{color:var(--up);}
+  .pitem .pv.down{color:var(--down);}
+  .pitem .pm{flex:none; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums; font-size:11px; letter-spacing:-.01em; white-space:nowrap;}
+  .pitem .pbadge{margin:0; flex:none;}
+  /* 자산 포트폴리오 하위 상세 : 원금·평가·수익 3칸 */
+  .pgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:9px; border:1px solid #EFE9DC; border-radius:14px; background:#FCFAF5; padding:10px 4px 9px;}
+  .pgrid > div{min-width:0; text-align:center;}
+  .pgrid .k{display:block; font-size:9.5px; color:var(--ink-3); font-weight:700; margin-bottom:4px; letter-spacing:-.01em;}
+  .pgrid .v{display:block; font-size:12px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.03em; color:var(--ink); white-space:nowrap;}
+  .pgrid .v.up{color:var(--up);}
+  .pgrid .v.down{color:var(--down);}
+  .pbadge{display:inline-block; margin-top:4px; font-style:normal; font-size:9.5px; font-weight:850; font-variant-numeric:tabular-nums; padding:2px 6px; border-radius:7px; letter-spacing:-.01em; background:#F1EDE4; color:var(--ink-3); white-space:nowrap;}
+  .pbadge.up{background:var(--up-soft); color:var(--up);}
+  .pbadge.down{background:var(--down-soft); color:var(--down);}
+  .pcaption{margin-top:7px; font-size:9.5px; color:#A9A28F; font-weight:600; letter-spacing:-.01em;}
   .debtrow{display:flex; align-items:center; gap:8px; font-size:12.5px; padding:8px 0; border-bottom:1px solid var(--line-2);}
   .debtrow:last-of-type{border-bottom:0;}
   .debtrow b{margin-left:auto; font-variant-numeric:tabular-nums; font-size:13px; font-weight:800;}
@@ -500,15 +527,20 @@
   .invest-sum{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 10px; border-radius:16px; background:#FBF8F1; border:1px solid var(--line-2); margin-bottom:12px;}
   .invest-sum div{text-align:center;}
   .invest-sum span{display:block; font-size:9.5px; color:var(--ink-3); font-weight:700; margin-bottom:3px;}
-  .invest-sum b{font-size:12px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.03em;}
-  .invest-sum b.up{color:#1F8A63;}
+  .invest-sum b{display:block; font-size:12px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.03em;}
+  .invest-sum b.up{color:var(--up);}
+  .invest-sum b.down{color:var(--down);}
+  .invest-sum .sumrate{display:inline-block; margin-top:4px; font-style:normal; font-size:9.5px; font-weight:850; font-variant-numeric:tabular-nums; padding:1px 6px; border-radius:7px; letter-spacing:-.01em; background:#F1EDE4; color:var(--ink-3);}
+  .invest-sum .sumrate.up{background:var(--up-soft); color:var(--up);}
+  .invest-sum .sumrate.down{background:var(--down-soft); color:var(--down);}
   .invest-row{padding:9px 0; border-bottom:1px solid var(--line-2);}
   .invest-row:last-child{border-bottom:0; padding-bottom:0;}
   .invest-h{display:flex; align-items:baseline; gap:6px; font-size:12.5px; font-weight:800; letter-spacing:-.01em;}
   .invest-h .iu{font-size:10px; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums;}
   .invest-h b{margin-left:auto; font-size:13px; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
   .invest-f{display:flex; gap:10px; flex-wrap:wrap; font-size:10.5px; color:var(--ink-3); font-weight:700; margin-top:3px; font-variant-numeric:tabular-nums;}
-  .invest-f .up{color:#1F8A63;}
+  .invest-f .up{color:var(--up);}
+  .invest-f .down{color:var(--down);}
   .invest-note{font-size:10px; color:var(--ink-3); line-height:1.55; margin-top:11px; padding-top:9px; border-top:1px dashed var(--line); font-weight:600; letter-spacing:-.01em;}
   .invest-note b{color:var(--ink-2);}
   /* 주식·투자 상세 : 계좌별 / 종목 합산 */
@@ -522,8 +554,8 @@
   .accsum{margin-left:auto; text-align:right; font-size:11.5px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
   .accsum small{display:block; font-size:9px; font-weight:700;}
   .accsum small.up, .accsum small.down{color:var(--ink-3);}
-  .accsum small.up{color:#1F8A63;}
-  .accsum small.down{color:var(--red);}
+  .accsum small.up{color:var(--up);}
+  .accsum small.down{color:var(--down);}
   .invest-row.sub{padding-left:8px;}
   .invest-row.sub:last-child{padding-bottom:2px;}
   .invest-f.accts{align-items:center; gap:6px; margin-top:4px;}
@@ -534,11 +566,11 @@
   .prop-sum span{display:block; font-size:9px; color:var(--ink-3); font-weight:700; margin-bottom:3px; letter-spacing:-.01em;}
   .prop-sum b{display:block; font-size:11px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.045em; white-space:nowrap;}
   .prop-sum b em{font-style:normal; font-size:8.5px; font-weight:700; color:var(--ink-3); margin-left:1px; letter-spacing:0;}
-  .prop-sum b.up{color:#1F8A63;}
-  .prop-sum b.down{color:var(--red);}
+  .prop-sum b.up{color:var(--up);}
+  .prop-sum b.down{color:var(--down);}
   .prop-sum i{display:block; font-style:normal; font-size:8px; color:var(--ink-3); font-weight:700; margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.01em;}
-  .prop-sum i.up{color:#1F8A63;}
-  .prop-sum i.down{color:var(--red);}
+  .prop-sum i.up{color:var(--up);}
+  .prop-sum i.down{color:var(--down);}
   .prop-barlab{display:flex; justify-content:space-between; gap:8px; font-size:9.5px; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums; margin-bottom:4px; letter-spacing:-.01em;}
   .prop-barlab b{color:var(--ink-2); font-weight:800;}
   .prop-bar{display:flex; height:8px; border-radius:99px; overflow:hidden; background:#EFE9DC;}
@@ -547,8 +579,8 @@
   .prop-meta > div{display:flex; align-items:baseline; justify-content:space-between; gap:6px; padding:7px 0; border-bottom:1px solid var(--line-2); font-size:11px;}
   .prop-meta span{color:var(--ink-3); font-weight:700; white-space:nowrap;}
   .prop-meta b{min-width:0; font-weight:800; font-variant-numeric:tabular-nums; text-align:right; letter-spacing:-.02em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
-  .prop-meta b.up{color:#1F8A63;}
-  .prop-meta b.down{color:var(--red);}
+  .prop-meta b.up{color:var(--up);}
+  .prop-meta b.down{color:var(--down);}
   .prop-foot{display:flex; align-items:center; gap:10px; margin-top:12px; padding-top:10px; border-top:1px dashed var(--line);}
   .prop-foot .pnote{flex:1; font-size:9.5px; color:var(--ink-3); line-height:1.5; font-weight:600; letter-spacing:-.01em;}
   .prop-edit{
@@ -688,8 +720,8 @@
   .invprev div{text-align:center; min-width:0;}
   .invprev span{display:block; font-size:9px; color:var(--ink-3); font-weight:700; margin-bottom:3px; letter-spacing:-.01em;}
   .invprev b{display:block; font-size:11.5px; font-weight:850; letter-spacing:-.035em; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .invprev b.up{color:#1F8A63;}
-  .invprev b.down{color:var(--red);}
+  .invprev b.up{color:var(--up);}
+  .invprev b.down{color:var(--down);}
   .invprev-note{font-size:10px; color:var(--ink-3); font-weight:600; margin:0 0 10px; line-height:1.5; letter-spacing:-.01em;}
   #ivDelete.arming{color:#fff; background:var(--red); text-decoration:none; border-radius:10px;}
 
@@ -2313,7 +2345,7 @@
       '<div class="prop-barlab"><span>매수가 <b>' + won(p.buy, {unit:false}) + '원</b></span>' +
         '<span>' + (v.preBuy ? '매수 전' : (v.gain >= 0 ? '차익 <b>' : '차손 <b>') + signedWon(v.gain).replace('+', '') + '원</b>') + '</span></div>' +
       '<div class="prop-bar"><i style="width:' + buyW.toFixed(1) + '%;background:#7C6FD1"></i>' +
-        '<i style="width:' + gainW.toFixed(1) + '%;background:' + (v.gain >= 0 ? '#2F8F7B' : '#D8544F') + '"></i></div>';
+        '<i style="width:' + gainW.toFixed(1) + '%;background:' + (v.gain >= 0 ? 'var(--up)' : 'var(--down)') + '"></i></div>';
 
     const dTxt = v.delta === null ? '—'
       : (v.delta === 0 ? '변동 없음' : (v.delta > 0 ? '▲ ' : '▼ ') + won(Math.abs(v.delta), {unit:false}) + '원');
@@ -2391,22 +2423,14 @@
           : r.key === 'pen' ? r.v - penPrev.v
           : r.v - pv[r.key]);
       const cls = d > 0 ? 'up' : (d < 0 ? 'down' : '');
-      const dtxt = !pv ? '—' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d)) + '');
-      const sub = (r.key === 'stock' || r.key === 'pen')
-        ? '<div class="psub">' + (r.key === 'stock' ? '일반 계좌' : 'ISA·연금저축·IRP·퇴직연금') +
-          ' · 원금 ' + won((r.key === 'stock' ? inv : pen).p) + ' · 평가 ' + won(r.v) + ' · 수익 ' +
-          signedWon((r.key === 'stock' ? inv : pen).g) + ' (' + signedPct((r.key === 'stock' ? inv : pen).rate) + ')</div>'
-        : (r.key === 'real'
-          ? '<div class="psub">' + propSubText(ym) + '</div>'
-          : ((ym === LAST_YM
-            ? '<div class="psub">' + SUBS.cash.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
-            : '')));
+      const dtxt = !pv ? '' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d)));
       return '<div class="prow">' +
         '<div class="prow-h"><span class="pdot" style="background:' + r.color + '"></span>' + r.name +
         '<b>' + won(r.v) + '</b></div>' +
         '<div class="pbar"><i style="width:' + (share*100).toFixed(1) + '%;background:' + r.color + '"></i></div>' +
-        '<div class="prow-f"><span class="' + cls + '">' + dtxt + '</span><span>비중 ' + pct(share) + '%</span></div>' +
-        sub + '</div>';
+        '<div class="prow-f">' + (dtxt ? '<span class="' + cls + '">' + dtxt + '</span>' : '') +
+          '<span class="pct-share">비중 ' + pct(share) + '%</span></div>' +
+        pfDetail(r, ym) + '</div>';
     }).join('');
 
     // 부채
@@ -2426,10 +2450,43 @@
     renderProp(ym);
     drawGrowth();
   }
-  function propSubText(ym) {
-    const v = propView(ym);
-    return esc(state.prop.name) + ' · 매수가 대비 ' +
-      (v.preBuy ? '—' : signedWon(v.gain) + ' 원 (' + signedPct(v.rate) + ')');
+  /* 손익 클래스 · 부호 있는 수익률 */
+  function gainCls(n) { return n > 0 ? 'up' : (n < 0 ? 'down' : ''); }
+  /* 부호를 명시한 수익률 (0 이면 그대로) */
+  function rateSign(rate) {
+    return (rate > 0 ? '+' : (rate < 0 ? '−' : '')) + pct(rate) + '%';
+  }
+  /* 자산 포트폴리오 : 항목별 하위 상세 (한 줄에 하나씩 읽히게) */
+  function pfDetail(r, ym) {
+    if (r.key === 'stock' || r.key === 'pen') {
+      const g = r.key === 'stock' ? investGroup(ym, 'broker') : investGroup(ym, 'pension');
+      const cls = gainCls(g.g);
+      return '<div class="pgrid">' +
+          '<div><span class="k">원금</span><span class="v">' + won(g.p) + '</span></div>' +
+          '<div><span class="k">평가</span><span class="v">' + won(g.v) + '</span></div>' +
+          '<div><span class="k">수익</span><span class="v ' + cls + '">' + signedWon(g.g) + ' 원</span>' +
+            '<i class="pbadge ' + cls + '">' + rateSign(g.rate) + '</i></div>' +
+        '</div>' +
+        '<div class="pcaption">' + (r.key === 'stock' ? '일반 계좌' : 'ISA·연금저축·IRP·퇴직연금') + '</div>';
+    }
+    if (r.key === 'real') {
+      const v = propView(ym);
+      const cls = v.preBuy ? '' : gainCls(v.gain);
+      return '<div class="pdetail">' +
+          '<div class="pitem"><span class="pn strong">' + esc(state.prop.name) + '</span>' +
+            '<span class="pm">매수 ' + won(state.prop.buy) + '</span></div>' +
+          '<div class="pitem"><span class="pn">매수가 대비</span>' +
+            (v.preBuy ? '<span class="pm">매수 전</span>'
+              : '<span class="pv ' + cls + '">' + signedWon(v.gain) + ' 원</span>' +
+                '<i class="pbadge ' + cls + '">' + signedPct(v.rate) + '</i>') +
+          '</div></div>';
+    }
+    /* 현금·예적금 : 계좌 하나당 한 줄 */
+    if (ym !== LAST_YM || !SUBS.cash.length) return '';
+    return '<div class="pdetail">' + SUBS.cash.map(function(s) {
+      return '<div class="pitem"><span class="pn">' + esc(s[0]) + '</span>' +
+        '<span class="pv">' + won(s[1]) + '</span></div>';
+    }).join('') + '</div>';
   }
 
   /* ────────────── 6-1. 투자 상세 ────────────── */
@@ -2490,10 +2547,12 @@
   function investTotals(ym) { return invSumOf(investItems(ym)); }
 
   function invSumBox(t) {
+    const cls = gainCls(t.g);
     return '<div><span>투자 원금</span><b>' + won(t.p) + '</b></div>' +
       '<div><span>평가금액</span><b>' + won(t.v) + '</b></div>' +
-      '<div><span>평가수익</span><b class="' + (t.g >= 0 ? 'up' : 'down') + '">' +
-        (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g)) + ' (' + pct(t.rate) + '%)</b></div>';
+      '<div><span>평가수익</span><b class="' + cls + '">' +
+        (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g)) + '</b>' +
+        '<i class="sumrate ' + cls + '">' + rateSign(t.rate) + '</i></div>';
   }
   function syncInvSegs() {
     ['invSeg', 'penSeg'].forEach(function(id) {
@@ -2529,7 +2588,7 @@
         '<div class="acchead"><b>' + esc(acct) + '</b>' +
           '<span class="accbadge">' + (pension ? list.length + '상품' : list.length + '종목') + '</span>' +
           '<span class="accsum">' + won(t.v) +
-            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + ' 원 (' + pct(t.rate) + '%)</small>' +
+            '<small class="' + gainCls(t.g) + '">' + signedWon(t.g) + ' 원 (' + rateSign(t.rate) + ')</small>' +
           '</span>' +
         '</div>' +
         list.map(function(i) {
@@ -2540,7 +2599,7 @@
               '<button type="button" class="icon-btn inv-edit" data-inv-edit="' + esc(i.id || '') + '" data-itype="' + i.type + '"' +
                 ' aria-label="' + esc(i.name) + ' 수정" title="이 종목 수정">✎</button></div>' +
             '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
-              '<span class="' + (i.g >= 0 ? 'up' : 'down') + '">' + signedWon(i.g) + ' 원 (' + pct(i.rate) + '%)</span></div>' +
+              '<span class="' + gainCls(i.g) + '">' + signedWon(i.g) + ' 원 (' + rateSign(i.rate) + ')</span></div>' +
           '</div>';
         }).join('') +
         '</div>';
@@ -2570,7 +2629,7 @@
           (g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
           '<b>' + won(g.v) + '</b></div>' +
         '<div class="invest-f"><span>원금 ' + won(g.p) + '</span>' +
-          '<span class="' + (gain >= 0 ? 'up' : 'down') + '">' + signedWon(gain) + ' 원 (' + pct(rate) + '%)</span></div>' +
+          '<span class="' + gainCls(gain) + '">' + signedWon(gain) + ' 원 (' + rateSign(rate) + ')</span></div>' +
         '<div class="invest-f accts"><span class="ibadge">' + g.accts.length + '계좌</span>' +
           '<span>' + g.accts.map(esc).join(' · ') + '</span></div>' +
         '</div>';
