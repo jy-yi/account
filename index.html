@@ -394,6 +394,9 @@
     cursor:pointer; display:grid; place-items:center; padding:0;
   }
   .tx .tx-btn:hover{border-color:var(--red); color:var(--red); background:var(--red-soft);}
+  /* 고정 지출 줄: ✎ 수정 + − 제외 버튼이 같이 있어 간격을 좁혀요 */
+  .tx.tx-fix{gap:8px;}
+  .tx.tx-fix .icon-btn{width:26px; height:26px; border-radius:9px; font-size:12px; font-weight:700; line-height:1;}
   .tx-empty{padding:18px 4px; text-align:center; font-size:11.5px; color:var(--ink-3); font-weight:600;}
   .exclbox{margin-top:12px; padding:12px; border-radius:14px; background:#FAF7F1; border:1px dashed #E7DFCF;}
   .exclbox h3{margin:0 0 6px; font-size:11px; color:#8A7A5E; font-weight:800; letter-spacing:-.01em;}
@@ -893,6 +896,7 @@
         <button type="submit" class="btn primary">저장</button>
       </div>
       <button type="button" class="btn-link" id="mfixReset" hidden>규칙 금액으로 되돌리기</button>
+      <button type="button" class="btn-link" id="mfixToRule">이번 달뿐 아니라 규칙 자체 수정 →</button>
     </form>
   </div>
 </div>
@@ -2235,14 +2239,20 @@
           '</div>';
       }
       const c = catOf(t.c);
-      return '<div class="tx">' +
+      const fixBtn = (t.k === 'f' && t.ruleId) ?
+        '<button class="icon-btn" data-mfix="' + t.ruleId + '" title="이번 달만 수정" aria-label="' + esc(t.n) + ' 이번 달만 수정">✎</button>' : '';
+      return '<div class="tx' + (fixBtn ? ' tx-fix' : '') + '">' +
         '<span class="te" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
         '<span class="tm"><b>' + (t.k === 'f' ? '<span class="ttag exp">고정</span>' : '') + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(t.m) + '</span></span>' +
         '<span class="ta">' + nf.format(t.a) + '원</span>' +
+        fixBtn +
         '<button class="tx-btn" data-id="' + t.id + '" data-k="e" title="공동 지출에서 제외" aria-label="' + esc(t.n) + ' 공동 지출에서 제외">−</button>' +
         '</div>';
     }).join('') : '<div class="tx-empty">이 필터에는 내역이 없어요.</div>';
 
+    Array.prototype.forEach.call(el('txList').querySelectorAll('[data-mfix]'), function(b) {
+      b.addEventListener('click', function(){ openMonthFix(b.getAttribute('data-mfix')); });
+    });
     Array.prototype.forEach.call(el('txList').querySelectorAll('.tx-btn'), function(b) {
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
@@ -2667,6 +2677,12 @@
     closeMonthFix();
     renderAll();
     toast('규칙 금액으로 되돌렸어요');
+  });
+  el('mfixToRule').addEventListener('click', function() {
+    if (!mfixRuleId) return;
+    const id = mfixRuleId;
+    closeMonthFix();
+    openRuleModal(id);
   });
 
   function closeModal() { el('modal').hidden = true; }
