@@ -3911,8 +3911,7 @@
   /* ────────────── 11-6. 보유 종목 추가·수정·삭제 ────────────── */
   let invEditId = null;    // 수정 중인 종목 id (없으면 추가)
   let invType = 'broker';  // 모달에서 고른 구분
-  let invDelArm = 0;       // '이 종목 삭제' 두 번 누르기 확인용
-  let invDelTimer = null;
+  let invDelArm = 0;       // '이 종목 삭제' 두 번 누르기 확인용 (모달을 닫으면 풀려요)
 
   function invAccts(type) {
     const out = [];
@@ -3970,7 +3969,6 @@
     invEditId = rec ? rec.id : null;
     invType = rec ? rec.type : (type === 'pension' ? 'pension' : 'broker');
     invDelArm = 0;
-    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
     el('ivDelete').textContent = '이 종목 삭제';
     el('ivDelete').classList.remove('arming');
     el('ivDelete').hidden = !rec;
@@ -3993,7 +3991,6 @@
     el('invModal').hidden = true;
     invEditId = null;
     invDelArm = 0;
-    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
     el('ivDelete').textContent = '이 종목 삭제';
     el('ivDelete').classList.remove('arming');
   }
@@ -4079,15 +4076,10 @@
     if (!invDelArm) {
       invDelArm = 1;
       el('ivDelete').textContent = rec.name + ' 삭제할까요? 한 번 더 누르면 지워져요';
+      invDelArm = 1;
       el('ivDelete').classList.add('arming');
-      invDelTimer = setTimeout(function() {
-        invDelArm = 0;
-        el('ivDelete').textContent = '이 종목 삭제';
-        el('ivDelete').classList.remove('arming');
-      }, 8000);
       return;
     }
-    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
     state.invest = state.invest.filter(function(x){ return x.id !== rec.id; });
     save();
     closeInvModal();
