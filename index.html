@@ -5111,7 +5111,8 @@
     b.className = 'btn-snap';
     b.textContent = '✎ 현금·부채';
     b.addEventListener('click', openSnapModal);
-    anchor.parentNode.appendChild(b);
+    if (anchor.nextSibling) anchor.parentNode.insertBefore(b, anchor.nextSibling);
+    else anchor.parentNode.appendChild(b);
   }
   function snapRowsHtml(kind) {
     const list = snapDraft[kind] || [];
@@ -5208,7 +5209,8 @@
 
   /* 디버깅·검증용 (이 브라우저 안의 화면 상태만 노출해요) */
   window.__householdLedger = {
-    DB: DB, state: state, applyModel: applyModel, renderAll: renderAll, refresh: refresh
+    DB: DB, state: state, applyModel: applyModel, renderAll: renderAll, refresh: refresh,
+    openSnap: openSnapModal, mountSnap: mountSnapBtn
   };
 
   /* ══════════════ 12. 시작 ══════════════ */
