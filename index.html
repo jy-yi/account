@@ -1869,7 +1869,7 @@
     pickerYear: 2026,
     brand: { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name },   // 가계부 이름·이모지
     budgets: null,    // 카테고리별 예산 (아래에서 기본값으로 채움)
-    collapsed: {},    // 접힌 카드 (키 -> true)
+    collapsed: {},    // 카드 접힘 (키 -> true 접음 / false 펼침, 기록 없으면 기본값)
     prop: null,       // 부동산 매수가·시세 (아래에서 기본값으로 채움)
     edits: {},        // 샘플·추가 내역 수정분 (id -> {d,n,c,m,a})
     cats: null,       // 지출 카테고리 목록 (추가·수정·삭제 가능)
@@ -1943,7 +1943,9 @@
         }
         if (s.collapsed && typeof s.collapsed === 'object') {
           Object.keys(s.collapsed).forEach(function(k) {
-            if (s.collapsed[k] === true && String(k).indexOf(':') > 0) state.collapsed[k] = true;
+            const v = s.collapsed[k];
+            /* true = 접음, false = 내가 펼침 (기본 접힘 카드도 펼친 상태를 기억해요) */
+            if (typeof v === 'boolean' && String(k).indexOf(':') > 0) state.collapsed[k] = v;
           });
         }
         if (s.prop && typeof s.prop === 'object') {
@@ -4416,7 +4418,17 @@
     const t = card.querySelector('.card-head > h2, .netcard-top > .eyebrow');
     return (panel ? panel.id : 'card') + ':' + (t ? t.textContent.trim() : 'x');
   }
-  function isCollapsed(key) { return state.collapsed[key] === true; }
+  /* 자산 탭 하단 4개 카드는 첫 진입 시 기본으로 접어 둬요 (직접 누른 상태가 있으면 그게 우선) */
+  const DEFAULT_COLLAPSED = {
+    'view-asset:주식·투자 상세': true,
+    'view-asset:연금·절세 상세': true,
+    'view-asset:부동산 상세': true,
+    'view-asset:부채': true
+  };
+  function isCollapsed(key) {
+    if (Object.prototype.hasOwnProperty.call(state.collapsed, key)) return state.collapsed[key] === true;
+    return DEFAULT_COLLAPSED[key] === true;
+  }
   function applyCollapsed() {
     Array.prototype.forEach.call(document.querySelectorAll('.card[data-card]'), function(card) {
       const key = card.getAttribute('data-card');
@@ -4431,7 +4443,8 @@
     });
   }
   function setCollapsed(key, on) {
-    if (on) state.collapsed[key] = true; else delete state.collapsed[key];
+    /* 펼칠 때도 false 로 남겨서 새로고침 후에도 '내가 펼친 카드'로 유지돼요 */
+    state.collapsed[key] = !!on;
     save();
     applyCollapsed();
   }
