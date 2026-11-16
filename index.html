@@ -3523,11 +3523,20 @@
   /* 카테고리 목록을 앱 전체에 적용 */
   function applyCats(nextCats, extraRemoved) {
     const prevIds = CATS.map(function(c){ return c.id; });
-    const nextIds = nextCats.map(function(c){ return c.id; });
-    const fallback = (nextCats.filter(function(c){ return c.id === 'etc'; })[0] || nextCats[0]).id;
     const gone = prevIds.concat(extraRemoved || []).filter(function(id, i, arr) {
-      return arr.indexOf(id) === i && nextIds.indexOf(id) < 0;
+      return arr.indexOf(id) === i && !nextCats.some(function(c){ return c.id === id; });
     });
+    // 내역이 남아 있는 카테고리를 지우면 「기타」로 모아요 (없으면 새로 만듬)
+    const orphaned = gone.filter(function(id) { return catTxCount(id) > 0; });
+    let fb = nextCats.filter(function(c){ return c.id === 'etc'; })[0] ||
+             nextCats.filter(function(c){ return /^기타/.test(c.label); })[0] || null;
+    let madeEtc = false;
+    if (orphaned.length && !fb) {
+      fb = { id: 'etc', label: '기타', emoji: '🧩', color: '#94A85C', fixed: false, budget: 0 };
+      nextCats.push(fb);
+      madeEtc = true;
+    }
+    const fallback = (fb || nextCats[0]).id;
     gone.forEach(function(id) { if (id !== fallback) state.catRemap[id] = fallback; });
     state.cats = nextCats.map(function(c) {
       return { id: c.id, label: c.label, emoji: c.emoji, color: c.color, fixed: !!c.fixed };
@@ -3546,9 +3555,12 @@
     save();
     closeBudgetModal();
     renderAll();
+    const fbLabel = catOf(fallback).label;
     toast(gone.length
-      ? '카테고리를 정리했어요 · ' + gone.length + '개를 "' + catOf(fallback).label + '"로 옮겼어요'
-      : '카테고리와 예산을 저장했어요 · 총 변동 예산 ' + won(budgetTotal()));
+      ? '카테고리를 정리했어요 · ' + (orphaned.length
+          ? orphaned.length + '개 항목의 내역은 "' + fbLabel + '"로 옮겼어요'
+          : '지운 항목의 내역이 없어 바로 정리됐어요')
+      : (madeEtc ? '저장했어요 · 내역은 "기타"로 모았어요' : '카테고리와 예산을 저장했어요 · 총 변동 예산 ' + won(budgetTotal())));
   }
   function addDraftCat() {
     const err = el('budgetErr');
@@ -3617,15 +3629,15 @@
       toast('카테고리는 최소 1개는 남겨야 해요');
       return;
     }
-    const fallback = (budgetDraft.cats.filter(function(x){ return x.id === 'etc'; })[0] ||
-      budgetDraft.cats.filter(function(x){ return x.id !== id; })[0]).label;
     const n = catTxCount(id);
-    budgetDraft.cats = budgetDraft.cats.filter(function(x){ return x.id !== id; });
+    const restLabels = budgetDraft.cats.filter(function(x){ return x.id !== id; });
+    const hasEtc = restLabels.some(function(x){ return x.id === 'etc' || /^기타/.test(x.label); });
+    budgetDraft.cats = restLabels;
     budgetDraft.removed.push(id);
     renderBudgetFields();
     syncBudgetDraft();
     toast(n
-      ? '"' + c.label + '" 목록에서 뺐어요 · 기존 ' + n + '건은 "' + fallback + '"로 옮길 준비를 했어요'
+      ? '"' + c.label + '" 목록에서 뺐어요 · 기존 ' + n + '건은 ' + (hasEtc ? '"기타"로' : '"기타"로 모을게요') + ' 옮겨요'
       : '"' + c.label + '" 카테고리를 뺄 준비를 했어요 · 저장하면 적용돼요');
   });
   el('newCatPresets').addEventListener('click', function(e) {
