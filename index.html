@@ -2279,13 +2279,14 @@
     const p = state.prop;
     const price = realOf(ym);
     const buyYM = propBuyYM();
-    const preBuy = MONTHS.indexOf(buyYM) >= 0 && ym < buyYM;
+    const preBuy = !!buyYM && ym < buyYM;
     const gain = price - p.buy;
     const rate = p.buy ? gain / p.buy : 0;
     const prevYm = relYM(ym, -1);
     const delta = (SNAP[prevYm] && !preBuy) ? price - realOf(prevYm) : null;
-    const mi = MONTHS.indexOf(ym), bi = MONTHS.indexOf(buyYM);
-    const months = (mi >= 0 && bi >= 0) ? Math.max(0, mi - bi) : 0;
+    const months = (/^\d{4}-\d{2}/.test(String(p.buyDate || '')) && /^\d{4}-\d{2}$/.test(ym))
+      ? Math.max(0, (+ym.slice(0, 4) - +String(p.buyDate).slice(0, 4)) * 12 + (+ym.slice(5, 7) - +String(p.buyDate).slice(5, 7)))
+      : 0;
     return { price: price, gain: gain, rate: rate, preBuy: preBuy, delta: delta, months: months, buyYM: buyYM };
   }
   function signedWon(n) {
@@ -2361,9 +2362,9 @@
     el('netSplit').innerHTML =
       '<div><span>총자산</span><b>' + won(total) + '</b></div>' +
       '<div><span>총부채</span><b>' + won(snap.debt) + '</b></div>' +
-      '<div><span>저축률</span><b>' + pct(saveRate) + '%</b></div>';
-    el('incomeHint').innerHTML = '이번 달 공동 수입 <b>' + won(incNow) + '</b> (' + visibleIncome(ym).length + '건) · 고정 저축 ' +
-      won(saveNow) + ' → 저축률 ' + pct(saveRate) + '%';
+      '<div><span>저축률</span><b>' + (saveNow > 0 ? pct(saveRate) + '%' : '—') + '</b></div>';
+    el('incomeHint').innerHTML = '이번 달 공동 수입 <b>' + won(incNow) + '</b> (' + visibleIncome(ym).length + '건) · ' +
+      (saveNow > 0 ? '고정 저축 ' + won(saveNow) + ' → 저축률 ' + pct(saveRate) + '%' : '고정 저축 미설정');
 
     // 이번 달 증식 칩
     el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true}) + '';
@@ -3605,7 +3606,7 @@
   });
   document.addEventListener('keydown', function(e) {
     if (e.key !== 'Escape') return;
-    closeModal(); closeRuleModal(); closeMonthFix(); closeBrandModal(); closeBudgetModal(); closePropModal(); closePicker();
+    closeModal(); closeRuleModal(); closeMonthFix(); closeBrandModal(); closeBudgetModal(); closePropModal(); closeSnapModal(); closePicker();
   });
 
   el('addForm').addEventListener('submit', function(e) {
@@ -5189,7 +5190,7 @@
       });
     });
     const gone = orig.filter(function(r){ return !keep[r.id]; }).map(function(r){ return r.id; });
-    closeSnapModal();
+    el('snapErr').hidden = true;
     commit(async function() {
       for (let i = 0; i < upd.length; i++) {
         const r = await DB.sb.from('asset_snapshots').update({ name: upd[i][1].name, amount: upd[i][1].amount }).eq('id', upd[i][0]);
@@ -5204,7 +5205,12 @@
         if (r.error) return r;
       }
       return { error: null };
-    }, '현금·부채 금액을 저장했어요');
+    }, '현금·부채 금액을 저장했어요').then(function(ok) {
+      if (ok) { closeSnapModal(); return; }
+      const e = el('snapErr');
+      e.textContent = '저장하지 못했어요 · 잠시 뒤 다시 시도해 주세요';
+      e.hidden = false;
+    });
   });
 
   /* 디버깅·검증용 (이 브라우저 안의 화면 상태만 노출해요) */
