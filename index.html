@@ -466,6 +466,7 @@
   .tx .ttag.exp{background:#F3F0E9; color:#8A8175;}
   /* modal kind toggle */
   .kindtoggle{display:flex; gap:4px; padding:4px; background:#F4F1EA; border-radius:14px; margin:0 0 14px;}
+  .kindtoggle[hidden]{display:none;}
   .kindtoggle button{
     flex:1; border:0; background:transparent; font:inherit; font-size:13px; font-weight:800;
     color:var(--ink-3); padding:10px 8px; border-radius:11px; cursor:pointer; letter-spacing:-.01em; transition:.16s ease;
@@ -745,6 +746,10 @@
       <div class="card-head">
         <h2>연금·절세 상세</h2>
         <span class="muted" id="penNote"></span>
+      </div>
+      <div class="invseg" id="penSeg" role="group" aria-label="연금·절세 보기 방식">
+        <button type="button" data-invview="acct" class="on" aria-pressed="true">계좌별 보기</button>
+        <button type="button" data-invview="merged" aria-pressed="false">종목 합산</button>
       </div>
       <div class="invest-sum" id="penSum"></div>
       <div id="penList"></div>
@@ -2150,16 +2155,21 @@
       '<div><span>평가수익</span><b class="' + (t.g >= 0 ? 'up' : 'down') + '">' +
         (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g)) + ' (' + pct(t.rate) + '%)</b></div>';
   }
+  function syncInvSegs() {
+    ['invSeg', 'penSeg'].forEach(function(id) {
+      Array.prototype.forEach.call(el(id).querySelectorAll('button'), function(b) {
+        const on = b.getAttribute('data-invview') === state.invView;
+        b.classList.toggle('on', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+  }
   function renderInvest(ym) {
     const all = investItems(ym).filter(function(i){ return i.type === 'broker'; });
     const t = invSumOf(all);
     el('investNote').textContent = ymLabel(ym) + ' 평가 · 일반 계좌';
     el('investSum').innerHTML = invSumBox(t);
-    Array.prototype.forEach.call(el('invSeg').querySelectorAll('button'), function(b) {
-      const on = b.getAttribute('data-invview') === state.invView;
-      b.classList.toggle('on', on);
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-    });
+    syncInvSegs();
     el('investList').innerHTML = (state.invView === 'merged')
       ? mergedRows(all)
       : acctRows(all, false);
@@ -2179,7 +2189,7 @@
         '<div class="acchead"><b>' + esc(acct) + '</b>' +
           '<span class="accbadge">' + (pension ? '절세' : list.length + '종목') + '</span>' +
           '<span class="accsum">' + won(t.v) +
-            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + ' (' + pct(t.rate) + '%)</small>' +
+            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + '원 (' + pct(t.rate) + '%)</small>' +
           '</span>' +
         '</div>' +
         list.map(function(i) {
@@ -2232,7 +2242,8 @@
     items.forEach(function(i){ if (accounts.indexOf(i.acct) < 0) accounts.push(i.acct); });
     el('penNote').textContent = ymLabel(ym) + ' 평가 · 계좌 ' + accounts.length + '개';
     el('penSum').innerHTML = invSumBox(t);
-    el('penList').innerHTML = acctRows(items, true);
+    syncInvSegs();
+    el('penList').innerHTML = (state.invView === 'merged') ? mergedRows(items) : acctRows(items, true);
   }
 
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
@@ -3067,7 +3078,7 @@
     const meta = LEDGER[state.ym];
     editTarget = { id: id, k: t.k };
     modalKind = isInc ? 'inc' : 'exp';
-    el('fDate').value = state.ym + '-' + t.d;
+    el('fDate').value = state.ym + '-' + String(t.d).slice(-2);
     el('fDate').min = state.ym + '-01';
     el('fDate').max = state.ym + '-' + String(meta.days).padStart(2, '0');
     el('fAmount').value = t.a;
@@ -3771,14 +3782,17 @@
       drawGrowth();
     });
   });
-  Array.prototype.forEach.call(el('invSeg').querySelectorAll('button'), function(b) {
-    b.addEventListener('click', function() {
-      const v = b.getAttribute('data-invview');
-      if (state.invView === v) return;
-      state.invView = v;
-      save();
-      renderInvest(state.ym);
-      toast(v === 'merged' ? '종목 합산으로 봐요 · 같은 종목은 한 줄로 묶었어요' : '계좌별로 봐요 · 계좌마다 원금·평가·수익률을 보여줘요');
+  ['invSeg', 'penSeg'].forEach(function(id) {
+    Array.prototype.forEach.call(el(id).querySelectorAll('button'), function(b) {
+      b.addEventListener('click', function() {
+        const v = b.getAttribute('data-invview');
+        if (state.invView === v) return;
+        state.invView = v;
+        save();
+        renderInvest(state.ym);
+        renderPension(state.ym);
+        toast(v === 'merged' ? '종목 합산으로 봐요 · 같은 종목은 한 줄로 묶었어요' : '계좌별로 봐요 · 계좌마다 원금·평가·수익률을 보여줘요');
+      });
     });
   });
 
