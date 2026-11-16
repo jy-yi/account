@@ -692,11 +692,129 @@
   .invprev b.down{color:var(--red);}
   .invprev-note{font-size:10px; color:var(--ink-3); font-weight:600; margin:0 0 10px; line-height:1.5; letter-spacing:-.01em;}
   #ivDelete.arming{color:#fff; background:var(--red); text-decoration:none; border-radius:10px;}
+
+  /* ── 로그인 게이트 : 로그인 전에는 가계부를 그리지 않아요 ── */
+  [hidden]{display:none !important;}
+  .gate{min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 18px calc(28px + env(safe-area-inset-bottom));}
+  .gate-card{
+    width:min(420px,100%); background:rgba(255,255,255,.94); border:1px solid var(--line);
+    border-radius:26px; padding:26px 22px 20px; text-align:center;
+    box-shadow:0 1px 2px rgba(35,38,43,.04), 0 26px 54px -34px rgba(35,38,43,.5);
+    -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px);
+  }
+  .gate-mark{
+    width:56px; height:56px; margin:0 auto 12px; border-radius:19px; display:grid; place-items:center; font-size:28px;
+    background:linear-gradient(160deg,#FFFFFF 0%, #EAF3EE 100%);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.9), 0 10px 24px -16px rgba(35,38,43,.5);
+  }
+  .gate-title{font-size:19px; font-weight:850; letter-spacing:-.03em; margin:0 0 6px;}
+  .gate-sub2{font-size:11.5px; color:var(--ink-3); font-weight:600; line-height:1.65; margin:0 0 18px; letter-spacing:-.01em;}
+  .gate-field{text-align:left; margin-bottom:10px;}
+  .gate-field label{display:block; font-size:11px; font-weight:800; color:var(--ink-2); margin-bottom:5px;}
+  .gate-field input{
+    width:100%; font:inherit; font-size:14px; font-weight:600; padding:13px 14px; border-radius:14px;
+    border:1px solid var(--line); background:#FCFAF6; color:var(--ink); -webkit-appearance:none; appearance:none;
+  }
+  .gate-field input:focus{outline:2px solid #CFE7DE; border-color:#B9DCCF; background:#fff;}
+  .gate-keep{display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin:2px 0 14px; cursor:pointer;}
+  .gate-keep input{width:17px; height:17px; accent-color:#2F8F7B;}
+  .gate-err{color:#A83A35; background:var(--red-soft); border-radius:12px; padding:9px 11px; font-size:11px; font-weight:700; line-height:1.55; margin:0 0 12px; text-align:left;}
+  .gate-btn{
+    width:100%; border:0; border-radius:15px; padding:14px; background:var(--teal); color:#fff;
+    font:inherit; font-size:14px; font-weight:850; letter-spacing:-.01em; cursor:pointer;
+    box-shadow:0 12px 24px -16px rgba(47,143,123,.95);
+  }
+  .gate-btn:disabled{opacity:.6; cursor:default;}
+  .gate-sample{
+    width:100%; margin-top:6px; border:0; background:transparent; color:var(--ink-3); font:inherit; font-size:11.5px;
+    font-weight:700; text-decoration:underline; text-underline-offset:3px; padding:10px; cursor:pointer;
+  }
+  .gate-sample:hover{color:var(--ink-2);}
+  .gate-logout{
+    width:100%; margin-top:4px; border:1px solid var(--line); background:#fff; border-radius:14px; padding:12px;
+    font:inherit; font-size:12.5px; font-weight:800; color:var(--ink-2); cursor:pointer;
+  }
+  .gate-foot{font-size:10px; color:#A9AFAF; font-weight:600; margin:12px 0 0; line-height:1.6;}
+  .gate-sql{
+    text-align:left; font-family:ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; line-height:1.65;
+    background:#FBF8F1; border:1px solid var(--line-2); border-radius:13px; padding:11px; margin:0 0 12px;
+    white-space:pre-wrap; word-break:break-all; color:var(--ink-2); max-height:180px; overflow:auto;
+  }
+  /* ── 헤더 우측 : 접속 상태 · 로그아웃 ── */
+  .head{position:relative;}
+  .head-status{position:absolute; right:0; top:6px; display:flex; align-items:center; gap:5px; z-index:5;}
+  .hbadge{
+    font-size:9.5px; font-weight:800; letter-spacing:-.01em; padding:5px 9px; border-radius:999px;
+    background:#fff; border:1px solid var(--line); color:var(--ink-2); white-space:nowrap;
+    box-shadow:0 6px 14px -12px rgba(35,38,43,.6);
+  }
+  .hbadge.live{background:var(--teal-soft); border-color:#CFE7DE; color:#1F7A63;}
+  .hbadge.sample{background:#F6F1E8; border-color:var(--line); color:#8A7A5E;}
+  .hbadge.off{background:var(--red-soft); border-color:#F3D6D3; color:#A83A35;}
+  .hlogout{
+    border:1px solid var(--line); background:#fff; color:var(--ink-3); font:inherit; font-size:9.5px; font-weight:800;
+    padding:5px 8px; border-radius:999px; cursor:pointer;
+  }
+  .hlogout:hover{color:var(--red); border-color:#F3D6D3; background:var(--red-soft);}
+  /* ── 현금·부채 금액 수정 ── */
+  .btn-snap{
+    border:1px solid var(--line); background:#fff; color:var(--ink-2); font:inherit; font-size:10px; font-weight:800;
+    padding:6px 9px; border-radius:999px; cursor:pointer; white-space:nowrap; flex:none;
+  }
+  .btn-snap:hover{color:var(--teal); border-color:#CFE7DE; background:var(--teal-soft);}
+  .snapsec{margin:0 0 14px;}
+  .snapsec h3{font-size:11.5px; font-weight:850; color:var(--ink-2); margin:0 0 7px;}
+  .snaprow{display:flex; gap:7px; align-items:center; margin-bottom:7px;}
+  .snaprow input{
+    font:inherit; font-size:13px; font-weight:600; padding:10px 11px; border-radius:12px;
+    border:1px solid var(--line); background:#FCFAF6; color:var(--ink); -webkit-appearance:none; appearance:none; min-width:0;
+  }
+  .snaprow input:focus{outline:2px solid #CFE7DE; border-color:#B9DCCF; background:#fff;}
+  .snaprow .snap-name{flex:1;}
+  .snaprow .snap-amt{width:118px; text-align:right; font-variant-numeric:tabular-nums;}
+  .snapadd{
+    width:100%; border:1px dashed #CFE3DA; background:#F7FBF9; color:#1F7A63; font:inherit; font-size:11.5px; font-weight:850;
+    padding:10px; border-radius:12px; cursor:pointer;
+  }
 </style>
 </head>
 <body>
-<div class="app">
+<!-- ── 로그인 게이트 : 로그인하지 않으면 아래 가계부는 화면에 그리지 않아요 ── -->
+<section class="gate" id="gate">
+  <form class="gate-card" id="loginForm" novalidate>
+    <div class="gate-mark" aria-hidden="true">🏠</div>
+    <h1 class="gate-title">우리 부부 공동 가계부</h1>
+    <p class="gate-sub2">둘만 보는 가계부예요. 로그인하면 두 사람이 같은 기록을 실시간으로 봐요.</p>
+    <div class="gate-field">
+      <label for="loginEmail">이메일</label>
+      <input type="email" id="loginEmail" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="you@example.com" />
+    </div>
+    <div class="gate-field">
+      <label for="loginPw">비밀번호</label>
+      <input type="password" id="loginPw" autocomplete="current-password" placeholder="••••••••" />
+    </div>
+    <label class="gate-keep"><input type="checkbox" id="loginKeep" checked /> <span>이 기기에서 로그인 유지</span></label>
+    <p class="gate-err" id="loginErr" hidden></p>
+    <button class="gate-btn" type="submit" id="loginBtn">로그인</button>
+    <button class="gate-sample" type="button" id="btnSample">샘플 체험 모드로 둘러보기</button>
+    <p class="gate-foot">계정은 부부 두 분만 쓸 수 있어요 · 새로 가입은 막혀 있어요</p>
+  </form>
+  <div class="gate-card" id="memberNotice" hidden>
+    <div class="gate-mark" aria-hidden="true">🔗</div>
+    <h1 class="gate-title">한 단계만 남았어요</h1>
+    <p class="gate-sub2">아직 가계부 멤버 연결 전입니다. SQL에서 부부 멤버 연결을 완료해 주세요.</p>
+    <pre class="gate-sql" id="memberSql"></pre>
+    <button class="gate-sample" type="button" id="btnSample2">샘플 체험 모드로 둘러보기</button>
+    <button class="gate-logout" type="button" id="btnGateLogout">로그아웃</button>
+  </div>
+</section>
+
+<div class="app" id="appRoot" hidden>
   <div class="head">
+    <div class="head-status" id="headStatus" hidden>
+      <span class="hbadge" id="connBadge" hidden>🟢 실시간 동기화</span>
+      <button class="hlogout" type="button" id="btnLogout" hidden>로그아웃</button>
+    </div>
     <button class="mark" type="button" id="btnBrandBadge" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">
       <span id="headEmoji">🏠</span><span class="badge-pen" aria-hidden="true">✎</span>
     </button>
@@ -704,7 +822,7 @@
       <span class="title-text" id="headTitleText">우리집 공동 가계부</span>
       <button class="title-pen" type="button" id="btnBrandPen" aria-label="가계부 이름·이모지 바꾸기" title="가계부 이름·이모지 바꾸기">✎</button>
     </h1>
-    <p class="sub">샘플 프로토타입 · 마지막 업데이트 2026-11-16</p>
+    <p class="sub" id="headSub">샘플 프로토타입 · 마지막 업데이트 2026-11-16</p>
   </div>
 
   <div class="toolbar">
@@ -902,7 +1020,7 @@
   </section>
 </div>
 
-<div class="dock">
+<div class="dock" id="dockRoot" hidden>
   <div class="dock-in">
     <button class="btn ghost" id="btnCopy">📋 피클에게 보내기</button>
     <button class="btn primary" id="btnAdd">＋ 내역 추가</button>
@@ -989,6 +1107,31 @@
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- 현금·부채 금액 수정 (실시간 DB 모드 전용) -->
+<div class="modal" id="snapModal" hidden>
+  <div class="bd" data-close-snap></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="snapTitle">
+    <div class="grab"></div>
+    <h2 id="snapTitle">현금·부채 금액</h2>
+    <p class="hint" id="snapHint">이 달 기준으로 넣으면 순자산·자산 포트폴리오에 바로 반영돼요.</p>
+    <div class="snapsec">
+      <h3>💧 현금·예적금</h3>
+      <div id="snapCashRows"></div>
+      <button type="button" class="snapadd" id="snapAddCash">＋ 계좌 추가</button>
+    </div>
+    <div class="snapsec">
+      <h3>📉 부채</h3>
+      <div id="snapDebtRows"></div>
+      <button type="button" class="snapadd" id="snapAddDebt">＋ 부채 추가</button>
+    </div>
+    <p class="err" id="snapErr" hidden></p>
+    <div class="acts">
+      <button type="button" class="btn ghost" data-close-snap>취소</button>
+      <button type="button" class="btn primary" id="snapSave">저장</button>
+    </div>
+  </div>
+</div>
 
 <!-- 고정 지출 규칙 모달 -->
 <div class="modal" id="ruleModal" hidden>
@@ -1261,6 +1404,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 (function(){
   "use strict";
@@ -1805,6 +1949,7 @@
   });
 
   function save() {
+    if (DB.mode === 'live') return;   // 실시간 DB 모드에서는 실제 데이터를 기기 저장소에 남기지 않아요
     try {
       localStorage.setItem(STORE_KEY, JSON.stringify({
         ym: state.ym, tab: state.tab, excluded: state.excluded,
@@ -1872,6 +2017,10 @@
     return meta.status === 'ongoing' ? meta.elapsed : meta.days;
   }
   function ruleOverride(rule, ym) {
+    if (DB.mode === 'live') {
+      const t = (DB.byYm[ym] || []).filter(function(x){ return x.ruleId === rule.id; })[0];
+      return t ? { d: +String(t.d).slice(3), a: t.a } : null;
+    }
     return (state.overrides[ym] && state.overrides[ym][rule.id]) || null;
   }
   function ruleAmount(rule, ym) {
@@ -1903,11 +2052,18 @@
   function upcomingFixed(ym) {
     const meta = LEDGER[ym];
     if (!meta || meta.status !== 'ongoing') return [];
+    if (DB.mode === 'live') {
+      const have = {};
+      (DB.byYm[ym] || []).forEach(function(t){ if (t.ruleId) have[t.ruleId] = true; });
+      return state.rules.filter(function(r){ return r.on && ruleActiveIn(r, ym) && !have[r.id] && r.day > meta.elapsed; })
+        .map(function(r){ return { rule: r, day: r.day, a: r.amount }; });
+    }
     const lim = meta.elapsed;
     return state.rules.filter(function(r){ return r.on && ruleDay(r, ym) > lim; })
       .map(function(r){ return { rule: r, day: ruleDay(r, ym), a: ruleAmount(r, ym) }; });
   }
   function monthTxs(ym) {
+    if (DB.mode === 'live') return (DB.byYm[ym] || []).slice();
     const meta = LEDGER[ym];
     if (!meta) return [];
     const base = meta.txs.map(function(t, i) {
@@ -1937,6 +2093,7 @@
   }
   /* ── 수입 내역 ── */
   function monthIncomeTxs(ym) {
+    if (DB.mode === 'live') return (DB.incByYm[ym] || []).slice();
     const meta = LEDGER[ym];
     if (!meta) return [];
     const base = (meta.incomes || []).map(function(t, i) {
@@ -2028,7 +2185,7 @@
     el('headEmoji').textContent = b.emoji;
     el('headTitleText').textContent = b.name;
     el('headTitle').setAttribute('aria-label', b.name);
-    document.title = b.emoji + ' ' + b.name + ' · 샘플 프로토타입';
+    document.title = b.emoji + ' ' + b.name + (DB.mode === 'live' ? ' · 부부 공동 가계부' : ' · 샘플 프로토타입');
     const lbl = '가계부 이름·이모지 바꾸기 (' + b.emoji + ' ' + b.name + ')';
     ['btnBrandBadge', 'btnBrandPen'].forEach(function(id) {
       el(id).setAttribute('aria-label', lbl);
@@ -2063,6 +2220,7 @@
     save();
     closeBrandModal();
     renderBrand();
+    if (DB.mode === 'live') DB.saveBrand(emoji, name);
   }
 
   /* ── 연/월 피커 ── */
@@ -2098,6 +2256,7 @@
     closePicker();
     save();
     renderAll();
+    if (DB.mode === 'live') DB.onMonth(ym);
   }
 
   /* ────────────── 6. 렌더 : 자산 탭 ────────────── */
@@ -2159,7 +2318,7 @@
       : (v.delta === 0 ? '변동 없음' : (v.delta > 0 ? '▲ ' : '▼ ') + won(Math.abs(v.delta), {unit:false}) + '원');
     const meta = [
       { k: '물건', v: state.prop.name, cls: '' },
-      { k: '면적', v: PROP_AREA, cls: '' },
+      { k: '면적', v: state.prop.area || PROP_AREA, cls: '' },
       { k: '매수일', v: buyDateLabel(), cls: '' },
       { k: '시세 기준', v: ymLabel(ym) + ' 실거래', cls: '' },
       { k: '전월 대비', v: dTxt, cls: v.delta > 0 ? 'up' : (v.delta < 0 ? 'down' : '') },
@@ -2238,7 +2397,7 @@
           signedWon((r.key === 'stock' ? inv : pen).g) + ' (' + signedPct((r.key === 'stock' ? inv : pen).rate) + ')</div>'
         : (r.key === 'real'
           ? '<div class="psub">' + propSubText(ym) + '</div>'
-          : ((ym === '2026-11'
+          : ((ym === LAST_YM
             ? '<div class="psub">' + SUBS.cash.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
             : '')));
       return '<div class="prow">' +
@@ -2254,7 +2413,7 @@
     el('debtNote').textContent = hasPrev
       ? (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 상환' : '이번 달 ' + won(debtD) + ' 증가')
       : '';
-    el('debtList').innerHTML = (ym === '2026-11')
+    el('debtList').innerHTML = (ym === LAST_YM)
       ? SUBS.debt.map(function(d) {
           return '<div class="debtrow"><span>' + d[0] + '</span><b>' + won(d[1]) + '</b></div>';
         }).join('')
@@ -2279,6 +2438,15 @@
     });
   }
   function investItems(ym) {
+    if (DB.mode === 'live') {
+      return (DB.invByYm[ym] || []).map(function(it) {
+        return {
+          id: it.id, acct: it.acct, type: it.type, name: it.name, sub: invSubText(it),
+          units: invQtyText(it.qty), p: it.principal, v: it.value,
+          g: it.value - it.principal, rate: it.principal ? (it.value - it.principal) / it.principal : 0
+        };
+      });
+    }
     const baseTotal = invBaseTotal();
     const isBase = (ym === INVEST_BASE);
     const target = SNAP[ym] ? SNAP[ym].stock : baseTotal;
@@ -2306,6 +2474,7 @@
     return state.invest.reduce(function(s,i){ return s + (i.value || 0); }, 0);
   }
   function stockOf(ym) {
+    if (DB.mode === 'live') return SNAP[ym] ? SNAP[ym].stock : 0;
     if (ym === INVEST_BASE) return invBaseTotal();
     return SNAP[ym] ? SNAP[ym].stock : invBaseTotal();
   }
@@ -2566,7 +2735,7 @@
     const remainAfterFixed = remain - upSum;
     el('settleList').innerHTML =
       row('💰','공동 수입', incList.length + '건 · 부부 합산 세후', won(inc) + '') +
-      row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') +
+      (meta.save > 0 ? row('🏦','고정 저축','적금·청약·연금·ETF 자동', '−' + won(meta.save) + '') : '') +
       row('📌','고정 지출','자동 규칙 ' + fixedList.length + '건' + (upcoming.length ? ' · 예정 ' + nf.format(upSum) + '원' : ''), '−' + won(fixedSpent) + '') +
       row('🧾','변동 생활비','줄일 수 있는 소비', '−' + won(spent) + '') +
       '<div class="srow total"><span class="ico">✨</span><span class="lb">이번 달 남은 돈' +
@@ -2610,6 +2779,7 @@
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
         state.excluded[id] = true;
+        if (DB.mode === 'live') DB.setExcluded(id, true);
         save();
         renderAll();
         toast('공동 수입에서 뺐어요 · 공동 수입과 저축률을 다시 계산했어요');
@@ -2620,11 +2790,14 @@
     });
 
     el('allowNote').innerHTML =
-      '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance) + '</b> (각 ' +
-      won(meta.allowance/2) + ')은 위 <b>고정 지출</b>에 포함돼 있어요.<br>' +
+      (meta.allowance > 0
+        ? '🤝 <b>부부 고정 용돈 이체 ' + won(meta.allowance) + '</b> (각 ' +
+          won(meta.allowance/2) + ')은 위 <b>고정 지출</b>에 포함돼 있어요.<br>'
+        : '') +
       '개인 용돈 사용 내역은 서로 보지 않기로 해서 이 가계부에 아예 담지 않아요.' +
-      '<div style="margin-top:6px;color:#8A7A5E;font-size:10.5px;">내 고정 저축 구성: ' +
-      SAVE_PLAN.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>';
+      (DB.mode === 'live' ? '' :
+        '<div style="margin-top:6px;color:#8A7A5E;font-size:10.5px;">내 고정 저축 구성: ' +
+        SAVE_PLAN.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>');
 
     /* 인사이트 */
     const cur = byCat(list);
@@ -2907,6 +3080,7 @@
         const id = b.getAttribute('data-id');
         const k = b.getAttribute('data-k');
         state.excluded[id] = true;
+        if (DB.mode === 'live') DB.setExcluded(id, true);
         save();
         renderAll();
         const t = (k === 'i' ? monthIncomeTxs(ym) : monthTxs(ym)).filter(function(x){ return x.id === id; })[0];
@@ -2933,6 +3107,7 @@
         const id = b.getAttribute('data-id');
         const wasIncome = /@|^iadd/.test(id) || monthIncomeTxs(ym).some(function(x){ return x.id === id; });
         delete state.excluded[id];
+        if (DB.mode === 'live') DB.setExcluded(id, false);
         save();
         renderAll();
         toast(wasIncome ? '다시 공동 수입으로 넣었어요' : '다시 공동 지출로 넣었어요');
@@ -3008,6 +3183,7 @@
     Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-fdel]'), function(b) {
       b.addEventListener('click', function() {
         state.excluded[b.getAttribute('data-fdel')] = true;
+        if (DB.mode === 'live') DB.setExcluded(b.getAttribute('data-fdel'), true);
         save();
         renderAll();
         toast('이번 달 고정 지출에서 뺐어요 · 규칙은 그대로예요');
@@ -3022,6 +3198,7 @@
         const r = state.rules.filter(function(x){ return x.id === id; })[0];
         if (!r) return;
         r.on = !r.on;
+        if (DB.mode === 'live') DB.setRuleOn(id, r.on);
         save();
         renderAll();
         toast(r.on ? r.name + ' 규칙을 켰어요 · 매월 자동으로 생겨요' : r.name + ' 규칙을 껐어요 · 이제 안 생겨요');
@@ -3283,6 +3460,7 @@
   }
   /* 직접 추가한 내역은 원본을 고치고, 샘플 내역은 수정분만 덮어써요 */
   function patchTx(id, patch) {
+    if (DB.mode === 'live') { DB.updateTx(id, patch); return; }
     let hit = false;
     [state.added, state.addedIncome].forEach(function(arr) {
       arr.forEach(function(t) { if (t.id === id) { Object.assign(t, patch); hit = true; } });
@@ -3355,7 +3533,9 @@
       method: el('rMethod').value, on: el('rOn').checked
     };
     const editing = !!ruleEditingId;
-    if (editing) {
+    if (DB.mode === 'live') {
+      DB.saveRule(data, editing ? ruleEditingId : null);
+    } else if (editing) {
       const r = state.rules.filter(function(x){ return x.id === ruleEditingId; })[0];
       if (r) Object.assign(r, data);
     } else {
@@ -3371,6 +3551,7 @@
   el('ruleDelete').addEventListener('click', function() {
     if (!ruleEditingId) return;
     const r = state.rules.filter(function(x){ return x.id === ruleEditingId; })[0];
+    if (DB.mode === 'live') DB.deleteRule(ruleEditingId);
     state.rules = state.rules.filter(function(x){ return x.id !== ruleEditingId; });
     Object.keys(state.overrides).forEach(function(k) {
       if (state.overrides[k]) delete state.overrides[k][ruleEditingId];
@@ -3394,6 +3575,7 @@
     if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
     if (!state.overrides[state.ym]) state.overrides[state.ym] = {};
     state.overrides[state.ym][mfixRuleId] = { d: day, a: amount };
+    if (DB.mode === 'live') DB.setMonthFix(mfixRuleId, state.ym, day, amount);
     save();
     closeMonthFix();
     renderAll();
@@ -3402,6 +3584,7 @@
   el('mfixReset').addEventListener('click', function() {
     if (!mfixRuleId) return;
     if (state.overrides[state.ym]) delete state.overrides[state.ym][mfixRuleId];
+    if (DB.mode === 'live') DB.resetMonthFix(mfixRuleId, state.ym);
     save();
     closeMonthFix();
     renderAll();
@@ -3464,7 +3647,7 @@
         errEl.hidden = false;
         return;
       }
-      state.addedIncome.push({
+      const incRow = {
         id: 'iadd#' + Date.now() + '#' + Math.floor(Math.random() * 1000),
         ym: state.ym,
         d: v.slice(5, 10),
@@ -3473,7 +3656,9 @@
         m: el('fAccount').value,
         a: amt,
         k: 'i'
-      });
+      };
+      if (DB.mode === 'live') DB.insertTx(incRow, 'income');
+      else state.addedIncome.push(incRow);
       save();
       closeModal();
       state.tab = 'spend';
@@ -3492,7 +3677,7 @@
       errEl.hidden = false;
       return;
     }
-    state.added.push({
+    const expRow = {
       id: 'add#' + Date.now() + '#' + Math.floor(Math.random() * 1000),
       ym: state.ym,
       d: v.slice(5, 10),
@@ -3500,7 +3685,9 @@
       c: cat,
       m: method,
       a: amt
-    });
+    };
+    if (DB.mode === 'live') DB.insertTx(expRow, 'var');
+    else state.added.push(expRow);
     save();
     closeModal();
     state.tab = 'spend';
@@ -3725,6 +3912,7 @@
       const e = state.edits[k];
       if (e && e.c) e.c = resolveCat(e.c);
     });
+    if (DB.mode === 'live') DB.saveCats(nextCats, gone, fallback);
     save();
     closeBudgetModal();
     renderAll();
@@ -3918,12 +4106,14 @@
     state.prop.buy = buyM * 10000;
     state.prop.buyDate = date;
     state.prop.price[state.ym] = priceM * 10000;
+    if (DB.mode === 'live') DB.saveProp();
     save();
     closePropModal();
     renderAll();
     toast('부동산 시세를 고쳤어요 · ' + ymLabel(state.ym) + ' 순자산 다시 계산됨');
   });
   el('propDefault').addEventListener('click', function() {
+    if (DB.mode === 'live') { toast('실시간 모드에서는 샘플 기본값으로 되돌릴 수 없어요 · 위 칸에서 직접 고쳐주세요'); return; }
     state.prop = JSON.parse(JSON.stringify(PROP_DEFAULT));
     save();
     closePropModal();
@@ -4086,6 +4276,7 @@
     } else {
       state.invest = state.invest.concat([rec]);
     }
+    if (DB.mode === 'live') DB.saveInvest(rec, editing);
     save();
     closeInvModal();
     renderAll();
@@ -4104,6 +4295,7 @@
       return;
     }
     state.invest = state.invest.filter(function(x){ return x.id !== rec.id; });
+    if (DB.mode === 'live') DB.deleteInvest(rec.id);
     save();
     closeInvModal();
     renderAll();
@@ -4218,7 +4410,808 @@
     applyCollapsed();
   }
 
-  /* ────────────── 12. 시작 ────────────── */
+  /* ══════════════ 13. Supabase : 로그인 게이트 · 실시간 DB 동기화 ══════════════ */
+  const SB_URL = 'https://jychbzwevnvgnmoueruz.supabase.co';
+  const SB_KEY = 'sb_publishable_7NzeAUfqaORQYS1FugrnJg_r_hbY1up';
+  const CUR_YM = (function(d){ return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); })(new Date());
+  let LAST_YM = '2026-11';
+  let PERSIST_LOGIN = true;
+
+  /* '이 기기에서 로그인 유지'를 끄면 세션을 sessionStorage 에만 둬요 */
+  const memStore = {};
+  const authStore = {
+    getItem: function(k) {
+      try { const a = localStorage.getItem(k); if (a !== null) return a; } catch (e) {}
+      try { const b = sessionStorage.getItem(k); if (b !== null) return b; } catch (e) {}
+      return memStore[k] || null;
+    },
+    setItem: function(k, v) {
+      try { (PERSIST_LOGIN ? localStorage : sessionStorage).setItem(k, v); return; } catch (e) {}
+      memStore[k] = v;
+    },
+    removeItem: function(k) {
+      try { localStorage.removeItem(k); } catch (e) {}
+      try { sessionStorage.removeItem(k); } catch (e) {}
+      delete memStore[k];
+    }
+  };
+
+  const DB = {
+    mode: 'sample',            // sample | live
+    sb: null, uid: null, hhId: null, hh: null,
+    cats: [], txs: [], rules: [], snaps: [], invs: [],
+    byYm: {}, incByYm: {}, invByYm: {}, snapByYm: {},
+    ch: null, subs: false, lastWrite: 0
+  };
+
+  /* ── 접속 상태 뱃지 · 헤더 문구 ── */
+  function setBadge(kind, label) {
+    const b = el('connBadge');
+    if (!b) return;
+    b.hidden = false;
+    b.className = 'hbadge ' + kind;
+    b.textContent = label || (kind === 'live' ? '🟢 실시간 동기화'
+      : kind === 'sample' ? '🧪 샘플 모드'
+      : kind === 'off' ? '🔴 연결 끊김'
+      : '🟡 연결 중');
+  }
+  function setSub(t) { const s = el('headSub'); if (s) s.textContent = t; }
+  function hhmm() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  }
+
+  /* ── 로그인 화면 ── */
+  function gateMsg(msg) {
+    const e = el('loginErr');
+    if (!e) return;
+    if (!msg) { e.hidden = true; e.textContent = ''; return; }
+    e.textContent = msg;
+    e.hidden = false;
+  }
+  function showGate(msg) {
+    el('gate').hidden = false;
+    el('loginForm').hidden = false;
+    el('memberNotice').hidden = true;
+    el('appRoot').hidden = true;
+    el('dockRoot').hidden = true;
+    el('headStatus').hidden = true;
+    el('btnLogout').hidden = true;
+    el('loginBtn').disabled = false;
+    el('loginBtn').textContent = '로그인';
+    gateMsg(msg || '');
+  }
+  function showMemberMissing() {
+    el('gate').hidden = false;
+    el('loginForm').hidden = true;
+    el('memberNotice').hidden = false;
+    el('appRoot').hidden = true;
+    el('dockRoot').hidden = true;
+    el('headStatus').hidden = true;
+    const sql = [
+      '-- 1) 가계부가 없으면 하나 만들기',
+      'insert into public.households (name, emoji)',
+      "select '우리집 공동 가계부', '🏠'",
+      'where not exists (select 1 from public.households);',
+      '',
+      '-- 2) 내 계정을 가계부 멤버로 연결',
+      'insert into public.household_members (household_id, user_id, role, label)',
+      "select h.id, u.id, 'owner', '나'",
+      'from public.households h, auth.users u',
+      "where u.id = '" + (DB.uid || '<내 user id>') + "'",
+      'on conflict do nothing;'
+    ].join('\n');
+    el('memberSql').textContent = sql;
+  }
+  function showApp() {
+    el('gate').hidden = true;
+    el('appRoot').hidden = false;
+    el('dockRoot').hidden = false;
+    el('headStatus').hidden = false;
+    renderAll();
+    applyCollapsed();
+  }
+
+  /* ── DB → 화면 모델 ── */
+  function txObj(row) {
+    const d = String(row.tx_date || '').slice(5, 10) || (row.ym ? row.ym.slice(5) + '-01' : '');
+    return {
+      id: row.id, ym: row.ym, d: d, n: row.title,
+      c: row.category_key || 'etc', m: row.pay_method || '',
+      a: Number(row.amount) || 0,
+      k: row.kind === 'fixed' ? 'f' : (row.kind === 'income' ? 'i' : 'e'),
+      ruleId: row.rule_id || null
+    };
+  }
+  function invObj(r) {
+    const q = (r.quantity === null || r.quantity === undefined) ? NaN : Number(r.quantity);
+    return {
+      id: r.id, acct: r.account_name || '', type: r.bucket === 'pension' ? 'pension' : 'broker',
+      name: r.ticker_name || '', sub: r.sub_type || '',
+      qty: (isFinite(q) && q > 0) ? q : null,
+      principal: Number(r.principal) || 0, value: Number(r.eval_amount) || 0
+    };
+  }
+  function ruleOn(r) { const t = r.active_to; return !t || t >= LAST_YM; }
+  function ruleActiveIn(r, ym) {
+    const f = (r.activeFrom !== undefined ? r.activeFrom : r.active_from) || '';
+    const t = (r.activeTo !== undefined ? r.activeTo : r.active_to) || null;
+    return (!f || f <= ym) && (!t || t >= ym);
+  }
+  function txPatchToRow(p) {
+    const out = {};
+    if (p.d) out.tx_date = state.ym + '-' + p.d;
+    if (p.n) out.title = p.n;
+    if (p.c) out.category_key = p.c;
+    if (p.m) out.pay_method = p.m;
+    if (typeof p.a === 'number') out.amount = p.a;
+    out.updated_at = new Date().toISOString();
+    return out;
+  }
+
+  const SEED_CATS = [
+    ['food', '식비·장보기', '🛒', '#57A05E', 0],
+    ['dine', '외식·카페', '🍽️', '#E9834A', 0],
+    ['home', '주거·관리비', '🏠', '#7C6FD1', 0],
+    ['util', '공과금·통신', '💡', '#4E9BD6', 0],
+    ['living', '생활·마트', '🧴', '#E37DA0', 0],
+    ['transit', '교통·차량', '🚌', '#D9A93F', 0],
+    ['gift', '경조사·선물', '🎁', '#C05F73', 0],
+    ['leisure', '쇼핑·여가', '✈️', '#57B4C9', 0],
+    ['health', '의료·건강', '💊', '#94A85C', 0]
+  ];
+
+  function applyModel() {
+    /* 1) 카테고리 → 예산 */
+    const cats = (DB.cats || []).slice().sort(function(a, b){ return (a.sort_order || 0) - (b.sort_order || 0); });
+    if (cats.length) {
+      state.cats = cats.map(function(c) {
+        return { id: c.key, label: c.label, emoji: c.emoji || '🏷️', color: c.color || '#94A85C', fixed: false };
+      });
+      CATS = state.cats;
+      rebuildCatIndex();
+      state.budgets = {};
+      cats.forEach(function(c){ state.budgets[c.key] = Number(c.budget_amount) || 0; });
+    }
+    /* 2) 가계부 이름·이모지 */
+    if (DB.hh) state.brand = { emoji: DB.hh.emoji || '🏠', name: DB.hh.name || '우리집 공동 가계부' };
+
+    /* 3) 달 범위 : DB에 있는 첫 달 ~ 이번 달 */
+    let maxYm = CUR_YM, minYm = CUR_YM;
+    const marks = {};
+    (DB.txs || []).forEach(function(t){ if (t.ym) marks[t.ym] = 1; });
+    (DB.snaps || []).forEach(function(s){ if (s.ym) marks[s.ym] = 1; });
+    (DB.invs || []).forEach(function(i){ if (i.ym) marks[i.ym] = 1; });
+    Object.keys(marks).forEach(function(m) {
+      if (!/^\d{4}-\d{2}$/.test(m)) return;
+      if (m > maxYm) maxYm = m;
+      if (m < minYm) minYm = m;
+    });
+    LAST_YM = maxYm;
+    const months = [];
+    let y = +minYm.slice(0, 4), mo = +minYm.slice(5, 7);
+    const ey = +maxYm.slice(0, 4), em = +maxYm.slice(5, 7);
+    let guard = 0;
+    while ((y < ey || (y === ey && mo <= em)) && guard++ < 240) {
+      months.push(y + '-' + String(mo).padStart(2, '0'));
+      mo++; if (mo > 12) { mo = 1; y++; }
+    }
+    MONTHS.length = 0;
+    months.forEach(function(m){ MONTHS.push(m); });
+    Object.keys(PREV).forEach(function(k){ delete PREV[k]; });
+    MONTHS.forEach(function(m, i){ if (i) PREV[m] = MONTHS[i - 1]; });
+
+    /* 4) 내역 */
+    const byYm = {}, incByYm = {};
+    (DB.txs || []).forEach(function(row) {
+      const o = txObj(row);
+      const bag = row.kind === 'income' ? incByYm : byYm;
+      if (!bag[o.ym]) bag[o.ym] = [];
+      bag[o.ym].push(o);
+    });
+    DB.byYm = byYm;
+    DB.incByYm = incByYm;
+
+    /* 5) 제외 상태만 DB에서 (샘플 수정분·추가분은 절대 섮지 않아요) */
+    state.excluded = {};
+    (DB.txs || []).forEach(function(row){ if (row.is_excluded) state.excluded[row.id] = true; });
+    state.added = [];
+    state.addedIncome = [];
+    state.edits = {};
+    state.overrides = {};
+    state.catRemap = {};
+
+    /* 6) 고정 지출 규칙 */
+    state.rules = (DB.rules || []).map(function(r) {
+      return {
+        id: r.id, name: r.title, cat: r.category_key || 'etc',
+        day: r.day_of_month || 25, amount: Number(r.amount) || 0,
+        method: r.pay_method || '자동이체', on: ruleOn(r),
+        activeFrom: r.active_from || '', activeTo: r.active_to || null
+      };
+    });
+
+    /* 7) 자산 스냅샷 · 투자 */
+    const snapByYm = {};
+    (DB.snaps || []).forEach(function(s) {
+      const box = snapByYm[s.ym] || (snapByYm[s.ym] = { cash: 0, debt: 0, real: 0, rows: [] });
+      const amt = Number(s.amount) || 0;
+      if (s.kind === 'cash') box.cash += amt;
+      else if (s.kind === 'debt') box.debt += amt;
+      else if (s.kind === 'real_estate') box.real += amt;
+      box.rows.push(s);
+    });
+    DB.snapByYm = snapByYm;
+    const invByYm = {};
+    (DB.invs || []).forEach(function(r){ (invByYm[r.ym] = invByYm[r.ym] || []).push(invObj(r)); });
+    DB.invByYm = invByYm;
+
+    /* 8) 부동산 (매수가·매수일은 meta) */
+    state.prop = { name: '부동산', area: '', buy: 0, buyDate: '', price: {} };
+    const reRows = (DB.snaps || []).filter(function(s){ return s.kind === 'real_estate'; })
+      .sort(function(a, b){ return a.ym < b.ym ? -1 : (a.ym > b.ym ? 1 : 0); });
+    if (reRows.length) {
+      const p = reRows[reRows.length - 1];
+      const meta = (p.meta && typeof p.meta === 'object') ? p.meta : {};
+      state.prop.name = p.name || '부동산';
+      state.prop.buy = Number(meta.buy_price) || 0;
+      state.prop.buyDate = meta.buy_date || '';
+      state.prop.area = meta.area || '';
+    }
+    reRows.forEach(function(r){ state.prop.price[r.ym] = (state.prop.price[r.ym] || 0) + (Number(r.amount) || 0); });
+
+    /* 9) 순자산 스냅샷 (기록 없는 달은 직전 값 유지 · 종목도 같이 이어짐) */
+    Object.keys(SNAP).forEach(function(k){ delete SNAP[k]; });
+    const carry = {};
+    let curInv = null;
+    MONTHS.forEach(function(ym) {
+      if (invByYm[ym] && invByYm[ym].length) curInv = invByYm[ym];
+      carry[ym] = curInv || [];
+    });
+    DB.invByYm = carry;
+    let prev = { cash: 0, stock: 0, real: 0, debt: 0 };
+    MONTHS.forEach(function(ym) {
+      const box = snapByYm[ym];
+      const inv = carry[ym];
+      if (box || (inv && inv.length)) {
+        prev = {
+          cash: box ? box.cash : prev.cash,
+          stock: inv.length ? inv.reduce(function(s, i){ return s + i.value; }, 0) : prev.stock,
+          real: box ? box.real : prev.real,
+          debt: box ? box.debt : prev.debt
+        };
+      }
+      SNAP[ym] = { cash: prev.cash, stock: prev.stock, real: prev.real, debt: prev.debt };
+    });
+
+    /* 10) 최신월 상세 구성 */
+    const lastBox = snapByYm[LAST_YM];
+    const pick = function(kind) {
+      return lastBox ? lastBox.rows.filter(function(r){ return r.kind === kind; })
+        .map(function(r){ return [r.name || kind, Number(r.amount) || 0]; }) : [];
+    };
+    SUBS.cash = pick('cash');
+    SUBS.debt = pick('debt');
+    SUBS.real = pick('real_estate');
+
+    /* 11) 보유 종목 목록 (종목 모달·계좌 목록용) */
+    state.invest = (invByYm[LAST_YM] || carry[LAST_YM] || []).slice();
+
+    /* 12) 월 상태 */
+    Object.keys(LEDGER).forEach(function(k){ delete LEDGER[k]; });
+    const now = new Date();
+    const curDay = now.getDate();
+    MONTHS.forEach(function(ym) {
+      const days = daysIn(ym);
+      const ongoing = ym === CUR_YM;
+      const rows = byYm[ym] || [];
+      const allow = rows.filter(function(t){ return t.c === 'allow'; })
+        .reduce(function(s, t){ return s + t.a; }, 0);
+      LEDGER[ym] = {
+        income: 0, save: 0, allowance: allow, days: days,
+        elapsed: ongoing ? Math.min(curDay, days) : days,
+        status: ongoing ? 'ongoing' : 'closed',
+        incomes: [], txs: []
+      };
+    });
+
+    /* 13) 보던 달이 범위를 벗어나면 이번 달로 */
+    if (MONTHS.indexOf(state.ym) < 0) state.ym = MONTHS.indexOf(CUR_YM) >= 0 ? CUR_YM : LAST_YM;
+  }
+
+  /* ── 불러오기 ── */
+  async function refresh() {
+    if (!DB.sb || !DB.hhId) return;
+    const q = function(table) { return DB.sb.from(table).select('*').eq('household_id', DB.hhId); };
+    const res = await Promise.all([
+      DB.sb.from('households').select('*').eq('id', DB.hhId).maybeSingle(),
+      q('categories').order('sort_order', { ascending: true }),
+      q('transactions').order('tx_date', { ascending: true }),
+      q('recurring_rules'),
+      q('asset_snapshots'),
+      q('investments')
+    ]);
+    for (let i = 0; i < res.length; i++) if (res[i].error) throw res[i].error;
+    DB.hh = res[0].data || null;
+    DB.cats = res[1].data || [];
+    DB.txs = res[2].data || [];
+    DB.rules = res[3].data || [];
+    DB.snaps = res[4].data || [];
+    DB.invs = res[5].data || [];
+    applyModel();
+  }
+
+  /* 카테고리가 하나도 없으면 처음 한 번만 기본 카테고리를 만드러요 */
+  async function ensureSeed() {
+    if (!DB.sb || !DB.hhId) return false;
+    const c = await DB.sb.from('categories').select('key', { count: 'exact', head: true }).eq('household_id', DB.hhId);
+    if (c.error) throw c.error;
+    if ((c.count || 0) > 0) return false;
+    const rows = SEED_CATS.map(function(c, i) {
+      return { household_id: DB.hhId, key: c[0], label: c[1], emoji: c[2], color: c[3], budget_amount: c[4], sort_order: i };
+    });
+    const r = await DB.sb.from('categories').insert(rows);
+    if (r.error) throw r.error;
+    return true;
+  }
+
+  /* 이번 달에 아직 안 생긴 고정 지출 규칙 자동 생성 (idempotent) */
+  async function ensureFixed(ym) {
+    if (!DB.sb || !DB.hhId) return false;
+    const meta = LEDGER[ym];
+    if (!meta) return false;
+    const lim = meta.status === 'ongoing' ? meta.elapsed : meta.days;
+    const have = {};
+    (DB.txs || []).forEach(function(t){ if (t.ym === ym && t.rule_id) have[t.rule_id] = 1; });
+    const rows = (DB.rules || []).filter(function(r) {
+      return ruleActiveIn({ activeFrom: r.active_from || '', activeTo: r.active_to || null }, ym)
+        && (r.day_of_month || 0) <= lim && !have[r.id];
+    }).map(function(r) {
+      const day = Math.min(Math.max(r.day_of_month || 1, 1), daysIn(ym));
+      return {
+        household_id: DB.hhId, ym: ym, tx_date: ym + '-' + String(day).padStart(2, '0'),
+        kind: 'fixed', category_key: r.category_key || 'etc', title: r.title,
+        amount: Number(r.amount) || 0, pay_method: r.pay_method || '자동이체',
+        is_excluded: false, rule_id: r.id, created_by: DB.uid
+      };
+    });
+    if (!rows.length) return false;
+    DB.lastWrite = Date.now();
+    const r = await DB.sb.from('transactions').insert(rows);
+    if (r.error) { console.error('[ledger] 고정 지출 자동 생성 실패', r.error); return false; }
+    return true;
+  }
+
+  /* ── 쓰기 공통 ── */
+  function commit(build, okMsg) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      try {
+        const r = await build();
+        if (r && r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] DB 저장 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        setBadge('off', '🔴 저장 실패');
+        return false;
+      }
+      try {
+        await refresh();
+        renderAll();
+      } catch (e) { console.error('[ledger] 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      if (okMsg) toast(okMsg);
+      return true;
+    })();
+  }
+  function afterRuleChange(ok) {
+    if (!ok) return;
+    ensureFixed(state.ym).then(function(changed) {
+      if (!changed) return;
+      refresh().then(function(){ renderAll(); }).catch(function(e){ console.error(e); });
+    }).catch(function(e){ console.error(e); });
+  }
+
+  DB.saveBrand = function(emoji, name) {
+    return commit(function(){
+      return DB.sb.from('households').update({ name: name, emoji: emoji }).eq('id', DB.hhId);
+    });
+  };
+  DB.insertTx = function(o, kind) {
+    return commit(function(){
+      const row = {
+        household_id: DB.hhId, ym: o.ym, tx_date: o.ym + '-' + o.d,
+        kind: kind, category_key: o.c || null, title: o.n, amount: o.a,
+        pay_method: o.m || null, is_excluded: false, created_by: DB.uid
+      };
+      return DB.sb.from('transactions').insert(row);
+    });
+  };
+  DB.updateTx = function(id, patch) {
+    return commit(function(){
+      return DB.sb.from('transactions').update(txPatchToRow(patch)).eq('id', id);
+    });
+  };
+  DB.setExcluded = function(id, val) {
+    return commit(function(){
+      return DB.sb.from('transactions').update({ is_excluded: !!val, updated_at: new Date().toISOString() }).eq('id', id);
+    });
+  };
+  DB.saveRule = function(data, id) {
+    return commit(function(){
+      if (id) {
+        return DB.sb.from('recurring_rules').update({
+          title: data.name, amount: data.amount, category_key: data.cat,
+          pay_method: data.method, day_of_month: data.day,
+          active_to: data.on ? null : relYM(CUR_YM, -1)
+        }).eq('id', id);
+      }
+      return DB.sb.from('recurring_rules').insert({
+        household_id: DB.hhId, title: data.name, amount: data.amount,
+        category_key: data.cat, pay_method: data.method, day_of_month: data.day,
+        active_from: CUR_YM, active_to: data.on ? null : relYM(CUR_YM, -1)
+      });
+    }).then(afterRuleChange);
+  };
+  DB.deleteRule = function(id) {
+    return commit(async function(){
+      const t = await DB.sb.from('transactions').delete().eq('household_id', DB.hhId).eq('rule_id', id);
+      if (t.error) return t;
+      return DB.sb.from('recurring_rules').delete().eq('id', id);
+    });
+  };
+  DB.setRuleOn = function(id, on) {
+    return commit(function(){
+      return DB.sb.from('recurring_rules').update({ active_to: on ? null : relYM(CUR_YM, -1) }).eq('id', id);
+    }).then(afterRuleChange);
+  };
+  DB.setMonthFix = function(ruleId, ym, day, amount) {
+    const rule = (DB.rules || []).filter(function(r){ return r.id === ruleId; })[0];
+    return commit(function(){
+      const found = (DB.txs || []).filter(function(t){ return t.rule_id === ruleId && t.ym === ym; })[0];
+      const date = ym + '-' + String(day).padStart(2, '0');
+      if (found) {
+        return DB.sb.from('transactions').update({ amount: amount, tx_date: date, updated_at: new Date().toISOString() }).eq('id', found.id);
+      }
+      return DB.sb.from('transactions').insert({
+        household_id: DB.hhId, ym: ym, tx_date: date, kind: 'fixed',
+        category_key: rule ? rule.category_key : 'etc', title: rule ? rule.title : '고정 지출',
+        amount: amount, pay_method: rule ? rule.pay_method : '자동이체',
+        is_excluded: false, rule_id: ruleId, created_by: DB.uid
+      });
+    });
+  };
+  DB.resetMonthFix = function(ruleId, ym) {
+    const rule = (DB.rules || []).filter(function(r){ return r.id === ruleId; })[0];
+    if (!rule) return Promise.resolve(false);
+    return commit(function(){
+      const found = (DB.txs || []).filter(function(t){ return t.rule_id === ruleId && t.ym === ym; })[0];
+      if (!found) return Promise.resolve({ error: null });
+      return DB.sb.from('transactions').update({
+        amount: Number(rule.amount) || 0,
+        tx_date: ym + '-' + String(rule.day_of_month || 1).padStart(2, '0'),
+        updated_at: new Date().toISOString()
+      }).eq('id', found.id);
+    });
+  };
+  DB.saveCats = function(next, gone, fallback) {
+    return commit(async function(){
+      const exist = {};
+      (DB.cats || []).forEach(function(c){ exist[c.key] = c; });
+      for (let i = 0; i < next.length; i++) {
+        const c = next[i];
+        const row = {
+          label: c.label, emoji: c.emoji, color: c.color,
+          budget_amount: Math.round(c.budget || 0), sort_order: i
+        };
+        const r = exist[c.id]
+          ? await DB.sb.from('categories').update(row).eq('id', exist[c.id].id)
+          : await DB.sb.from('categories').insert(Object.assign({ household_id: DB.hhId, key: c.id }, row));
+        if (r.error) return r;
+      }
+      const del = (gone || []).filter(function(k){ return exist[k] && !next.some(function(c){ return c.id === k; }); });
+      if (del.length) {
+        const fb = fallback || 'etc';
+        const t = await DB.sb.from('transactions').update({ category_key: fb }).eq('household_id', DB.hhId).in('category_key', del);
+        if (t.error) return t;
+        const rr = await DB.sb.from('recurring_rules').update({ category_key: fb }).eq('household_id', DB.hhId).in('category_key', del);
+        if (rr.error) return rr;
+        const d = await DB.sb.from('categories').delete().eq('household_id', DB.hhId).in('key', del);
+        if (d.error) return d;
+      }
+      return { error: null };
+    }, '카테고리·예산을 저장했어요');
+  };
+  DB.saveProp = function() {
+    const p = state.prop, ym = state.ym;
+    const price = p.price[ym] || 0;
+    return commit(async function(){
+      const found = (DB.snaps || []).filter(function(s){ return s.ym === ym && s.kind === 'real_estate'; })[0];
+      const meta = Object.assign({}, (found && found.meta && typeof found.meta === 'object') ? found.meta : {}, {
+        buy_price: p.buy, buy_date: p.buyDate, area: p.area || ''
+      });
+      if (found) {
+        return DB.sb.from('asset_snapshots').update({ name: p.name, amount: price, meta: meta }).eq('id', found.id);
+      }
+      return DB.sb.from('asset_snapshots').insert({
+        household_id: DB.hhId, ym: ym, kind: 'real_estate', name: p.name, amount: price, meta: meta
+      });
+    });
+  };
+  DB.saveInvest = function(rec, editing) {
+    return commit(function(){
+      const row = {
+        bucket: rec.type, account_name: rec.acct, ticker_name: rec.name,
+        sub_type: rec.sub || (rec.type === 'pension' ? '연금·절세' : '일반 계좌'),
+        quantity: (typeof rec.qty === 'number' && rec.qty > 0) ? rec.qty : 0,
+        principal: rec.principal, eval_amount: rec.value
+      };
+      if (editing) return DB.sb.from('investments').update(row).eq('id', rec.id);
+      return DB.sb.from('investments').insert(Object.assign({ household_id: DB.hhId, ym: state.ym }, row));
+    });
+  };
+  DB.deleteInvest = function(id) {
+    return commit(function(){ return DB.sb.from('investments').delete().eq('id', id); });
+  };
+  DB.onMonth = function(ym) {
+    if (DB.mode !== 'live') return;
+    ensureFixed(ym).then(function(changed) {
+      if (!changed) return;
+      refresh().then(function(){ renderAll(); }).catch(function(e){ console.error(e); });
+    }).catch(function(e){ console.error(e); });
+  };
+
+  /* ── 실시간 구독 ── */
+  let syncTimer = null, syncMine = true;
+  function scheduleSync(mine) {
+    syncMine = syncMine && mine;
+    clearTimeout(syncTimer);
+    syncTimer = setTimeout(function() {
+      const remote = !syncMine;
+      syncMine = true;
+      refresh().then(function() {
+        renderAll();
+        applyCollapsed();
+        setSub('실시간 DB 연동 · ' + hhmm() + ' 동기화');
+        if (remote) toast('🔄 부부가 입력한 내용을 반영했어요');
+      }).catch(function(e){ console.error('[ledger] 실시간 반영 실패', e); setBadge('off'); });
+    }, 350);
+  }
+  function subscribe() {
+    if (!DB.sb || !DB.hhId) return;
+    if (DB.ch) { try { DB.sb.removeChannel(DB.ch); } catch (e) {} }
+    const ch = DB.sb.channel('hh-' + DB.hhId);
+    ['households', 'categories', 'transactions', 'recurring_rules', 'asset_snapshots', 'investments'].forEach(function(t) {
+      const filter = (t === 'households') ? ('id=eq.' + DB.hhId) : ('household_id=eq.' + DB.hhId);
+      ch.on('postgres_changes', { event: '*', schema: 'public', table: t, filter: filter }, function() {
+        scheduleSync(Date.now() - DB.lastWrite < 2500);
+      });
+    });
+    ch.subscribe(function(status) {
+      if (status === 'SUBSCRIBED') { DB.subs = true; setBadge('live'); setSub('실시간 DB 연동 · ' + hhmm() + ' 연결됨'); }
+      else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+        DB.subs = false; setBadge('off');
+        setTimeout(function(){ if (DB.mode === 'live') subscribe(); }, 5000);
+      }
+    });
+    DB.ch = ch;
+  }
+
+  /* ── 로그인 / 로그아웃 / 샘플 모드 ── */
+  async function enterApp() {
+    gateMsg('');
+    const btn = el('loginBtn');
+    try {
+      const s = await DB.sb.auth.getSession();
+      const session = s && s.data ? s.data.session : null;
+      if (!session) { showGate(); return; }
+      DB.uid = session.user.id;
+      const m = await DB.sb.from('household_members').select('household_id, role, label').eq('user_id', DB.uid).limit(1);
+      if (m.error) throw m.error;
+      if (!m.data || !m.data.length) { showMemberMissing(); return; }
+      DB.hhId = m.data[0].household_id;
+      await ensureSeed();
+      DB.mode = 'live';
+      await refresh();
+      await ensureFixed(CUR_YM);
+      await refresh();
+      el('loginPw').value = '';
+      showApp();
+      el('btnLogout').hidden = false;
+      const resetFoot = el('btnReset') && el('btnReset').parentNode;
+      if (resetFoot) resetFoot.hidden = true;   // 샘플 되돌리기는 실시간 모드에서 숨겨요
+      mountSnapBtn();
+      setBadge(DB.subs ? 'live' : 'wait');
+      setSub('실시간 DB 연동 · ' + hhmm() + ' 연결됨');
+      subscribe();
+      toast('로그인했어요 · 부부 공동 가계부와 연결됐어요');
+    } catch (e) {
+      console.error('[ledger] 로그인 처리 실패', e);
+      showGate('가계부를 불러오지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '로그인'; }
+    }
+  }
+
+  async function bootGate() {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+      showGate('로그인 모듈을 불러오지 못했어요 · 인터넷 연결을 확인하고 새로고침 해주세요.');
+      return;
+    }
+    DB.sb = window.supabase.createClient(SB_URL, SB_KEY, {
+      auth: { storage: authStore, persistSession: true, autoRefreshToken: true, detectSessionInUrl: false }
+    });
+    let session = null;
+    try {
+      const s = await DB.sb.auth.getSession();
+      session = s && s.data ? s.data.session : null;
+    } catch (e) { console.error('[ledger] 세션 확인 실패', e); }
+    if (session) await enterApp();
+    else showGate();
+  }
+
+  el('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const email = el('loginEmail').value.trim();
+    const pw = el('loginPw').value;
+    if (!email || !pw) { gateMsg('이메일과 비밀번호를 넣어주세요.'); return; }
+    PERSIST_LOGIN = el('loginKeep').checked;
+    const btn = el('loginBtn');
+    btn.disabled = true;
+    btn.textContent = '로그인 중…';
+    gateMsg('');
+    try {
+      const r = await DB.sb.auth.signInWithPassword({ email: email, password: pw });
+      if (r.error) throw r.error;
+      await enterApp();
+    } catch (err) {
+      const m = String((err && err.message) || '');
+      gateMsg(/invalid login/i.test(m) ? '이메일이나 비밀번호가 맞지 않아요.'
+        : /email not confirmed/i.test(m) ? '이메일 인증이 아직 안 됐어요 · Supabase Users에서 Auto Confirm 후 다시 시도해 주세요.'
+        : /rate|too many/i.test(m) ? '시도가 너무 많았어요 · 잠시 뒤에 다시 해 주세요.'
+        : '로그인 실패 · ' + (m || '다시 시도해 주세요.'));
+      btn.disabled = false;
+      btn.textContent = '로그인';
+    }
+  });
+
+  function enterSampleMode() {
+    el('gate').hidden = true;
+    el('appRoot').hidden = false;
+    el('dockRoot').hidden = false;
+    el('headStatus').hidden = false;
+    el('btnLogout').hidden = true;
+    DB.mode = 'sample';
+    setBadge('sample');
+    setSub('샘플 체험 모드 · 실제 DB에는 저장되지 않아요');
+    renderAll();
+  }
+  el('btnSample').addEventListener('click', enterSampleMode);
+  el('btnSample2').addEventListener('click', enterSampleMode);
+  el('btnGateLogout').addEventListener('click', async function() {
+    try { if (DB.sb) await DB.sb.auth.signOut(); } catch (e) {}
+    location.reload();
+  });
+  el('btnLogout').addEventListener('click', async function() {
+    try { if (DB.ch) DB.sb.removeChannel(DB.ch); } catch (e) {}
+    try { if (DB.sb) await DB.sb.auth.signOut(); } catch (e) { console.error(e); }
+    location.reload();
+  });
+
+  /* ── 현금·부채 금액 수정 (asset_snapshots) ── */
+  let snapDraft = null;
+  function mountSnapBtn() {
+    if (document.getElementById('btnSnapEdit')) return;
+    const anchor = el('pfMonth');
+    if (!anchor || !anchor.parentNode) return;
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.id = 'btnSnapEdit';
+    b.className = 'btn-snap';
+    b.textContent = '✎ 현금·부채';
+    b.addEventListener('click', openSnapModal);
+    anchor.parentNode.appendChild(b);
+  }
+  function snapRowsHtml(kind) {
+    const list = snapDraft[kind] || [];
+    return list.map(function(r, i) {
+      return '<div class="snaprow">' +
+        '<input class="snap-name" data-k="' + kind + '" data-i="' + i + '" value="' + esc(r.name) + '" placeholder="' + (kind === 'cash' ? '비상금 통장' : '주택담보대출') + '" />' +
+        '<input class="snap-amt" type="number" inputmode="numeric" min="0" step="10000" data-k="' + kind + '" data-i="' + i + '" value="' + (r.amount || 0) + '" placeholder="0" />' +
+        '<button type="button" class="icon-btn del" data-del="' + kind + ':' + i + '" aria-label="삭제">−</button>' +
+        '</div>';
+    }).join('');
+  }
+  function renderSnapRows() {
+    el('snapCashRows').innerHTML = snapRowsHtml('cash');
+    el('snapDebtRows').innerHTML = snapRowsHtml('debt');
+  }
+  function openSnapModal() {
+    const box = DB.snapByYm[state.ym];
+    const rows = box ? box.rows : [];
+    snapDraft = {
+      cash: rows.filter(function(r){ return r.kind === 'cash'; }).map(function(r){ return { id: r.id, name: r.name || '', amount: Number(r.amount) || 0 }; }),
+      debt: rows.filter(function(r){ return r.kind === 'debt'; }).map(function(r){ return { id: r.id, name: r.name || '', amount: Number(r.amount) || 0 }; })
+    };
+    if (!snapDraft.cash.length) snapDraft.cash.push({ id: null, name: '비상금 통장', amount: 0 });
+    if (!snapDraft.debt.length) snapDraft.debt.push({ id: null, name: '주택담보대출', amount: 0 });
+    renderSnapRows();
+    el('snapHint').textContent = ymLabel(state.ym) + ' 기준으로 넣으면 순자산·자산 포트폴리오에 바로 반영돼요.';
+    el('snapErr').hidden = true;
+    el('snapModal').hidden = false;
+  }
+  function closeSnapModal() { el('snapModal').hidden = true; snapDraft = null; }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-snap]'), function(b) {
+    b.addEventListener('click', closeSnapModal);
+  });
+  ['snapCashRows', 'snapDebtRows'].forEach(function(id) {
+    el(id).addEventListener('input', function(e) {
+      const t = e.target;
+      const k = t.getAttribute('data-k'), i = +t.getAttribute('data-i');
+      if (!snapDraft || !k || !snapDraft[k] || !snapDraft[k][i]) return;
+      if (t.classList.contains('snap-amt')) snapDraft[k][i].amount = Math.max(0, Math.round(Number(t.value) || 0));
+      else snapDraft[k][i].name = t.value;
+    });
+    el(id).addEventListener('click', function(e) {
+      const b = e.target.closest('[data-del]');
+      if (!b || !snapDraft) return;
+      const p = b.getAttribute('data-del').split(':');
+      snapDraft[p[0]].splice(+p[1], 1);
+      renderSnapRows();
+    });
+  });
+  el('snapAddCash').addEventListener('click', function() {
+    if (!snapDraft) return;
+    snapDraft.cash.push({ id: null, name: '', amount: 0 });
+    renderSnapRows();
+  });
+  el('snapAddDebt').addEventListener('click', function() {
+    if (!snapDraft) return;
+    snapDraft.debt.push({ id: null, name: '', amount: 0 });
+    renderSnapRows();
+  });
+  el('snapSave').addEventListener('click', function() {
+    if (!snapDraft) return;
+    const ym = state.ym;
+    const orig = ((DB.snapByYm[ym] || {}).rows || []).filter(function(r){ return r.kind === 'cash' || r.kind === 'debt'; });
+    const keep = {};
+    const upd = [], ins = [];
+    ['cash', 'debt'].forEach(function(k) {
+      (snapDraft[k] || []).forEach(function(r) {
+        const name = String(r.name || '').trim();
+        const amount = Math.max(0, Math.round(Number(r.amount) || 0));
+        if (!name && !amount && !r.id) return;
+        const row = { name: name || (k === 'cash' ? '현금' : '부채'), amount: amount, kind: k, ym: ym };
+        if (r.id) { keep[r.id] = 1; upd.push([r.id, row]); }
+        else ins.push(Object.assign({ household_id: DB.hhId, meta: {} }, row));
+      });
+    });
+    const gone = orig.filter(function(r){ return !keep[r.id]; }).map(function(r){ return r.id; });
+    closeSnapModal();
+    commit(async function() {
+      for (let i = 0; i < upd.length; i++) {
+        const r = await DB.sb.from('asset_snapshots').update({ name: upd[i][1].name, amount: upd[i][1].amount }).eq('id', upd[i][0]);
+        if (r.error) return r;
+      }
+      if (ins.length) {
+        const r = await DB.sb.from('asset_snapshots').insert(ins);
+        if (r.error) return r;
+      }
+      if (gone.length) {
+        const r = await DB.sb.from('asset_snapshots').delete().in('id', gone);
+        if (r.error) return r;
+      }
+      return { error: null };
+    }, '현금·부채 금액을 저장했어요');
+  });
+
+  /* 디버깅·검증용 (이 브라우저 안의 화면 상태만 노출해요) */
+  window.__householdLedger = {
+    DB: DB, state: state, applyModel: applyModel, renderAll: renderAll, refresh: refresh
+  };
+
+  /* ══════════════ 12. 시작 ══════════════ */
   function renderAll() {
     renderHead();
     renderAsset();
@@ -4227,6 +5220,7 @@
   initCardToggles();
   renderAll();
   applyCollapsed();
+  bootGate();
   window.addEventListener('resize', function() {
     if (state.tab === 'asset') drawGrowth();
   });
