@@ -3630,14 +3630,12 @@
       return;
     }
     const n = catTxCount(id);
-    const restLabels = budgetDraft.cats.filter(function(x){ return x.id !== id; });
-    const hasEtc = restLabels.some(function(x){ return x.id === 'etc' || /^기타/.test(x.label); });
-    budgetDraft.cats = restLabels;
+    budgetDraft.cats = budgetDraft.cats.filter(function(x){ return x.id !== id; });
     budgetDraft.removed.push(id);
     renderBudgetFields();
     syncBudgetDraft();
     toast(n
-      ? '"' + c.label + '" 목록에서 뺐어요 · 기존 ' + n + '건은 ' + (hasEtc ? '"기타"로' : '"기타"로 모을게요') + ' 옮겨요'
+      ? '"' + c.label + '" 목록에서 뺐어요 · 기존 ' + n + '건은 저장하면 "기타"로 옮겨요'
       : '"' + c.label + '" 카테고리를 뺄 준비를 했어요 · 저장하면 적용돼요');
   });
   el('newCatPresets').addEventListener('click', function(e) {
