@@ -172,13 +172,13 @@
     box-shadow:var(--shadow); border:1px solid rgba(255,255,255,.9);
     margin-bottom:12px;
   }
-  .card-head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:12px;}
+  .card-head{display:flex; align-items:baseline; justify-content:space-between; flex-wrap:wrap; gap:6px 8px; margin-bottom:12px;}
   .card-head h2{font-size:14.5px; margin:0; letter-spacing:-.02em; font-weight:800;}
   /* 카드 접기/펼치기 */
   .ch-right{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; min-width:0;}
   .card-toggle{
-    flex:none; width:24px; height:24px; padding:0; display:grid; place-items:center;
-    border:1px solid var(--line); background:#fff; color:var(--ink-3); border-radius:8px;
+    position:relative; z-index:2; flex:none; width:26px; height:26px; padding:0; display:grid; place-items:center;
+    border:1px solid #E7E0D3; background:#fff; color:var(--ink-2); border-radius:9px;
     font:inherit; font-size:11px; line-height:1; cursor:pointer; transition:.16s ease;
   }
   .card-toggle:hover, .card-toggle:focus-visible{border-color:var(--teal); color:var(--teal); background:var(--teal-soft); outline:none;}
