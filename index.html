@@ -1755,7 +1755,7 @@
     const base = meta.txs.map(function(t, i) {
       return { id: ym + '#' + i, ym: ym, d: t[0], n: t[1], c: t[2], m: t[3], a: t[4], k:'e' };
     });
-    const extra = state.added.filter(function(t){ return t.ym === ym; });
+    const extra = state.added.filter(function(t){ return t.ym === ym; }).map(function(t){ return Object.assign({}, t, { k: 'e' }); });
     return fixedTxs(ym).concat(base, extra).map(applyEditMap);
   }
   /* 샘플·직접 추가 내역의 수정분을 덮어씌워요 */
@@ -2187,7 +2187,7 @@
       const t = invSumOf(list);
       return '<div class="accrow">' +
         '<div class="acchead"><b>' + esc(acct) + '</b>' +
-          '<span class="accbadge">' + (pension ? '절세' : list.length + '종목') + '</span>' +
+          '<span class="accbadge">' + (pension ? list.length + '상품' : list.length + '종목') + '</span>' +
           '<span class="accsum">' + won(t.v) +
             '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + ' 원 (' + pct(t.rate) + '%)</small>' +
           '</span>' +
