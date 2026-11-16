@@ -651,6 +651,24 @@
   }
   .brandreset{color:var(--ink-3);}
   .brandreset:hover{color:var(--ink-2);}
+  /* 보유 종목 추가·수정 */
+  .invadd{
+    display:flex; align-items:center; justify-content:center; gap:6px; width:100%; margin-top:11px;
+    padding:12px; border-radius:14px; border:1px dashed #CFE3DA; background:#F7FBF9; color:#1F7A63;
+    font:inherit; font-size:12px; font-weight:850; letter-spacing:-.01em; cursor:pointer; transition:.16s ease;
+  }
+  .invadd:hover, .invadd:active{border-color:var(--teal); background:var(--teal-soft);}
+  .invest-h .iname{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .invest-h .inv-edit{width:22px; height:22px; border-radius:7px; font-size:10px; flex:none; align-self:center; margin-left:2px;}
+  .kindtoggle button.on[data-itype="pension"]{color:#2E6FA8;}
+  .invprev{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:11px 8px; border-radius:14px; background:#FBF8F1; border:1px solid var(--line-2); margin:2px 0 8px;}
+  .invprev div{text-align:center; min-width:0;}
+  .invprev span{display:block; font-size:9px; color:var(--ink-3); font-weight:700; margin-bottom:3px; letter-spacing:-.01em;}
+  .invprev b{display:block; font-size:11.5px; font-weight:850; letter-spacing:-.035em; font-variant-numeric:tabular-nums; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .invprev b.up{color:#1F8A63;}
+  .invprev b.down{color:var(--red);}
+  .invprev-note{font-size:10px; color:var(--ink-3); font-weight:600; margin:0 0 10px; line-height:1.5; letter-spacing:-.01em;}
+  #ivDelete.arming{color:#fff; background:var(--red); text-decoration:none; border-radius:10px;}
 </style>
 </head>
 <body>
@@ -738,8 +756,9 @@
       <div id="investList"></div>
       <div class="invest-note">
         미국주식 소수점은 토스증권 자동 모으기 기준 · 환율 <b>1,380원/달러</b> 가정 · 과거 월은 현재 보유 종목을 기준으로 평가액을 비례 환산한 참고값이에요.<br>
-        같은 종목을 여러 계좌에 나눠 담았다면 <b>종목 합산</b>에서 한 줄로 보여요.
+        같은 종목을 여러 계좌에 나눠 담았다면 <b>종목 합산</b>에서 한 줄로 보여요.<br>종목은 <b>＋ 종목 추가</b>로 넣고, <b>✎</b>로 고치거나 지울 수 있어요.
       </div>
+      <button type="button" class="invadd" id="btnAddStock" data-invadd="broker">＋ 종목 추가</button>
     </div>
 
     <div class="card">
@@ -754,8 +773,9 @@
       <div class="invest-sum" id="penSum"></div>
       <div id="penList"></div>
       <div class="invest-note">
-        ISA·연금저축·IRP·퇴직연금은 일반 위탁 계좌와 세제·인출 조건이 달라요. 납입한도는 연금저축 <b>600만 원</b> + IRP 포함 <b>900만 원</b> 한도로 보고 있어요.
+        ISA·연금저축·IRP·퇴직연금은 일반 위탁 계좌와 세제·인출 조건이 달라요. 납입한도는 연금저축 <b>600만 원</b> + IRP 포함 <b>900만 원</b> 한도로 보고 있어요.<br>종목은 <b>＋ 종목 추가</b>로 넣고, <b>✎</b>로 고치거나 지울 수 있어요.
       </div>
+      <button type="button" class="invadd" id="btnAddPen" data-invadd="pension">＋ 종목 추가</button>
     </div>
 
     <div class="card">
@@ -1100,6 +1120,78 @@
   </div>
 </div>
 
+<!-- 보유 종목 추가·수정 모달 -->
+<div class="modal" id="invModal" hidden>
+  <div class="bd" data-close-inv></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="invTitle">
+    <div class="grab"></div>
+    <h2 id="invTitle">종목 추가</h2>
+    <p class="hint" id="invHint">보유 종목을 넣으면 카드 합계·포트폴리오·순자산·차트·피클 요약까지 바로 다시 계산되고 이 브라우저에 저장돼요.</p>
+    <div class="kindtoggle" id="invKind" role="tablist" aria-label="구분">
+      <button type="button" role="tab" data-itype="broker" class="on" aria-selected="true">📈 주식·투자</button>
+      <button type="button" role="tab" data-itype="pension" aria-selected="false">🛡️ 연금·절세</button>
+    </div>
+    <form id="invForm" novalidate>
+      <div class="frow">
+        <div class="field" style="flex:1.15;">
+          <label for="ivAcct">계좌명</label>
+          <select id="ivAcct"></select>
+        </div>
+        <div class="field" style="flex:0 0 112px;">
+          <label for="ivSub">부가 유형</label>
+          <input type="text" id="ivSub" list="ivSubList" maxlength="20" placeholder="미국주식" />
+        </div>
+      </div>
+      <div class="field" id="ivAcctNewWrap" hidden>
+        <label for="ivAcctNew">새 계좌명</label>
+        <input type="text" id="ivAcctNew" maxlength="20" placeholder="예: 남편 키움증권" />
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="ivName">종목명</label>
+          <input type="text" id="ivName" maxlength="24" placeholder="NVDA · TIGER 미국S&amp;P500" />
+        </div>
+        <div class="field" style="flex:0 0 110px;">
+          <label for="ivQty">보유 수량</label>
+          <input type="number" id="ivQty" inputmode="decimal" min="0" step="any" placeholder="0.5200" />
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="ivPrincipal">총 투자 원금 (원)</label>
+          <input type="number" id="ivPrincipal" inputmode="numeric" min="0" step="1000" placeholder="1000000" />
+        </div>
+        <div class="field">
+          <label for="ivValue">현재 평가금액 (원)</label>
+          <input type="number" id="ivValue" inputmode="numeric" min="0" step="1000" placeholder="1200000" />
+        </div>
+      </div>
+      <div class="invprev">
+        <div><span>투자 원금</span><b id="ivpP">—</b></div>
+        <div><span>평가금액</span><b id="ivpV">—</b></div>
+        <div><span>평가수익</span><b id="ivpG">—</b></div>
+      </div>
+      <p class="invprev-note" id="ivpNote">원금과 평가금액을 넣으면 수익률이 바로 계산돼요.</p>
+      <p class="err" id="ivErr" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-inv>취소</button>
+        <button type="submit" class="btn primary" id="ivSubmit">추가하기</button>
+      </div>
+      <button type="button" class="btn-link" id="ivDelete" hidden>이 종목 삭제</button>
+    </form>
+    <datalist id="ivSubList">
+      <option value="미국주식 소수점"></option>
+      <option value="국내 ETF"></option>
+      <option value="미국 배당"></option>
+      <option value="ISA 국내 ETF"></option>
+      <option value="ISA TDF"></option>
+      <option value="연금저축 국내 ETF"></option>
+      <option value="IRP TDF"></option>
+      <option value="퇴직연금 DC TDF"></option>
+    </datalist>
+  </div>
+</div>
+
 <!-- 카테고리별 예산 설정 모달 -->
 <div class="modal" id="budgetModal" hidden>
   <div class="bd" data-close-budget></div>
@@ -1224,20 +1316,52 @@
 
   // 보유 종목 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
   // type: broker = 일반 위탁 계좌 / pension = ISA·연금저축·IRP·퇴직연금
-  const INVEST = [
-    {acct:'아내 토스증권',     type:'broker',  name:'VOO',                 sub:'미국주식 소수점', units:'4.3821주',  principal:3150000,  value:3749000},
-    {acct:'아내 토스증권',     type:'broker',  name:'QQQM',                sub:'미국주식 소수점', units:'2.1540주',  principal:660000,   value:773000},
-    {acct:'아내 토스증권',     type:'broker',  name:'SCHD',                sub:'미국 배당',       units:'31.0000주', principal:10800000, value:12028000},
-    {acct:'남편 토스증권',     type:'broker',  name:'KODEX 미국나스닥100', sub:'국내 ETF',        units:'—',         principal:9600000,  value:10400000},
-    {acct:'남편 토스증권',     type:'broker',  name:'TIGER 미국채10년선물',sub:'국내 ETF',        units:'—',         principal:3000000,  value:3150000},
-    {acct:'아내 ISA',          type:'pension', name:'TIGER 미국S&P500',    sub:'ISA 국내 ETF',    units:'—',         principal:12000000, value:13300000},
-    {acct:'아내 ISA',          type:'pension', name:'TDF 2045',            sub:'ISA TDF',         units:'—',         principal:4200000,  value:4500000},
-    {acct:'남편 연금저축',     type:'pension', name:'TIGER 미국S&P500',    sub:'연금저축 국내 ETF', units:'—',       principal:12300000, value:13600000},
-    {acct:'남편 IRP',          type:'pension', name:'TDF 2050',            sub:'IRP TDF',         units:'—',         principal:6000000,  value:6500000},
-    {acct:'남편 퇴직연금 DC',  type:'pension', name:'TDF 2050',            sub:'퇴직연금 DC TDF', units:'—',         principal:6000000,  value:6500000}
+  // qty: 보유 수량(소수점 6자리까지). 계좌·종목·원금·평가는 화면에서 직접 추가·수정할 수 있고 localStorage 에 남겨요
+  const INVEST_SEED = [
+    {id:'iv01', acct:'아내 토스증권',     type:'broker',  name:'VOO',                 sub:'미국주식 소수점', qty:4.3821, principal:3150000,  value:3749000},
+    {id:'iv02', acct:'아내 토스증권',     type:'broker',  name:'QQQM',                sub:'미국주식 소수점', qty:2.1540, principal:660000,   value:773000},
+    {id:'iv03', acct:'아내 토스증권',     type:'broker',  name:'SCHD',                sub:'미국 배당',       qty:31,     principal:10800000, value:12028000},
+    {id:'iv04', acct:'남편 토스증권',     type:'broker',  name:'KODEX 미국나스닥100', sub:'국내 ETF',        qty:null,   principal:9600000,  value:10400000},
+    {id:'iv05', acct:'남편 토스증권',     type:'broker',  name:'TIGER 미국채10년선물',sub:'국내 ETF',        qty:null,   principal:3000000,  value:3150000},
+    {id:'iv06', acct:'아내 ISA',          type:'pension', name:'TIGER 미국S&P500',    sub:'ISA 국내 ETF',    qty:null,   principal:12000000, value:13300000},
+    {id:'iv07', acct:'아내 ISA',          type:'pension', name:'TDF 2045',            sub:'ISA TDF',         qty:null,   principal:4200000,  value:4500000},
+    {id:'iv08', acct:'남편 연금저축',     type:'pension', name:'TIGER 미국S&P500',    sub:'연금저축 국내 ETF', qty:null, principal:12300000, value:13600000},
+    {id:'iv09', acct:'남편 IRP',          type:'pension', name:'TDF 2050',            sub:'IRP TDF',         qty:null,   principal:6000000,  value:6500000},
+    {id:'iv10', acct:'남편 퇴직연금 DC',  type:'pension', name:'TDF 2050',            sub:'퇴직연금 DC TDF', qty:null,   principal:6000000,  value:6500000}
   ];
   const INVEST_BASE = '2026-11';
   const ACCT_TYPE_LABEL = { broker:'일반 계좌', pension:'연금·절세' };
+  function invNewId() {
+    return 'iv' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+  }
+  /* 보유 종목 한 건 검증·정리 (localStorage 복원값·입력값 공용) */
+  function cleanInvestItem(o) {
+    if (!o || typeof o !== 'object') return null;
+    const name = typeof o.name === 'string' ? o.name.trim().slice(0, 24) : '';
+    const acct = typeof o.acct === 'string' ? o.acct.trim().slice(0, 20) : '';
+    if (!name || !acct) return null;
+    const type = (o.type === 'pension') ? 'pension' : 'broker';
+    let principal = Number(o.principal), value = Number(o.value);
+    if (!isFinite(principal) || principal < 0) principal = 0;
+    if (!isFinite(value) || value < 0) value = 0;
+    principal = Math.round(Math.min(principal, 1e11));
+    value = Math.round(Math.min(value, 1e11));
+    let qty = Number(o.qty);
+    qty = (isFinite(qty) && qty > 0) ? Math.min(Math.round(qty * 1e6) / 1e6, 1e9) : null;
+    const sub = typeof o.sub === 'string' ? o.sub.trim().slice(0, 20) : '';
+    const id = (typeof o.id === 'string' && /^[A-Za-z0-9_-]{1,24}$/.test(o.id)) ? o.id : invNewId();
+    return {id:id, acct:acct, type:type, name:name, sub:sub, qty:qty, principal:principal, value:value};
+  }
+  function defaultInvest() { return JSON.parse(JSON.stringify(INVEST_SEED)); }
+  /* 수량 표기 : 소수점 4~6자리 (예: 0.5200주 / 0.123456주) */
+  function invQtyText(qty) {
+    if (typeof qty !== 'number' || !isFinite(qty) || qty <= 0) return '—';
+    const dec = (String(qty).split('.')[1] || '').length;
+    return qty.toFixed(Math.min(6, Math.max(4, dec))) + '주';
+  }
+  function invSubText(i) {
+    return i.sub || (i.type === 'pension' ? '연금·절세 상품' : '일반 계좌');
+  }
 
   // 부동산 상세 (2026-11 기준 / 가상 샘플). 매수가·시세는 직접 고칠 수 있고 localStorage 에 남겨요
   const PROP_DEFAULT = {
@@ -1551,8 +1675,10 @@
     edits: {},        // 샘플·추가 내역 수정분 (id -> {d,n,c,m,a})
     cats: null,       // 지출 카테고리 목록 (추가·수정·삭제 가능)
     catRemap: {},     // 삭제한 카테고리 -> 대체 카테고리
+    invest: null,     // 보유 종목 (추가·수정·삭제 가능, 아래에서 기본값으로 채움)
     invView: 'acct'   // 주식·투자 상세 : acct(계좌별) | merged(종목 합산)
   };
+  state.invest = defaultInvest();
   state.cats = cloneCats(DEFAULT_CATS);
   state.budgets = {};
   state.cats.forEach(function(c){ state.budgets[c.id] = (typeof c.budget === 'number' ? c.budget : 0); });
@@ -1571,6 +1697,14 @@
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
         if (s.invView === 'acct' || s.invView === 'merged') state.invView = s.invView;
+        if (Array.isArray(s.invest)) {
+          const list = [];
+          s.invest.forEach(function(it) {
+            const rec = cleanInvestItem(it);
+            if (rec && !list.some(function(x){ return x.id === rec.id; })) list.push(rec);
+          });
+          state.invest = list;
+        }
         if (s.brand && typeof s.brand === 'object') {
           if (typeof s.brand.emoji === 'string' && s.brand.emoji.trim()) state.brand.emoji = s.brand.emoji.trim();
           if (typeof s.brand.name === 'string' && s.brand.name.trim()) state.brand.name = s.brand.name.trim().slice(0, 20);
@@ -1655,7 +1789,8 @@
         rules: state.rules, overrides: state.overrides, range: state.range,
         brand: state.brand, budgets: state.budgets, collapsed: state.collapsed,
         prop: state.prop, edits: state.edits,
-        cats: state.cats, catRemap: state.catRemap, invView: state.invView
+        cats: state.cats, catRemap: state.catRemap, invView: state.invView,
+        invest: state.invest
       }));
     } catch (e) {}
   }
@@ -1945,7 +2080,7 @@
   /* ────────────── 6. 렌더 : 자산 탭 ────────────── */
   function netOf(ym) {
     const s = SNAP[ym];
-    return s.cash + s.stock + realOf(ym) - s.debt;
+    return s.cash + stockOf(ym) + realOf(ym) - s.debt;
   }
   /* 부동산 시세 : 직접 고친 값이 있으면 그 달은 그 값, 아니면 스냅샷 시세 */
   function realOf(ym) {
@@ -2016,7 +2151,7 @@
     const ym = state.ym;
     const prevYm = relYM(ym, -1);
     const snap = SNAP[ym];
-    const total = snap.cash + snap.stock + realOf(ym);
+    const total = snap.cash + stockOf(ym) + realOf(ym);
     const net = total - snap.debt;
 
     const hasPrev = !!SNAP[prevYm];
@@ -2121,23 +2256,35 @@
     });
   }
   function investItems(ym) {
-    const base = SNAP[INVEST_BASE].stock;
-    const target = SNAP[ym] ? SNAP[ym].stock : base;
-    const f = target / base;
-    const items = INVEST.map(function(it) {
+    const baseTotal = invBaseTotal();
+    const isBase = (ym === INVEST_BASE);
+    const target = SNAP[ym] ? SNAP[ym].stock : baseTotal;
+    const f = isBase ? 1 : (baseTotal ? target / baseTotal : 1);
+    const items = state.invest.map(function(it) {
       return {
-        acct: it.acct, type: it.type, name: it.name, sub: it.sub, units: it.units,
+        id: it.id, acct: it.acct, type: it.type, name: it.name, sub: invSubText(it),
+        units: invQtyText(it.qty),
         p: Math.round(it.principal * f / 1000) * 1000,
         v: Math.round(it.value * f / 1000) * 1000
       };
     });
-    const tv = items.reduce(function(s,i){ return s + i.v; }, 0);
-    if (items.length && tv !== target) items[items.length - 1].v += (target - tv);
+    if (!isBase && items.length) {
+      const tv = items.reduce(function(s,i){ return s + i.v; }, 0);
+      if (tv !== target) items[items.length - 1].v += (target - tv);
+    }
     items.forEach(function(i) {
       i.g = i.v - i.p;
       i.rate = i.p ? i.g / i.p : 0;
     });
     return items;
+  }
+  /* 최신월(2026-11) 주식·투자 평가액 = 직접 넣은 보유 종목 합계 */
+  function invBaseTotal() {
+    return state.invest.reduce(function(s,i){ return s + (i.value || 0); }, 0);
+  }
+  function stockOf(ym) {
+    if (ym === INVEST_BASE) return invBaseTotal();
+    return SNAP[ym] ? SNAP[ym].stock : invBaseTotal();
   }
   function invSumOf(items) {
     const p = items.reduce(function(s,i){ return s + i.p; }, 0);
@@ -2194,9 +2341,11 @@
         '</div>' +
         list.map(function(i) {
           return '<div class="invest-row sub">' +
-            '<div class="invest-h"><span>' + esc(i.name) + '</span>' +
+            '<div class="invest-h"><span class="iname">' + esc(i.name) + '</span>' +
               (i.units !== '—' ? '<span class="iu">' + i.units + '</span>' : '') +
-              '<b>' + won(i.v) + '</b></div>' +
+              '<b>' + won(i.v) + '</b>' +
+              '<button type="button" class="icon-btn inv-edit" data-inv-edit="' + esc(i.id || '') + '" data-itype="' + i.type + '"' +
+                ' aria-label="' + esc(i.name) + ' 수정" title="이 종목 수정">✎</button></div>' +
             '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
               '<span class="' + (i.g >= 0 ? 'up' : 'down') + '">' + signedWon(i.g) + ' 원 (' + pct(i.rate) + '%)</span></div>' +
           '</div>';
@@ -2224,7 +2373,7 @@
       const gain = g.v - g.p;
       const rate = g.p ? gain / g.p : 0;
       return '<div class="invest-row">' +
-        '<div class="invest-h"><span>' + esc(g.name) + '</span>' +
+        '<div class="invest-h"><span class="iname">' + esc(g.name) + '</span>' +
           (g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
           '<b>' + won(g.v) + '</b></div>' +
         '<div class="invest-f"><span>원금 ' + won(g.p) + '</span>' +
@@ -3362,6 +3511,7 @@
     state.budgets = {};
     CATS.forEach(function(c){ state.budgets[c.id] = (typeof c.budget === 'number' ? c.budget : BUDGET_DEFAULT[c.id] || 0); });
     state.prop = JSON.parse(JSON.stringify(PROP_DEFAULT));
+    state.invest = defaultInvest();
     state.edits = {};
     state.collapsed = {};
     save();
@@ -3756,6 +3906,193 @@
     closePropModal();
     renderAll();
     toast('부동산 매수가·시세를 기본값으로 되돌렸어요');
+  });
+
+  /* ────────────── 11-6. 보유 종목 추가·수정·삭제 ────────────── */
+  let invEditId = null;    // 수정 중인 종목 id (없으면 추가)
+  let invType = 'broker';  // 모달에서 고른 구분
+  let invDelArm = 0;       // '이 종목 삭제' 두 번 누르기 확인용
+  let invDelTimer = null;
+
+  function invAccts(type) {
+    const out = [];
+    state.invest.forEach(function(i) { if (i.type === type && out.indexOf(i.acct) < 0) out.push(i.acct); });
+    return out;
+  }
+  function syncIvAcctNew() { el('ivAcctNewWrap').hidden = (el('ivAcct').value !== '__new'); }
+  function fillIvAccts(type, current) {
+    const names = invAccts(type);
+    el('ivAcct').innerHTML = names.map(function(n) {
+      return '<option value="' + esc(n) + '">' + esc(n) + '</option>';
+    }).join('') + '<option value="__new">＋ 직접 입력 (새 계좌)</option>';
+    if (current && names.indexOf(current) >= 0) {
+      el('ivAcct').value = current; el('ivAcctNew').value = '';
+    } else if (current) {
+      el('ivAcct').value = '__new'; el('ivAcctNew').value = current;
+    } else if (names.length) {
+      el('ivAcct').value = names[0]; el('ivAcctNew').value = '';
+    } else {
+      el('ivAcct').value = '__new'; el('ivAcctNew').value = '';
+    }
+    syncIvAcctNew();
+  }
+  function syncInvTypeButtons() {
+    Array.prototype.forEach.call(el('invKind').querySelectorAll('button'), function(b) {
+      const on = b.getAttribute('data-itype') === invType;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+  function syncIvPreview() {
+    if (el('invModal').hidden) return;
+    const pRaw = el('ivPrincipal').value.trim();
+    const vRaw = el('ivValue').value.trim();
+    const p = pRaw ? Math.max(0, Math.round(parseFloat(pRaw) || 0)) : 0;
+    const v = vRaw ? Math.max(0, Math.round(parseFloat(vRaw) || 0)) : 0;
+    el('ivpP').textContent = pRaw ? won(p) : '—';
+    el('ivpV').textContent = vRaw ? won(v) : '—';
+    const gEl = el('ivpG');
+    if (!pRaw && !vRaw) {
+      gEl.textContent = '—'; gEl.className = '';
+      el('ivpNote').textContent = '원금과 평가금액을 넣으면 수익률이 바로 계산돼요.';
+      return;
+    }
+    const g = v - p;
+    gEl.textContent = (g >= 0 ? '+' : '−') + won(Math.abs(g)) + (p ? ' (' + signedPct(p ? g / p : 0) + ')' : '');
+    gEl.className = g > 0 ? 'up' : (g < 0 ? 'down' : '');
+    el('ivpNote').textContent = p
+      ? '수익률 ' + signedPct(g / p) + ' · 저장하면 카드 합계·순자산에 바로 반영돼요'
+      : '원금을 넣으면 수익률까지 계산돼요.';
+  }
+  function openInvModal(type, id) {
+    const rec = id ? state.invest.filter(function(x){ return x.id === id; })[0] : null;
+    if (id && !rec) return;
+    invEditId = rec ? rec.id : null;
+    invType = rec ? rec.type : (type === 'pension' ? 'pension' : 'broker');
+    invDelArm = 0;
+    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
+    el('ivDelete').textContent = '이 종목 삭제';
+    el('ivDelete').classList.remove('arming');
+    el('ivDelete').hidden = !rec;
+    el('invTitle').textContent = rec ? '종목 수정' : '종목 추가';
+    el('ivSubmit').textContent = rec ? '저장' : '추가하기';
+    el('invHint').textContent = ymLabel(INVEST_BASE) + ' 현재 보유 기준으로 저장돼요. 저장하면 카드 합계·포트폴리오·순자산·차트·피클 요약까지 바로 다시 계산되고 이 브라우저에 남아요.';
+    syncInvTypeButtons();
+    fillIvAccts(invType, rec ? rec.acct : '');
+    el('ivName').value = rec ? rec.name : '';
+    el('ivSub').value = rec ? rec.sub : '';
+    el('ivQty').value = (rec && rec.qty) ? String(rec.qty) : '';
+    el('ivPrincipal').value = rec ? String(rec.principal || '') : '';
+    el('ivValue').value = rec ? String(rec.value || '') : '';
+    el('ivErr').hidden = true;
+    syncIvPreview();
+    el('invModal').hidden = false;
+    setTimeout(function(){ el('ivName').focus(); }, 40);
+  }
+  function closeInvModal() {
+    el('invModal').hidden = true;
+    invEditId = null;
+    invDelArm = 0;
+    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
+    el('ivDelete').textContent = '이 종목 삭제';
+    el('ivDelete').classList.remove('arming');
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('[data-invadd]'), function(b) {
+    b.addEventListener('click', function() { openInvModal(b.getAttribute('data-invadd'), null); });
+  });
+  ['investList', 'penList'].forEach(function(id) {
+    el(id).addEventListener('click', function(e) {
+      const b = e.target.closest('[data-inv-edit]');
+      if (!b) return;
+      openInvModal(b.getAttribute('data-itype'), b.getAttribute('data-inv-edit'));
+    });
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-inv]'), function(b) {
+    b.addEventListener('click', closeInvModal);
+  });
+  Array.prototype.forEach.call(el('invKind').querySelectorAll('button'), function(b) {
+    b.addEventListener('click', function() {
+      const t = b.getAttribute('data-itype');
+      if (invType === t) return;
+      const cur = (el('ivAcct').value === '__new') ? el('ivAcctNew').value.trim() : el('ivAcct').value;
+      invType = t;
+      syncInvTypeButtons();
+      fillIvAccts(t, cur);
+      el('ivErr').hidden = true;
+      toast(t === 'pension' ? '연금·절세(ISA·연금·IRP·퇴직연금) 계좌로 넣어요' : '일반 주식·투자 계좌로 넣어요');
+    });
+  });
+  el('ivAcct').addEventListener('change', function() {
+    syncIvAcctNew();
+    if (el('ivAcct').value === '__new') setTimeout(function(){ el('ivAcctNew').focus(); }, 20);
+  });
+  ['ivPrincipal', 'ivValue', 'ivQty', 'ivName', 'ivSub', 'ivAcctNew'].forEach(function(id) {
+    el(id).addEventListener('input', function() {
+      el('ivErr').hidden = true;
+      syncIvPreview();
+    });
+  });
+  el('invForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const err = el('ivErr');
+    const acctPick = el('ivAcct').value;
+    const acct = (acctPick === '__new' ? el('ivAcctNew').value.trim() : acctPick).slice(0, 20);
+    const name = el('ivName').value.trim().slice(0, 24);
+    const sub = el('ivSub').value.trim().slice(0, 20);
+    const qtyRaw = el('ivQty').value.trim();
+    const pRaw = el('ivPrincipal').value.trim();
+    const vRaw = el('ivValue').value.trim();
+    const qty = qtyRaw ? parseFloat(qtyRaw) : null;
+    const p = pRaw ? Math.round(parseFloat(pRaw) || 0) : 0;
+    const v = vRaw ? Math.round(parseFloat(vRaw) || 0) : 0;
+    function fail(m) { err.textContent = m; err.hidden = false; el('invModal').querySelector('.sheet').scrollTop = 0; return; }
+    if (!acct) return fail(acctPick === '__new' ? '새 계좌명을 적어주세요.' : '계좌를 골라주세요.');
+    if (!name) return fail('종목명을 적어주세요. (예: NVDA)');
+    if (qtyRaw && (!isFinite(qty) || qty <= 0)) return fail('보유 수량은 0보다 큰 숫자로 넣어주세요. (예: 0.52)');
+    if (qtyRaw && qty > 1e9) return fail('보유 수량이 너무 커요. 숫자를 다시 확인해주세요.');
+    if (!pRaw && !vRaw) return fail('총 투자 원금이나 현재 평가금액 중 하나는 넣어주세요.');
+    if (!isFinite(p) || p < 0) return fail('투자 원금을 원 단위 숫자로 넣어주세요.');
+    if (!isFinite(v) || v < 0) return fail('평가금액을 원 단위 숫자로 넣어주세요.');
+    if (p > 1e11 || v > 1e11) return fail('금액이 너무 커요. 원 단위인지 확인해주세요.');
+    const editing = !!invEditId;
+    const rec = cleanInvestItem({
+      id: invEditId || invNewId(), acct: acct, type: invType,
+      name: name, sub: sub, qty: qty, principal: p, value: v
+    });
+    if (!rec) return fail('입력값을 다시 확인해주세요.');
+    if (editing) {
+      state.invest = state.invest.map(function(x) { return x.id === rec.id ? rec : x; });
+    } else {
+      state.invest = state.invest.concat([rec]);
+    }
+    save();
+    closeInvModal();
+    renderAll();
+    toast(rec.name + (editing ? ' 수정했어요' : ' 추가했어요') + ' · ' +
+      ACCT_TYPE_LABEL[rec.type] + ' 합계 ' + won(investGroup(state.ym, rec.type).v) +
+      ' · 순자산 ' + won(netOf(state.ym)));
+  });
+  el('ivDelete').addEventListener('click', function() {
+    const rec = invEditId ? state.invest.filter(function(x){ return x.id === invEditId; })[0] : null;
+    if (!rec) return;
+    if (!invDelArm) {
+      invDelArm = 1;
+      el('ivDelete').textContent = rec.name + ' 삭제할까요? 한 번 더 누르면 지워져요';
+      el('ivDelete').classList.add('arming');
+      invDelTimer = setTimeout(function() {
+        invDelArm = 0;
+        el('ivDelete').textContent = '이 종목 삭제';
+        el('ivDelete').classList.remove('arming');
+      }, 3200);
+      return;
+    }
+    if (invDelTimer) { clearTimeout(invDelTimer); invDelTimer = null; }
+    state.invest = state.invest.filter(function(x){ return x.id !== rec.id; });
+    save();
+    closeInvModal();
+    renderAll();
+    toast(rec.name + ' 삭제했어요 · ' + ACCT_TYPE_LABEL[rec.type] + ' 합계·순자산 다시 계산됨');
   });
 
   /* ────────────── 11-1. 월 네비게이터 · 기간 토글 ────────────── */
