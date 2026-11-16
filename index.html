@@ -487,6 +487,23 @@
   .invest-f .up{color:#1F8A63;}
   .invest-note{font-size:10px; color:var(--ink-3); line-height:1.55; margin-top:11px; padding-top:9px; border-top:1px dashed var(--line); font-weight:600; letter-spacing:-.01em;}
   .invest-note b{color:var(--ink-2);}
+  /* 주식·투자 상세 : 계좌별 / 종목 합산 */
+  .invseg{display:flex; gap:4px; padding:3px; background:#F2EEE5; border-radius:12px; margin:0 0 11px;}
+  .invseg button{flex:1; border:0; background:transparent; font:inherit; font-size:11px; font-weight:800; color:var(--ink-3); padding:8px 6px; border-radius:9px; cursor:pointer; letter-spacing:-.01em;}
+  .invseg button.on{background:#fff; color:var(--ink); box-shadow:0 6px 14px -12px rgba(35,38,43,.85), inset 0 0 0 1px var(--line-2);}
+  .accrow{margin-bottom:2px;}
+  .acchead{display:flex; align-items:center; gap:6px; padding:10px 0 6px; border-bottom:1px solid var(--line-2);}
+  .acchead b{font-size:11.5px; font-weight:850; letter-spacing:-.02em;}
+  .accbadge{font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:5px; background:#EEF2F8; color:#4B6A8C;}
+  .accsum{margin-left:auto; text-align:right; font-size:11.5px; font-weight:850; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+  .accsum small{display:block; font-size:9px; font-weight:700;}
+  .accsum small.up, .accsum small.down{color:var(--ink-3);}
+  .accsum small.up{color:#1F8A63;}
+  .accsum small.down{color:var(--red);}
+  .invest-row.sub{padding-left:8px;}
+  .invest-row.sub:last-child{padding-bottom:2px;}
+  .invest-f.accts{align-items:center; gap:6px; margin-top:4px;}
+  .ibadge{font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:5px; background:var(--teal-soft); color:#1F7A63; flex:none;}
   /* 부동산 상세 카드 */
   .prop-sum{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:12px 8px; border-radius:16px; background:#FBF8F1; border:1px solid var(--line-2); margin-bottom:10px;}
   .prop-sum div{text-align:center; min-width:0;}
@@ -712,10 +729,27 @@
         <h2>주식·투자 상세</h2>
         <span class="muted" id="investNote"></span>
       </div>
+      <div class="invseg" id="invSeg" role="group" aria-label="보기 방식">
+        <button type="button" data-invview="acct" class="on" aria-pressed="true">계좌별 보기</button>
+        <button type="button" data-invview="merged" aria-pressed="false">종목 합산</button>
+      </div>
       <div class="invest-sum" id="investSum"></div>
       <div id="investList"></div>
       <div class="invest-note">
-        미국주식 소수점은 토스증권 자동 모으기 기준 · 환율 <b>1,380원/달러</b> 가정 · 과거 월은 현재 보유 종목을 기준으로 평가액을 비례 환산한 참고값이에요.
+        미국주식 소수점은 토스증권 자동 모으기 기준 · 환율 <b>1,380원/달러</b> 가정 · 과거 월은 현재 보유 종목을 기준으로 평가액을 비례 환산한 참고값이에요.<br>
+        같은 종목을 여러 계좌에 나눠 담았다면 <b>종목 합산</b>에서 한 줄로 보여요.
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>연금·절세 상세</h2>
+        <span class="muted" id="penNote"></span>
+      </div>
+      <div class="invest-sum" id="penSum"></div>
+      <div id="penList"></div>
+      <div class="invest-note">
+        ISA·연금저축·IRP·퇴직연금은 일반 위탁 계좌와 세제·인출 조건이 달라요. 납입한도는 연금저축 <b>600만 원</b> + IRP 포함 <b>900만 원</b> 한도로 보고 있어요.
       </div>
     </div>
 
@@ -1183,17 +1217,22 @@
     '2026-11': {r2:{a:214600}, r3:{a:640000}}
   };
 
-  // 주식·투자 상세 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
+  // 보유 종목 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
+  // type: broker = 일반 위탁 계좌 / pension = ISA·연금저축·IRP·퇴직연금
   const INVEST = [
-    {name:'VOO',                 sub:'토스증권 · 미국주식 소수점', units:'4.3821주',  principal:3150000,  value:3749000},
-    {name:'QQQM',                sub:'토스증권 · 미국주식 소수점', units:'2.1540주',  principal:660000,   value:773000},
-    {name:'SCHD',                sub:'토스증권 · 미국 배당',       units:'31.0000주', principal:10800000, value:12028000},
-    {name:'TIGER 미국S&P500',    sub:'국내 ETF',                  units:'—',         principal:24300000, value:26900000},
-    {name:'KODEX 미국나스닥100', sub:'국내 ETF',                  units:'—',         principal:9600000,  value:10400000},
-    {name:'TIGER 미국채10년선물',sub:'국내 ETF',                  units:'—',         principal:3000000,  value:3150000},
-    {name:'ISA (ETF·TDF)',       sub:'절세 계좌',                 units:'—',         principal:16200000, value:17500000}
+    {acct:'아내 토스증권',     type:'broker',  name:'VOO',                 sub:'미국주식 소수점', units:'4.3821주',  principal:3150000,  value:3749000},
+    {acct:'아내 토스증권',     type:'broker',  name:'QQQM',                sub:'미국주식 소수점', units:'2.1540주',  principal:660000,   value:773000},
+    {acct:'아내 토스증권',     type:'broker',  name:'SCHD',                sub:'미국 배당',       units:'31.0000주', principal:10800000, value:12028000},
+    {acct:'남편 토스증권',     type:'broker',  name:'KODEX 미국나스닥100', sub:'국내 ETF',        units:'—',         principal:9600000,  value:10400000},
+    {acct:'남편 토스증권',     type:'broker',  name:'TIGER 미국채10년선물',sub:'국내 ETF',        units:'—',         principal:3000000,  value:3150000},
+    {acct:'아내 ISA',          type:'pension', name:'TIGER 미국S&P500',    sub:'ISA 국내 ETF',    units:'—',         principal:12000000, value:13300000},
+    {acct:'아내 ISA',          type:'pension', name:'TDF 2045',            sub:'ISA TDF',         units:'—',         principal:4200000,  value:4500000},
+    {acct:'남편 연금저축',     type:'pension', name:'TIGER 미국S&P500',    sub:'연금저축 국내 ETF', units:'—',       principal:12300000, value:13600000},
+    {acct:'남편 IRP',          type:'pension', name:'TDF 2050',            sub:'IRP TDF',         units:'—',         principal:6000000,  value:6500000},
+    {acct:'남편 퇴직연금 DC',  type:'pension', name:'TDF 2050',            sub:'퇴직연금 DC TDF', units:'—',         principal:6000000,  value:6500000}
   ];
   const INVEST_BASE = '2026-11';
+  const ACCT_TYPE_LABEL = { broker:'일반 계좌', pension:'연금·절세' };
 
   // 부동산 상세 (2026-11 기준 / 가상 샘플). 매수가·시세는 직접 고칠 수 있고 localStorage 에 남겨요
   const PROP_DEFAULT = {
@@ -1218,8 +1257,7 @@
   // 하위 구성 (최신월 기준)
   const SUBS = {
     cash:  [['비상금 통장',15000000], ['파킹통장',10200000], ['청약저축',6000000], ['정기적금',20000000]],
-    stock: [['국내 ETF',23800000], ['해외 ETF(S&P500)',33250000], ['ISA',17500000]],
-    real:  [['신혼집 시세',520000000]],
+    stock: [['국내 ETF',23800000], ['해외 ETF(S&P500)',33250000], ['ISA',17500000]],    real:  [['신혼집 시세',520000000]],
     debt:  [['주택담보대출',306000000], ['마이너스통장',15050000]]
   };
   const SAVE_PLAN = [['정기적금',1000000], ['ETF 자동매수',700000], ['연금저축',350000], ['청약',250000]];
@@ -1505,11 +1543,15 @@
     budgets: null,    // 카테고리별 예산 (아래에서 기본값으로 채움)
     collapsed: {},    // 접힌 카드 (키 -> true)
     prop: null,       // 부동산 매수가·시세 (아래에서 기본값으로 채움)
-    edits: {}         // 샘플·추가 내역 수정분 (id -> {d,n,c,m,a})
+    edits: {},        // 샘플·추가 내역 수정분 (id -> {d,n,c,m,a})
+    cats: null,       // 지출 카테고리 목록 (추가·수정·삭제 가능)
+    catRemap: {},     // 삭제한 카테고리 -> 대체 카테고리
+    invView: 'acct'   // 주식·투자 상세 : acct(계좌별) | merged(종목 합산)
   };
+  state.cats = cloneCats(DEFAULT_CATS);
   state.budgets = {};
+  state.cats.forEach(function(c){ state.budgets[c.id] = (typeof c.budget === 'number' ? c.budget : 0); });
   state.prop = JSON.parse(JSON.stringify(PROP_DEFAULT));
-  CATS.forEach(function(c){ state.budgets[c.id] = BUDGET_DEFAULT[c.id]; });
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
@@ -1523,6 +1565,7 @@
         if (s.range === '6m' || s.range === '1y' || s.range === 'all') state.range = s.range;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
         if (s.tab === 'asset' || s.tab === 'spend') state.tab = s.tab;
+        if (s.invView === 'acct' || s.invView === 'merged') state.invView = s.invView;
         if (s.brand && typeof s.brand === 'object') {
           if (typeof s.brand.emoji === 'string' && s.brand.emoji.trim()) state.brand.emoji = s.brand.emoji.trim();
           if (typeof s.brand.name === 'string' && s.brand.name.trim()) state.brand.name = s.brand.name.trim().slice(0, 20);
@@ -1607,7 +1650,7 @@
         rules: state.rules, overrides: state.overrides, range: state.range,
         brand: state.brand, budgets: state.budgets, collapsed: state.collapsed,
         prop: state.prop, edits: state.edits,
-        cats: state.cats, catRemap: state.catRemap
+        cats: state.cats, catRemap: state.catRemap, invView: state.invView
       }));
     } catch (e) {}
   }
@@ -2004,26 +2047,37 @@
     el('growthChip').textContent = ymLabel(ym).slice(5) + '월 ' + won(diff, {plus:true}) + '';
     syncRangeToggle();
 
-    // 포트폴리오
+    // 포트폴리오 (4영역 : 현금·예적금 / 주식·투자 / 연금·절세 / 부동산)
     el('pfMonth').textContent = ymLabel(ym) + ' 기준';
+    const inv = investGroup(ym, 'broker');
+    const pen = investGroup(ym, 'pension');
+    const invPrev = hasPrev ? investGroup(prevYm, 'broker') : null;
+    const penPrev = hasPrev ? investGroup(prevYm, 'pension') : null;
     const rows = [
       {key:'cash',  name:'현금·예적금', color:'#2F8F7B', v:snap.cash},
-      {key:'stock', name:'주식·투자',   color:'#E9834A', v:snap.stock},
+      {key:'stock', name:'주식·투자',   color:'#E9834A', v:inv.v},
+      {key:'pen',   name:'연금·절세',   color:'#4E9BD6', v:pen.v},
       {key:'real',  name:'부동산',       color:'#7C6FD1', v:realOf(ym)}
     ];
     const pv = hasPrev ? SNAP[prevYm] : null;
-    const inv = investTotals(ym);
     el('pfList').innerHTML = rows.map(function(r) {
       const share = total ? r.v / total : 0;
-      const d = pv ? (r.key === 'real' ? r.v - realOf(prevYm) : r.v - pv[r.key]) : 0;
+      const d = !pv ? 0
+        : (r.key === 'real' ? r.v - realOf(prevYm)
+          : r.key === 'stock' ? r.v - invPrev.v
+          : r.key === 'pen' ? r.v - penPrev.v
+          : r.v - pv[r.key]);
       const cls = d > 0 ? 'up' : (d < 0 ? 'down' : '');
       const dtxt = !pv ? '—' : (d === 0 ? '변동 없음' : (d > 0 ? '▲ ' : '▼ ') + won(Math.abs(d)) + '');
-      const sub = (r.key === 'stock')
-        ? '<div class="psub">투자원금 ' + won(inv.p) + ' · 평가 ' + won(inv.v) + ' · 평가수익 ' +
-          (inv.g >= 0 ? '+' : '−') + won(Math.abs(inv.g)) + ' (' + pct(inv.rate) + '%)</div>'
-        : ((ym === '2026-11' && SUBS[r.key] && r.key !== 'real')
-          ? '<div class="psub">' + SUBS[r.key].map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
-          : (r.key === 'real' ? '<div class="psub">' + propSubText(ym) + '</div>' : ''));
+      const sub = (r.key === 'stock' || r.key === 'pen')
+        ? '<div class="psub">' + (r.key === 'stock' ? '일반 계좌' : 'ISA·연금저축·IRP·퇴직연금') +
+          ' · 원금 ' + won((r.key === 'stock' ? inv : pen).p) + ' · 평가 ' + won(r.v) + ' · 수익 ' +
+          signedWon((r.key === 'stock' ? inv : pen).g) + ' (' + signedPct((r.key === 'stock' ? inv : pen).rate) + ')</div>'
+        : (r.key === 'real'
+          ? '<div class="psub">' + propSubText(ym) + '</div>'
+          : ((ym === '2026-11'
+            ? '<div class="psub">' + SUBS.cash.map(function(s){ return s[0] + ' ' + won(s[1]) + ''; }).join(' · ') + '</div>'
+            : '')));
       return '<div class="prow">' +
         '<div class="prow-h"><span class="pdot" style="background:' + r.color + '"></span>' + r.name +
         '<b>' + won(r.v) + '</b></div>' +
@@ -2045,6 +2099,7 @@
     el('debtFoot').textContent = '총부채 ' + won(snap.debt) + ' · ' + (debtD <= 0 ? '이번 달 ' + won(Math.abs(debtD)) + ' 줄었어요' : '이번 달 ' + won(debtD) + ' 늘었어요');
 
     renderInvest(ym);
+    renderPension(ym);
     renderProp(ym);
     drawGrowth();
   }
@@ -2060,13 +2115,13 @@
       b.classList.toggle('on', b.getAttribute('data-range') === state.range);
     });
   }
-  function investTotals(ym) {
+  function investItems(ym) {
     const base = SNAP[INVEST_BASE].stock;
     const target = SNAP[ym] ? SNAP[ym].stock : base;
     const f = target / base;
     const items = INVEST.map(function(it) {
       return {
-        name: it.name, sub: it.sub, units: it.units,
+        acct: it.acct, type: it.type, name: it.name, sub: it.sub, units: it.units,
         p: Math.round(it.principal * f / 1000) * 1000,
         v: Math.round(it.value * f / 1000) * 1000
       };
@@ -2077,30 +2132,107 @@
       i.g = i.v - i.p;
       i.rate = i.p ? i.g / i.p : 0;
     });
-    const tp = items.reduce(function(s,i){ return s + i.p; }, 0);
-    return {
-      items: items, p: tp, v: target, g: target - tp,
-      rate: tp ? (target - tp) / tp : 0, scaled: Math.abs(f - 1) > 1e-9
-    };
+    return items;
+  }
+  function invSumOf(items) {
+    const p = items.reduce(function(s,i){ return s + i.p; }, 0);
+    const v = items.reduce(function(s,i){ return s + i.v; }, 0);
+    return { items: items, p: p, v: v, g: v - p, rate: p ? (v - p) / p : 0 };
+  }
+  function investGroup(ym, type) {
+    return invSumOf(investItems(ym).filter(function(i){ return i.type === type; }));
+  }
+  function investTotals(ym) { return invSumOf(investItems(ym)); }
+
+  function invSumBox(t) {
+    return '<div><span>투자 원금</span><b>' + won(t.p) + '</b></div>' +
+      '<div><span>평가금액</span><b>' + won(t.v) + '</b></div>' +
+      '<div><span>평가수익</span><b class="' + (t.g >= 0 ? 'up' : 'down') + '">' +
+        (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g)) + ' (' + pct(t.rate) + '%)</b></div>';
   }
   function renderInvest(ym) {
-    const t = investTotals(ym);
-    el('investNote').textContent = ymLabel(ym) + ' 평가 기준';
-    el('investSum').innerHTML =
-      '<div><span>투자 원금</span><b>' + won(t.p) + '</b></div>' +
-      '<div><span>평가금액</span><b>' + won(t.v) + '</b></div>' +
-      '<div><span>평가수익</span><b class="' + (t.g >= 0 ? 'up' : '') + '">' +
-        (t.g >= 0 ? '+' : '−') + won(Math.abs(t.g), {unit:false}) + ' (' + pct(t.rate) + '%)</b></div>';
-    el('investList').innerHTML = t.items.map(function(i) {
-      return '<div class="invest-row">' +
-        '<div class="invest-h"><span>' + esc(i.name) + '</span>' +
-          (i.units !== '—' ? '<span class="iu">' + i.units + '</span>' : '') +
-          '<b>' + won(i.v) + '</b></div>' +
-        '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
-          '<span class="' + (i.g >= 0 ? 'up' : '') + '">' + (i.g >= 0 ? '+' : '−') + won(Math.abs(i.g)) +
-          ' (' + pct(i.rate) + '%)</span></div>' +
-      '</div>';
+    const all = investItems(ym).filter(function(i){ return i.type === 'broker'; });
+    const t = invSumOf(all);
+    el('investNote').textContent = ymLabel(ym) + ' 평가 · 일반 계좌';
+    el('investSum').innerHTML = invSumBox(t);
+    Array.prototype.forEach.call(el('invSeg').querySelectorAll('button'), function(b) {
+      const on = b.getAttribute('data-invview') === state.invView;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    el('investList').innerHTML = (state.invView === 'merged')
+      ? mergedRows(all)
+      : acctRows(all, false);
+  }
+  /* 계좌별 보기 : 계좌 헤더 + 종목 */
+  function acctRows(items, pension) {
+    const order = [];
+    const map = {};
+    items.forEach(function(i) {
+      if (!map[i.acct]) { map[i.acct] = []; order.push(i.acct); }
+      map[i.acct].push(i);
+    });
+    return order.map(function(acct) {
+      const list = map[acct];
+      const t = invSumOf(list);
+      return '<div class="accrow">' +
+        '<div class="acchead"><b>' + esc(acct) + '</b>' +
+          '<span class="accbadge">' + (pension ? '절세' : list.length + '종목') + '</span>' +
+          '<span class="accsum">' + won(t.v) +
+            '<small class="' + (t.g >= 0 ? 'up' : 'down') + '">' + signedWon(t.g) + ' (' + pct(t.rate) + '%)</small>' +
+          '</span>' +
+        '</div>' +
+        list.map(function(i) {
+          return '<div class="invest-row sub">' +
+            '<div class="invest-h"><span>' + esc(i.name) + '</span>' +
+              (i.units !== '—' ? '<span class="iu">' + i.units + '</span>' : '') +
+              '<b>' + won(i.v) + '</b></div>' +
+            '<div class="invest-f"><span>' + esc(i.sub) + '</span><span>원금 ' + won(i.p) + '</span>' +
+              '<span class="' + (i.g >= 0 ? 'up' : 'down') + '">' + signedWon(i.g) + '원 (' + pct(i.rate) + '%)</span></div>' +
+          '</div>';
+        }).join('') +
+        '</div>';
     }).join('');
+  }
+  /* 종목 상산 : 여러 계좌의 같은 종목을 하나로 */
+  function mergedRows(items) {
+    const order = [];
+    const map = {};
+    items.forEach(function(i) {
+      if (!map[i.name]) {
+        map[i.name] = { name: i.name, sub: i.sub, units: i.units, accts: [], p: 0, v: 0 };
+        order.push(i.name);
+      }
+      const g = map[i.name];
+      g.p += i.p;
+      g.v += i.v;
+      g.accts.push(i.acct);
+      if (g.units === '—' && i.units !== '—') g.units = i.units;
+    });
+    return order.map(function(nm) {
+      const g = map[nm];
+      const gain = g.v - g.p;
+      const rate = g.p ? gain / g.p : 0;
+      return '<div class="invest-row">' +
+        '<div class="invest-h"><span>' + esc(g.name) + '</span>' +
+          (g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
+          '<b>' + won(g.v) + '</b></div>' +
+        '<div class="invest-f"><span>원금 ' + won(g.p) + '</span>' +
+          '<span class="' + (gain >= 0 ? 'up' : 'down') + '">' + signedWon(gain) + '원 (' + pct(rate) + '%)</span></div>' +
+        '<div class="invest-f accts"><span class="ibadge">' + g.accts.length + '계좌</span>' +
+          '<span>' + g.accts.map(esc).join(' · ') + '</span></div>' +
+        '</div>';
+    }).join('');
+  }
+  /* 연금·절세 상세 */
+  function renderPension(ym) {
+    const items = investItems(ym).filter(function(i){ return i.type === 'pension'; });
+    const t = invSumOf(items);
+    const accounts = [];
+    items.forEach(function(i){ if (accounts.indexOf(i.acct) < 0) accounts.push(i.acct); });
+    el('penNote').textContent = ymLabel(ym) + ' 평가 · 계좌 ' + accounts.length + '개';
+    el('penSum').innerHTML = invSumBox(t);
+    el('penList').innerHTML = acctRows(items, true);
   }
 
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
@@ -2783,7 +2915,8 @@
     const addedInc = state.addedIncome.filter(function(t){ return t.ym === ym; });
     const icur = byIncomeCat(incList);
     const remain = inc - meta.save - fixedSpent - spent;
-    const inv = investTotals(ym);
+    const inv = investGroup(ym, 'broker');
+    const pen = investGroup(ym, 'pension');
     const invTxt = (inv.g >= 0 ? '+' : '−') + won(Math.abs(inv.g)) + ' (' + pct(inv.rate) + '%)';
 
     const L = [];
@@ -2820,7 +2953,16 @@
     if (changes.length) {
       L.push('· 늘어난 곳: ' + changes.map(function(x){ return x.c.label + ' +' + won(x.d) + ''; }).join(', '));
     }
-    L.push('· 주식·투자: 원금 ' + won(inv.p) + ' / 평가 ' + won(inv.v) + ' / 평가수익 ' + invTxt);
+    L.push('· 주식·투자(일반): 원금 ' + won(inv.p) + ' / 평가 ' + won(inv.v) + ' / 평가수익 ' + invTxt);
+    L.push('· 연금·절세: 계좌 ' + (function(){
+      const a = [];
+      investItems(ym).forEach(function(i){ if (i.type === 'pension' && a.indexOf(i.acct) < 0) a.push(i.acct); });
+      return a.length + '개(' + a.join(', ') + ')';
+    })() + ' · 원금 ' + won(pen.p) + ' / 평가 ' + won(pen.v) + ' / 평가수익 ' +
+      signedWon(pen.g) + '원 (' + signedPct(pen.rate) + ')');
+    L.push('· 자산 4영역: 현금·예적금 ' + won(SNAP[ym].cash) + ' / 주식·투자 ' + won(inv.v) +
+      ' / 연금·절세 ' + won(pen.v) + ' / 부동산 ' + won(realOf(ym)) +
+      ' (총자산 ' + won(SNAP[ym].cash + inv.v + pen.v + realOf(ym)) + ')');
     const pvv = propView(ym);
     L.push('· 부동산: ' + state.prop.name + ' 매수가 ' + won(state.prop.buy) + ' → 시세 ' + won(pvv.price) +
       (pvv.preBuy ? ' (매수 전)' : ' · 시세차익 ' + signedWon(pvv.gain) + '원 (' + signedPct(pvv.rate) + ')'));
@@ -3627,6 +3769,16 @@
       save();
       syncRangeToggle();
       drawGrowth();
+    });
+  });
+  Array.prototype.forEach.call(el('invSeg').querySelectorAll('button'), function(b) {
+    b.addEventListener('click', function() {
+      const v = b.getAttribute('data-invview');
+      if (state.invView === v) return;
+      state.invView = v;
+      save();
+      renderInvest(state.ym);
+      toast(v === 'merged' ? '종목 합산으로 봐요 · 같은 종목은 한 줄로 묶었어요' : '계좌별로 봐요 · 계좌마다 원금·평가·수익률을 보여줘요');
     });
   });
 
