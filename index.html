@@ -325,6 +325,40 @@
   .bbar{position:relative; height:8px; border-radius:99px; background:#F3F0E9; overflow:visible;}
   .bbar i{display:block; height:100%; border-radius:99px; transition:width .45s ease;}
   .bbar u{position:absolute; top:-3px; width:0; height:14px; border-left:2px dashed #B9B1A2; opacity:.9;}
+  /* 예산 카드 : 헤더 편집 버튼 · 합계 · 0원 제외 안내 */
+  .bh-right{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; min-width:0;}
+  .btn-budget{
+    flex:none; border:1px solid var(--line); background:#fff; color:var(--ink-2);
+    font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em;
+    padding:5px 10px; border-radius:999px; cursor:pointer; white-space:nowrap; transition:.16s ease;
+  }
+  .btn-budget:hover, .btn-budget:focus-visible{border-color:var(--teal); color:var(--teal); background:var(--teal-soft); outline:none;}
+  .bsum{display:flex; gap:6px; margin-bottom:10px;}
+  .bsum div{flex:1; min-width:0; background:#F8F5ED; border:1px solid var(--line-2); border-radius:11px; padding:7px 9px;}
+  .bsum span{display:block; font-size:9.5px; font-weight:700; color:var(--ink-3); white-space:nowrap;}
+  .bsum b{display:block; font-size:11.5px; font-weight:850; margin-top:2px; color:var(--ink); font-variant-numeric:tabular-nums; white-space:nowrap; letter-spacing:-.02em;}
+  .bsum b.over{color:var(--red);}
+  .bzero{margin-top:9px; padding:9px 11px; border-radius:12px; background:#FBF6EC; border:1px dashed #E6DAC4; font-size:10.5px; font-weight:700; color:var(--ink-3); line-height:1.65;}
+  .bzero b{color:var(--ink-2);}
+  .bempty{padding:16px 4px; text-align:center; font-size:11.5px; font-weight:700; color:var(--ink-3); line-height:1.6;}
+  /* 예산 설정 시트 */
+  .budgettotal{display:flex; align-items:baseline; justify-content:space-between; gap:8px; background:#F2F7F4; border:1px solid #DCEBE3; border-radius:14px; padding:11px 13px; margin-bottom:10px;}
+  .budgettotal span{font-size:10.5px; font-weight:800; color:#1F7A64;}
+  .budgettotal b{font-size:16px; font-weight:850; color:#1F7A64; font-variant-numeric:tabular-nums; letter-spacing:-.02em;}
+  .bfrow{display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--line-2);}
+  .bfrow:last-child{border-bottom:0;}
+  .bfrow .bfl{display:flex; align-items:baseline; gap:5px; flex:1; min-width:0; font-size:12px; font-weight:700; color:var(--ink-2);}
+  .bfrow .bfl .bfs{font-size:9.5px; font-weight:700; color:var(--ink-3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .bfrow .bfi{display:flex; align-items:center; gap:4px; flex:none;}
+  .bfrow .bfi input{width:104px; text-align:right; font:inherit; font-size:13px; font-weight:700; padding:9px 10px; border-radius:11px; border:1px solid var(--line); background:#FCFAF6; color:var(--ink); font-variant-numeric:tabular-nums; -webkit-appearance:none; appearance:none;}
+  .bfrow .bfi input:focus{outline:2px solid #CFE7DE; border-color:#B9DCCF; background:#fff;}
+  .bfrow .bfu{font-size:10.5px; font-weight:700; color:var(--ink-3);}
+  .bfrow.zero .bfi input{background:#F5F1E9; color:var(--ink-3);}
+  .bfrow.zero .bfl{color:var(--ink-3);}
+  @media (max-width:380px){
+    .bfrow .bfi input{width:92px;}
+    .bfrow .bfl .bfs{display:none;}
+  }
   /* transactions */
   .chips{display:flex; gap:6px; overflow-x:auto; padding:2px 0 10px; margin:0 -2px; scrollbar-width:none;}
   .chips::-webkit-scrollbar{display:none;}
@@ -658,9 +692,14 @@
     <div class="card">
       <div class="card-head">
         <h2>변동 생활비 예산 진행률</h2>
-        <span class="muted" id="budgetNote"></span>
+        <div class="bh-right">
+          <span class="muted" id="budgetNote"></span>
+          <button type="button" class="btn-budget" id="btnBudgetEdit" aria-label="카테고리별 예산 설정">✎ 예산 설정</button>
+        </div>
       </div>
+      <div id="budgetSum"></div>
       <div id="budgetList"></div>
+      <div id="budgetZero"></div>
     </div>
 
     <div class="card">
@@ -879,6 +918,27 @@
   </div>
 </div>
 
+<!-- 카테고리별 예산 설정 모달 -->
+<div class="modal" id="budgetModal" hidden>
+  <div class="bd" data-close-budget></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="budgetTitle">
+    <div class="grab"></div>
+    <h2 id="budgetTitle">카테고리별 예산 설정</h2>
+    <p class="hint">달마다 쓸 변동 생활비 예산을 카테고리별로 정해요. 0원으로 두면 그 항목은 예산 진행률에서 빠져요.</p>
+    <div class="budgettotal"><span>총 변동 예산</span><b id="budgetTotalText">0 원</b></div>
+    <form id="budgetForm" novalidate>
+      <div id="budgetFields"></div>
+      <p class="err" id="budgetErr" hidden></p>
+      <p class="muted" id="budgetZeroNote" style="font-size:10.5px; margin:10px 0 0; line-height:1.6;"></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-budget>취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+      <button type="button" class="btn-link" id="budgetDefault">기본값으로 되돌리기</button>
+    </form>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -897,7 +957,8 @@
   ];
   const CAT = {};
   CATS.forEach(function(c){ CAT[c.id] = c; });
-  const BUDGET_TOTAL = CATS.reduce(function(s,c){ return s + c.budget; }, 0);
+  const BUDGET_DEFAULT = {};
+  CATS.forEach(function(c){ BUDGET_DEFAULT[c.id] = c.budget; });
 
   // 수입 카테고리 5종
   const INCOME_CATS = [
@@ -1243,8 +1304,11 @@
     overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
     range: '6m',      // 6m | 1y | all
     pickerYear: 2026,
-    brand: { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name }   // 가계부 이름·이모지
+    brand: { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name },   // 가계부 이름·이모지
+    budgets: null     // 카테고리별 예산 (아래에서 기본값으로 채움)
   };
+  state.budgets = {};
+  CATS.forEach(function(c){ state.budgets[c.id] = BUDGET_DEFAULT[c.id]; });
   try {
     const raw = localStorage.getItem(STORE_KEY);
     if (raw) {
@@ -1262,6 +1326,12 @@
           if (typeof s.brand.emoji === 'string' && s.brand.emoji.trim()) state.brand.emoji = s.brand.emoji.trim();
           if (typeof s.brand.name === 'string' && s.brand.name.trim()) state.brand.name = s.brand.name.trim().slice(0, 20);
         }
+        if (s.budgets && typeof s.budgets === 'object') {
+          CATS.forEach(function(c) {
+            const v = s.budgets[c.id];
+            if (typeof v === 'number' && isFinite(v) && v >= 0) state.budgets[c.id] = Math.min(Math.round(v), 99999999);
+          });
+        }
       }
     }
   } catch (e) { /* 저장소를 못 쓰면 메모리 상태로만 동작 */ }
@@ -1272,9 +1342,28 @@
         ym: state.ym, tab: state.tab, excluded: state.excluded,
         added: state.added, addedIncome: state.addedIncome,
         rules: state.rules, overrides: state.overrides, range: state.range,
-        brand: state.brand
+        brand: state.brand, budgets: state.budgets
       }));
     } catch (e) {}
+  }
+
+  /* ── 카테고리별 예산 값 ── */
+  function budgetOf(id) {
+    const v = state.budgets[id];
+    return (typeof v === 'number' && isFinite(v) && v > 0) ? Math.round(v) : 0;
+  }
+  function budgetTotal() {
+    return CATS.reduce(function(s, c){ return s + budgetOf(c.id); }, 0);
+  }
+  function budgetHiddenCats() {
+    return CATS.filter(function(c){ return budgetOf(c.id) <= 0; });
+  }
+  /* 이번 달 변동 지출 중 예산이 잡힌 카테고리 몫 (0원으로 뺀 카테고리는 제외) */
+  function budgetSpent(list) {
+    return sum(list.filter(function(t) {
+      const c = CAT[t.c];
+      return !(c && budgetOf(c.id) <= 0);
+    }));
   }
 
   /* ────────────── 3. 숫자 포맷 ────────────── */
@@ -1794,6 +1883,8 @@
     const list = allExp.filter(function(t){ return t.k !== 'f'; });      // 변동 생활비
     const fixedList = allExp.filter(function(t){ return t.k === 'f'; });  // 고정 지출
     const spent = sum(list);
+    const bTotal = budgetTotal();
+    const bSpent = budgetSpent(list);
     const fixedSpent = sum(fixedList);
     const upcoming = upcomingFixed(ym);
     const upSum = upcoming.reduce(function(s,u){ return s + u.a; }, 0);
@@ -1898,14 +1989,18 @@
 
     /* 다음 플랜 */
     const plan = el('insPlan');
-    const budgetPct = spent / BUDGET_TOTAL;
+    const budgetPct = bTotal > 0 ? bSpent / bTotal : 0;
     const pacePct = days / meta.days;
-    if (ongoing) {
+    if (bTotal <= 0) {
+      plan.innerHTML =
+        '<b>예산을 아직 안 정했어요</b>' +
+        '<p>카테고리 예산이 모두 <b>0원</b>이라 진행률을 낼 수 없어요. 예산 카드의 <b>✎ 예산 설정</b>에서 쓸 금액을 넣어주세요.</p>';
+    } else if (ongoing) {
       const remainDays = meta.days - meta.elapsed;
-      const dailyNow = spent / meta.elapsed;
-      const leftBudget = Math.max(BUDGET_TOTAL - spent, 0);
+      const dailyNow = bSpent / meta.elapsed;
+      const leftBudget = Math.max(bTotal - bSpent, 0);
       const allowedPerDay = remainDays > 0 ? leftBudget / remainDays : 0;
-      const overPace = spent - BUDGET_TOTAL * pacePct;
+      const overPace = bSpent - bTotal * pacePct;
       const top = changes.length ? changes[0] : null;
       plan.innerHTML =
         '<b>남은 ' + remainDays + '일 플랜</b>' +
@@ -1920,11 +2015,11 @@
           '<div><span>남은 기간 하루 허용</span><b>' + won(Math.round(allowedPerDay)) + '</b></div>' +
         '</div>';
     } else {
-      const over = spent - BUDGET_TOTAL;
+      const over = bSpent - bTotal;
       const top = changes.length ? changes[0] : null;
       plan.innerHTML =
         '<b>' + ymLabel(ym) + ' 마감 결과</b>' +
-        '<p>예산 ' + won(BUDGET_TOTAL) + ' 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요. ' +
+        '<p>예산 ' + won(bTotal) + ' 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요. ' +
         (over > 0
           ? '예산을 <b>' + won(over) + '</b> 넘었어요.'
           : '<b>' + won(-over) + '</b> 남겼어요.') +
@@ -1997,24 +2092,51 @@
     });
 
     /* 예산 진행률 */
-    el('budgetNote').textContent = '변동 예산 ' + won(BUDGET_TOTAL) + ' · ' + pct(budgetPct, 0) + '% 사용';
-    el('budgetList').innerHTML = CATS.map(function(c) {
+    el('budgetNote').textContent = bTotal > 0
+      ? '변동 예산 ' + won(bTotal) + ' · ' + pct(budgetPct, 0) + '% 사용'
+      : '예산 미설정';
+
+    if (bTotal > 0) {
+      const bLeft = bTotal - bSpent;
+      el('budgetSum').innerHTML =
+        '<div class="bsum">' +
+          '<div><span>총 변동 예산</span><b>' + won(bTotal) + '</b></div>' +
+          '<div><span>이번 달 지출</span><b>' + won(bSpent) + '</b></div>' +
+          '<div><span>' + (bLeft >= 0 ? '남은 예산' : '넘은 금액') + '</span><b' + (bLeft < 0 ? ' class="over"' : '') + '>' + won(Math.abs(bLeft)) + '</b></div>' +
+        '</div>';
+    } else {
+      el('budgetSum').innerHTML = '';
+    }
+
+    const bShown = CATS.filter(function(c){ return budgetOf(c.id) > 0; });
+    const bZero = budgetHiddenCats();
+
+    el('budgetList').innerHTML = bShown.length ? bShown.map(function(c) {
       const v = cur[c.id] || 0;
-      const p = Math.min(v / c.budget, 1);
-      const over = v > c.budget;
-      const pace = v - c.budget * pacePct;
-      const expected = c.budget * pacePct;
+      const b = budgetOf(c.id);
+      const p = Math.min(v / b, 1);
+      const over = v > b;
+      const expected = b * pacePct;
       const flag = !ongoing
         ? (over ? '<span class="flag">초과</span>' : '')
         : (c.fixed ? '' : (v > expected * 1.1 ? '<span class="flag">빠름</span>' : (v < expected * 0.9 ? '<span class="flag ok">여유</span>' : '')));
       const color = over ? '#D8544F' : c.color;
-      return '<div class="brow">' +
+      return '<div class="brow" data-cat="' + c.id + '">' +
         '<div class="brow-top"><span class="bn">' + c.emoji + ' ' + c.label + '</span>' + flag +
-          '<span class="bv"><b>' + won(v, {unit:false}) + '</b> / ' + won(c.budget) + '</span></div>' +
+          '<span class="bv"><b>' + won(v, {unit:false}) + '</b> / ' + won(b) + '</span></div>' +
         '<div class="bbar"><i style="width:' + (p*100).toFixed(1) + '%;background:' + color + '"></i>' +
         (ongoing ? '<u style="left:' + (pacePct*100).toFixed(1) + '%"></u>' : '') + '</div>' +
         '</div>';
-    }).join('');
+    }).join('')
+      : '<div class="bempty">예산이 잡힌 카테고리가 없어요.<br>✎ 예산 설정에서 금액을 넣어주세요.</div>';
+
+    el('budgetZero').innerHTML = bZero.length
+      ? '<div class="bzero"><b>0원으로 뺀 항목</b> · ' + bZero.map(function(c) {
+          const v = cur[c.id] || 0;
+          return c.emoji + ' ' + c.label + (v > 0 ? ' <b>' + won(v) + '</b> 지출' : '');
+        }).join(' · ') +
+        '<br>이 항목은 예산·진행률에서 빼고 계산해요. 이번 달 지출은 위 결산의 변동 생활비에 그대로 들어가요.</div>'
+      : '';
 
     /* 상세 내역 : 전체 / 지출 / 수입 */
     const kind = state.kind || 'all';
@@ -2309,7 +2431,21 @@
     }
     L.push('· 고정 지출 ' + won(fixedSpent) + ' (' + fixedList.length + '건)' +
       (upcoming.length ? ' · 예정 ' + won(upSum) : ''));
-    L.push('· 변동 생활비 ' + won(spent) + ' (변동 예산 ' + won(BUDGET_TOTAL) + '의 ' + pct(spent / BUDGET_TOTAL, 0) + '%)');
+    L.push('· 변동 생활비 ' + won(spent) + (budgetTotal() > 0
+      ? ' (변동 예산 ' + won(budgetTotal()) + '의 ' + pct(budgetSpent(list) / budgetTotal(), 0) + '%)'
+      : ''));
+    if (LEDGER[ym].status === 'ongoing' && budgetTotal() > 0) {
+      const rd = LEDGER[ym].days - LEDGER[ym].elapsed;
+      const left = Math.max(budgetTotal() - budgetSpent(list), 0);
+      if (rd > 0) L.push('· 남은 ' + rd + '일 하루 허용 ' + won(Math.round(left / rd)));
+    }
+    const bHidden = budgetHiddenCats();
+    if (bHidden.length) {
+      L.push('· 예산 0원(진행률 제외): ' + bHidden.map(function(c) {
+        const v = cur[c.id] || 0;
+        return c.label + (v > 0 ? ' ' + won(v) + ' 지출' : ' 0원');
+      }).join(', '));
+    }
     L.push('· 이번 달 남은 돈 ' + won(remain) + (upcoming.length ? ' (고정 예정 ' + won(upSum) + ' 반영 시 ' + won(remain - upSum) + ')' : '') +
       ' · 저축률 ' + pct(inc ? meta.save / inc : 0) + '%');
     if (prevTotal) {
@@ -2609,9 +2745,10 @@
     state.cat = null;
     state.icat = null;
     state.brand = { emoji: BRAND_DEFAULT.emoji, name: BRAND_DEFAULT.name };
+    CATS.forEach(function(c){ state.budgets[c.id] = BUDGET_DEFAULT[c.id]; });
     save();
     renderAll();
-    toast('샘플 데이터로 되돌렸어요 · 이름도 기본값이에요');
+    toast('샘플 데이터로 되돌렸어요 · 이름·예산도 기본값이에요');
   });
 
   /* ────────────── 11-2. 가계부 이름·이모지 설정 ────────────── */
@@ -2668,6 +2805,103 @@
   el('brandDefault').addEventListener('click', function() {
     applyBrand(BRAND_DEFAULT.emoji, BRAND_DEFAULT.name);
     toast('기본값으로 되돌렸어요 · ' + BRAND_DEFAULT.emoji + ' ' + BRAND_DEFAULT.name);
+  });
+
+  /* ────────────── 11-3. 카테고리별 예산 설정 ────────────── */
+  let budgetDraft = null;
+
+  function monthVarSpend() {
+    return byCat(visible(state.ym).filter(function(t){ return t.k !== 'f'; }));
+  }
+  function renderBudgetFields() {
+    const sp = monthVarSpend();
+    el('budgetFields').innerHTML = CATS.map(function(c) {
+      const v = budgetDraft[c.id];
+      const now = sp[c.id] || 0;
+      return '<div class="bfrow' + (v <= 0 ? ' zero' : '') + '" data-row="' + c.id + '">' +
+        '<label class="bfl" for="bud-' + c.id + '">' + c.emoji + ' ' + c.label +
+          '<span class="bfs">' + (now ? won(now) + ' 썼어요' : '지출 없음') + '</span></label>' +
+        '<span class="bfi"><input type="number" id="bud-' + c.id + '" data-bud="' + c.id +
+          '" inputmode="numeric" min="0" max="99999999" step="10000" value="' + v + '" aria-label="' + c.label + ' 월 예산"><span class="bfu">원</span></span>' +
+        '</div>';
+    }).join('');
+  }
+  function budgetDraftSum() {
+    return CATS.reduce(function(s, c) { return s + (budgetDraft[c.id] || 0); }, 0);
+  }
+  function syncBudgetDraft() {
+    el('budgetTotalText').textContent = won(budgetDraftSum());
+    Array.prototype.forEach.call(el('budgetFields').querySelectorAll('.bfrow'), function(r) {
+      r.classList.toggle('zero', (budgetDraft[r.getAttribute('data-row')] || 0) <= 0);
+    });
+    const sp = monthVarSpend();
+    const zeros = CATS.filter(function(c){ return (budgetDraft[c.id] || 0) <= 0; });
+    el('budgetZeroNote').textContent = zeros.length
+      ? '0원으로 두는 항목: ' + zeros.map(function(c) {
+          const v = sp[c.id] || 0;
+          return c.label + (v > 0 ? ' (' + won(v) + ' 지출)' : '');
+        }).join(', ') + ' → 진행률·총예산에서 빠져요'
+      : '0원으로 두면 그 카테고리는 진행률에서 빠져요.';
+  }
+  function openBudgetModal() {
+    budgetDraft = {};
+    CATS.forEach(function(c){ budgetDraft[c.id] = budgetOf(c.id); });
+    el('budgetErr').hidden = true;
+    renderBudgetFields();
+    syncBudgetDraft();
+    el('budgetModal').hidden = false;
+  }
+  function closeBudgetModal() { el('budgetModal').hidden = true; budgetDraft = null; }
+  function applyBudgets(next) {
+    CATS.forEach(function(c) {
+      const n = Math.round(Number(next[c.id]));
+      state.budgets[c.id] = (isFinite(n) && n > 0) ? Math.min(n, 99999999) : 0;
+    });
+    save();
+    closeBudgetModal();
+    renderSpend();
+    toast('예산을 저장했어요 · 총 변동 예산 ' + won(budgetTotal()));
+  }
+
+  el('btnBudgetEdit').addEventListener('click', openBudgetModal);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-close-budget]'), function(b) {
+    b.addEventListener('click', closeBudgetModal);
+  });
+  el('budgetFields').addEventListener('input', function(e) {
+    const inp = e.target.closest('input[data-bud]');
+    if (!inp || !budgetDraft) return;
+    const n = Math.round(Number(inp.value));
+    budgetDraft[inp.getAttribute('data-bud')] = (isFinite(n) && n > 0) ? Math.min(n, 99999999) : 0;
+    el('budgetErr').hidden = true;
+    syncBudgetDraft();
+  });
+  el('budgetForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!budgetDraft) return;
+    const next = {};
+    let bad = null;
+    Array.prototype.forEach.call(el('budgetFields').querySelectorAll('input[data-bud]'), function(inp) {
+      const raw = inp.value.trim();
+      const n = raw === '' ? 0 : Number(raw);
+      if (!isFinite(n) || n < 0 || n > 99999999) bad = bad || inp;
+      next[inp.getAttribute('data-bud')] = isFinite(n) ? n : 0;
+    });
+    if (bad) {
+      const err = el('budgetErr');
+      err.textContent = '예산은 0원 이상 금액으로 넣어주세요.';
+      err.hidden = false;
+      bad.focus();
+      return;
+    }
+    applyBudgets(next);
+  });
+  el('budgetDefault').addEventListener('click', function() {
+    if (!budgetDraft) return;
+    CATS.forEach(function(c){ budgetDraft[c.id] = BUDGET_DEFAULT[c.id]; });
+    el('budgetErr').hidden = true;
+    renderBudgetFields();
+    syncBudgetDraft();
+    toast('기본 예산을 불러왔어요 · 저장을 눌러 적용해요');
   });
 
   /* ────────────── 11-1. 월 네비게이터 · 기간 토글 ────────────── */
