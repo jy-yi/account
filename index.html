@@ -4739,7 +4739,7 @@
     if (!q.lawd || !q.apt) {
       openPropModal();
       toast(DB.mode === 'live'
-        ? '실거래 조회 정보를 기본값으로 채워 뒀어요 · 저장을 누르면 바로 조회돼요'
+        ? '법정동·단지명을 넣어 주세요 · 저장을 누르면 바로 조회돼요'
         : '법정동·단지명을 넣으면 국토부 실거래를 조회해요');
       setTimeout(function(){ el(q.lawd ? 'prApt' : 'prLawd').focus(); }, 80);
       return;
