@@ -490,7 +490,12 @@
   /* income block (결산 카드) */
   .incblock{margin-top:12px; padding:13px 13px 8px; border-radius:16px; background:#F6FAF8; border:1px solid #DFEDE7;}
   .incblock h3{margin:0; font-size:11px; font-weight:800; color:#20735F; letter-spacing:-.01em; display:flex; align-items:center; gap:6px;}
-  .incblock h3 span{margin-left:auto; font-size:10px; color:#5D8F80; font-weight:700;}
+  .incblock h3 .inc-toggle{display:flex; align-items:center; gap:6px; width:100%; padding:0; border:0; background:transparent; font:inherit; font-size:11px; font-weight:800; color:#20735F; letter-spacing:-.01em; cursor:pointer; text-align:left;}
+  .incblock h3 .it-lb{flex:none;}
+  .incblock h3 .it-n{margin-left:auto; font-size:10px; color:#5D8F80; font-weight:700;}
+  .incblock h3 .it-chev{flex:none; width:12px; text-align:center; font-size:12px; font-weight:800; line-height:1; color:#5D8F80;}
+  .incblock.is-closed{padding-bottom:13px;}
+  .incblock.is-closed .inc-body{display:none;}
   .incrow{display:flex; align-items:center; gap:9px; padding:9px 0; border-bottom:1px solid #E7F1EC;}
   .incrow:last-child{border-bottom:0;}
   .incrow .ie{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; font-size:14px; background:#E7F3EE; flex:none;}
@@ -2921,7 +2926,12 @@
     const exInc = excludedIncome(ym);
     const incSorted = incList.slice().sort(function(a,b){ return dayOf(b) - dayOf(a) || b.a - a.a; });
     el('incomeBlock').innerHTML =
-      '<h3>💰 이번 달 수입 내역<span>' + incList.length + '건</span></h3>' +
+      '<h3><button type="button" class="inc-toggle" aria-controls="incBody">' +
+        '<span class="it-lb">💰 이번 달 수입 내역</span>' +
+        '<span class="it-n">' + incList.length + '건</span>' +
+        '<span class="it-chev" aria-hidden="true">⌄</span>' +
+      '</button></h3>' +
+      '<div class="inc-body" id="incBody">' +
       (incSorted.length ? incSorted.map(function(t) {
         const ic = INCAT[t.c] || INCOME_CATS[4];
         return '<div class="incrow">' +
@@ -2934,7 +2944,9 @@
       }).join('') : '<div class="tx-empty">이 달에 잡힌 수입이 없어요. ＋ 내역 추가 → 수입으로 넣어보세요.</div>') +
       '<div class="incfoot"><span>공동 수입 합계</span><b>' + nf.format(inc) + '원</b></div>' +
       (exInc.length ? '<div style="font-size:10px; color:#8B939E; font-weight:700; margin-top:5px;">수입에서 뺀 내역 ' +
-        exInc.length + '건 · ' + nf.format(sum(exInc)) + '원 (아래 상세에서 되돌릴 수 있어요)</div>' : '');
+        exInc.length + '건 · ' + nf.format(sum(exInc)) + '원 (아래 상세에서 되돌릴 수 있어요)</div>' : '') +
+      '</div>';
+    applyIncomeFold();
     Array.prototype.forEach.call(el('incomeBlock').querySelectorAll('.inc-del'), function(b) {
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
@@ -4873,12 +4885,15 @@
     const t = card.querySelector('.card-head > h2, .netcard-top > .eyebrow');
     return (panel ? panel.id : 'card') + ':' + (t ? t.textContent.trim() : 'x');
   }
-  /* 자산 탭 하단 4개 카드는 첫 진입 시 기본으로 접어 둬요 (직접 누른 상태가 있으면 그게 우선) */
+  /* 자산 탭 하단 4개 카드 + 지출 탭의 공동 수입 내역·고정 지출 카드는 첫 진입 시 기본으로 접어 둬요
+     (직접 누른 상태가 있으면 그게 우선) */
   const DEFAULT_COLLAPSED = {
     'view-asset:주식·투자 상세': true,
     'view-asset:연금·절세 상세': true,
     'view-asset:부동산 상세': true,
-    'view-asset:부채': true
+    'view-asset:부채': true,
+    'view-spend:이번 달 수입 내역': true,
+    'view-spend:고정 지출 · 자동 규칙': true
   };
   function isCollapsed(key) {
     if (Object.prototype.hasOwnProperty.call(state.collapsed, key)) return state.collapsed[key] === true;
@@ -4902,6 +4917,31 @@
     state.collapsed[key] = !!on;
     save();
     applyCollapsed();
+    applyIncomeFold();
+  }
+
+  /* 결산 카드 안 '이번 달 수입 내역' 접기 — 기본 닫힘, 헤더를 누르면 열려요 */
+  function applyIncomeFold() {
+    const box = el('incomeBlock');
+    if (!box) return;
+    const on = isCollapsed('view-spend:이번 달 수입 내역');
+    box.classList.toggle('is-closed', on);
+    const btn = box.querySelector('.inc-toggle');
+    if (!btn) return;
+    btn.setAttribute('aria-expanded', on ? 'false' : 'true');
+    btn.setAttribute('aria-label', '이번 달 수입 내역 ' + (on ? '펼치기' : '접기'));
+    const ch = btn.querySelector('.it-chev');
+    if (ch) ch.textContent = on ? '⌄' : '⌃';
+  }
+  function initIncomeFold() {
+    const box = el('incomeBlock');
+    if (!box) return;
+    box.addEventListener('click', function(e) {
+      const t = e.target;
+      if (!t || !t.closest || !t.closest('.inc-toggle')) return;
+      setCollapsed('view-spend:이번 달 수입 내역', !isCollapsed('view-spend:이번 달 수입 내역'));
+    });
+    applyIncomeFold();
   }
   function initCardToggles() {
     Array.prototype.forEach.call(document.querySelectorAll('#view-asset > .card, #view-spend > .card'), function(card) {
@@ -5759,6 +5799,7 @@
     if (state.tab === 'spend') renderSpend();
   }
   initCardToggles();
+  initIncomeFold();
   renderAll();
   applyCollapsed();
   bootGate();
