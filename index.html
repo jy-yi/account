@@ -1372,17 +1372,17 @@
       <div class="frow">
         <div class="field">
           <label for="prLawd">법정동(구/코드) <span class="opt">실거래</span></label>
-          <input type="text" id="prLawd" maxlength="24" autocomplete="off" placeholder="영등포구 또는 11560" />
+          <input type="text" id="prLawd" maxlength="24" autocomplete="off" placeholder="예: 강남구 또는 11680" />
         </div>
         <div class="field">
           <label for="prUmd">동 <span class="opt">선택</span></label>
-          <input type="text" id="prUmd" maxlength="20" autocomplete="off" placeholder="영등포동7가 (선택)" />
+          <input type="text" id="prUmd" maxlength="20" autocomplete="off" placeholder="예: 역삼동 (선택)" />
         </div>
       </div>
       <div class="frow">
         <div class="field">
           <label for="prApt">단지명</label>
-          <input type="text" id="prApt" maxlength="40" autocomplete="off" placeholder="예: ○○아파트" />
+          <input type="text" id="prApt" maxlength="40" autocomplete="off" placeholder="예: 래미안" />
         </div>
         <div class="field">
           <label for="prArea">전용면적 (㎡)</label>
@@ -4229,21 +4229,17 @@
   }
   function openPropModal() {
     const p = state.prop;
-    /* 실거래 조회 정보가 아직 비어 있으면 우리 집 기본값을 미리 채워 둬요(저장하면 그 값이 우선).
-       이미 저장된 값이 있으면 그 값이 항상 우선해요. */
-    const blank = !p.lawd && !p.umd && !p.apt;
-    const seed = (blank && DB.mode === 'live') ? RE_USER_DEFAULTS : null;
+    /* 저장된 실거래 조회 정보가 있을 때만 그 값을 채워요. 없으면 빈 칸으로 두고 직접 입력해요.
+       (소스에 거주지 기본값을 두지 않아요 — 저장된 값은 DB asset_snapshots.meta 에서 옵니다.) */
     el('prName').value = p.name;
     el('prBuy').value = Math.round(p.buy / 10000);
     el('prPrice').value = Math.round(realOf(state.ym) / 10000);
     el('prDate').value = p.buyDate;
-    el('prLawd').value = p.lawd || (seed ? seed.lawd : '');
-    el('prUmd').value = p.umd || (seed ? seed.umd : '');
-    el('prApt').value = p.apt || (seed ? seed.apt : '');
-    el('prArea').value = (typeof p.exclu === 'number' && p.exclu > 0) ? p.exclu : (seed ? seed.area : '');
-    el('propModalHint').textContent = seed
-      ? '실거래 조회 정보를 기본값으로 채워 뒀어요. 확인하고 저장을 누르면 다음부터 이 값으로 조회해요.'
-      : (ymLabel(state.ym) + ' 시세를 직접 넣어요. 법정동·단지명은 실거래가 조회에만 쓰고, 매수가는 그대로 둬도 돼요.');
+    el('prLawd').value = p.lawd || '';
+    el('prUmd').value = p.umd || '';
+    el('prApt').value = p.apt || '';
+    el('prArea').value = (typeof p.exclu === 'number' && p.exclu > 0) ? p.exclu : '';
+    el('propModalHint').textContent = ymLabel(state.ym) + ' 시세를 직접 넣어요. 법정동·단지명은 실거래가 조회에만 쓰고, 매수가는 그대로 둬도 돼요.';
     el('propErr').hidden = true;
     syncPropPreview();
     el('propModal').hidden = false;
@@ -4278,7 +4274,7 @@
     const areaRaw = el('prArea').value.trim();
     const areaNum = areaRaw ? parseFloat(areaRaw) : NaN;
     if (lawdRaw && !/^(\d{5}|\d{10}|[가-힣A-Za-z][가-힣A-Za-z\s]*)$/.test(lawdRaw)) {
-      err.textContent = '법정동은 5자리 코드나 구·시 이름으로 넣어주세요. (예: 11560 또는 영등포구)'; err.hidden = false; return;
+      err.textContent = '법정동은 5자리 코드나 구·시 이름으로 넣어주세요. (예: 11680 또는 강남구)'; err.hidden = false; return;
     }
     if (areaRaw && (!isFinite(areaNum) || areaNum <= 0 || areaNum > 1000)) {
       err.textContent = '전용면적은 ㎡ 단위 숫자로 넣어주세요. (예: 84.9)'; err.hidden = false; return;
@@ -4661,8 +4657,8 @@
        Live 모드에서는 asset_snapshots.meta(lawd_cd·apt_name·exclu_area)에 남고, DB 컬럼은 건드리지 않아요.
      · 결과 패널의 ‘최신 실거래가로 시세 반영’을 누르면 그 달 시세로 넣어요(Live 모드면 DB까지 저장). */
   const RE_PATH = '/functions/v1/get-realestate';
-  /* 실거래 조회 기본값 (우리 집). 부동산 항목에 저장된 값이 있으면 그 값이 우선해요. */
-  const RE_USER_DEFAULTS = { lawd: '영등포구', umd: '영등포동7가', apt: '경남아너스빌', area: 59.9 };
+  /* 실거래 조회 정보(법정동·동·단지명·전용면적)는 코드에 기본값으로 두지 않아요.
+     부동산 항목에 저장된 값(라이브는 asset_snapshots.meta)이 있으면 그 값을 쓰고, 없으면 사용자가 직접 입력해요. */
   const RE_MONTHS = 12;
   let reBusy = false;
   let reLast = null;     // 마지막 성공 응답 (시세 반영용)
