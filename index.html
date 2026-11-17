@@ -589,6 +589,29 @@
     white-space:nowrap; letter-spacing:-.01em; box-shadow:0 8px 18px -18px rgba(35,38,43,.5);
   }
   .prop-edit:hover{border-color:var(--teal); color:var(--teal); background:var(--teal-soft);}
+  /* 국토부 실거래가 조회 패널 */
+  .re-panel{margin-top:10px; padding:10px 11px; border-radius:14px; background:#F7FBF9; border:1px solid #E3F0EA;}
+  .re-panel.warn{background:var(--orange-soft); border-color:#F6DFD1;}
+  .re-head{display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:850; color:#1F7A63; letter-spacing:-.01em;}
+  .re-panel.warn .re-head{color:#B26A3C;}
+  .re-x{margin-left:auto; flex:none; width:22px; height:22px; border-radius:8px; border:1px solid #DCE9E3; background:#fff; color:var(--ink-3); font:inherit; font-size:10px; font-weight:800; cursor:pointer; display:grid; place-items:center; padding:0; line-height:1;}
+  .re-x:hover{border-color:var(--teal); color:var(--teal);}
+  .re-sub{font-size:9.5px; color:var(--ink-3); font-weight:700; margin:4px 0 2px; letter-spacing:-.01em; line-height:1.5;}
+  .re-sub b{color:#1F7A63; font-weight:850;}
+  .re-row{display:block; padding:7px 0; border-bottom:1px solid var(--line-2); font-variant-numeric:tabular-nums;}
+  .re-row:last-of-type{border-bottom:0;}
+  .re-line{display:flex; align-items:center; gap:5px; min-width:0;}
+  .re-row .re-d{flex:none; color:var(--ink-3); font-weight:700; font-size:9.5px; white-space:nowrap;}
+  .re-row .re-u{flex:0 1 auto; min-width:0; color:#1F7A63; background:#E8F3EE; border-radius:5px; padding:1px 5px;
+    font-size:9px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-.02em;}
+  .re-row .re-p{margin-left:auto; flex:none; font-weight:850; font-size:11.5px; letter-spacing:-.03em; white-space:nowrap;}
+  .re-row.top .re-p{color:#1F7A63;}
+  .re-row .re-m{font-size:9.5px; color:var(--ink-3); font-weight:700; margin-top:2px; letter-spacing:-.01em;}
+  .re-note{font-size:9px; color:var(--ink-3); font-weight:600; margin-top:6px; line-height:1.5; letter-spacing:-.01em;}
+  .re-apply{width:100%; margin-top:9px; border:0; border-radius:12px; background:#2F8F7B; color:#fff; font:inherit; font-size:11.5px; font-weight:850; padding:11px; cursor:pointer; letter-spacing:-.01em;}
+  .re-apply:hover{background:#287C6B;}
+  .re-apply[disabled]{opacity:.72; cursor:default; background:#5FA695;}
+  .re-empty{font-size:10.5px; color:var(--ink-2); font-weight:700; padding:8px 0 4px; line-height:1.6; letter-spacing:-.01em;}
   /* 내역 수정 버튼 (✎) 이 붙은 줄은 간격을 좁혀요 */
   .tx.tx-edit{gap:8px;}
   .tx.tx-edit .icon-btn{width:26px; height:26px; border-radius:9px; font-size:12px; font-weight:700; line-height:1;}
@@ -989,13 +1012,17 @@
     <div class="card">
       <div class="card-head">
         <h2>부동산 상세</h2>
-        <span class="muted" id="propNote"></span>
+        <div class="headright">
+          <span class="muted" id="propNote"></span>
+          <button type="button" class="btn-quote" id="btnQuoteReal" aria-label="국토부 아파트 실거래가 조회">🔄 실거래가 조회</button>
+        </div>
       </div>
       <div class="prop-sum" id="propSum"></div>
       <div id="propBar"></div>
       <div class="prop-meta" id="propMeta"></div>
+      <div class="re-panel" id="propRePanel" hidden></div>
       <div class="prop-foot">
-        <span class="pnote" id="propFootNote">시세는 월 1회 반영 · 고치면 그 달 평가액·순자산에 바로 반영돼요</span>
+        <span class="pnote" id="propFootNote">🔄 실거래가 조회로 국토부 실거래를 받아 그 달 시세에 바로 넣을 수 있어요</span>
         <button type="button" class="prop-edit" id="btnPropEdit">✎ 매수가·시세 수정</button>
       </div>
     </div>
@@ -1342,6 +1369,27 @@
         <label for="prDate">매수일</label>
         <input type="date" id="prDate" />
       </div>
+      <div class="frow">
+        <div class="field">
+          <label for="prLawd">법정동(구/코드) <span class="opt">실거래</span></label>
+          <input type="text" id="prLawd" maxlength="24" autocomplete="off" placeholder="영등포구 또는 11560" />
+        </div>
+        <div class="field">
+          <label for="prUmd">동 <span class="opt">선택</span></label>
+          <input type="text" id="prUmd" maxlength="20" autocomplete="off" placeholder="영등포동7가 (선택)" />
+        </div>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="prApt">단지명</label>
+          <input type="text" id="prApt" maxlength="40" autocomplete="off" placeholder="예: ○○아파트" />
+        </div>
+        <div class="field">
+          <label for="prArea">전용면적 (㎡)</label>
+          <input type="number" id="prArea" inputmode="decimal" min="0" max="1000" step="0.1" placeholder="예: 84.9" />
+        </div>
+      </div>
+      <p class="fieldnote">법정동·단지명을 넣어 두면 <b>🔄 실거래가 조회</b>로 국토부 실거래를 받아와요. 같은 단지명이 여러 동에 있으면 <b>동</b>까지 넣으면 정확해져요.</p>
       <p class="muted" style="font-size:10.5px; margin:0 0 10px; line-height:1.6;">만원 단위로 넣어요. 예: 4억 7,500만 원 → <b>47500</b></p>
       <p class="err" id="propErr" hidden></p>
       <div class="acts">
@@ -1608,6 +1656,10 @@
     area: '전용 59㎡',
     buy: 475000000,          // 취득가
     buyDate: '2025-11-28',   // 매수일
+    lawd: '',                // 법정동(구 이름 또는 5자리 코드) — 실거래가 조회용
+    umd: '',                 // 동(법정동) — 같은 단지명이 여러 동에 있을 때 (선택)
+    apt: '',                 // 단지명 — 실거래가 조회용
+    exclu: null,             // 전용면적 ㎡ — 실거래가 조회용
     price: {}                // 월별 시세 수정값 (ym -> 원). 비어 있으면 SNAP 시세를 그대로 씀
   };
   const PROP_AREA = PROP_DEFAULT.area;
@@ -1993,6 +2045,11 @@
           if (typeof P.name === 'string' && P.name.trim()) state.prop.name = P.name.trim().slice(0, 24);
           if (typeof P.buy === 'number' && isFinite(P.buy) && P.buy > 0) state.prop.buy = Math.round(P.buy);
           if (typeof P.buyDate === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(P.buyDate)) state.prop.buyDate = P.buyDate;
+          if (typeof P.area === 'string') state.prop.area = P.area.slice(0, 24);
+          if (typeof P.lawd === 'string') state.prop.lawd = P.lawd.slice(0, 24);
+          if (typeof P.umd === 'string') state.prop.umd = P.umd.slice(0, 20);
+          if (typeof P.apt === 'string') state.prop.apt = P.apt.slice(0, 40);
+          if (typeof P.exclu === 'number' && isFinite(P.exclu) && P.exclu > 0) state.prop.exclu = P.exclu;
           if (P.price && typeof P.price === 'object') {
             Object.keys(P.price).forEach(function(k) {
               const v = P.price[k];
@@ -2328,6 +2385,7 @@
     state.cat = null;
     state.icat = null;
     closePicker();
+    hideRe();
     save();
     renderAll();
     if (DB.mode === 'live') DB.onMonth(ym);
@@ -2402,7 +2460,7 @@
     el('propMeta').innerHTML = meta.map(function(r) {
       return '<div><span>' + r.k + '</span><b class="' + r.cls + '">' + esc(r.v) + '</b></div>';
     }).join('');
-    el('propFootNote').textContent = '시세는 월 1회 반영 · 고치면 그 달 평가액·순자산에 바로 반영돼요';
+    el('propFootNote').textContent = '🔄 실거래가 조회로 국토부 실거래를 받아 그 달 시세에 바로 넣을 수 있어요';
   }
   function renderAsset() {
     const ym = state.ym;
@@ -4171,11 +4229,21 @@
   }
   function openPropModal() {
     const p = state.prop;
+    /* 실거래 조회 정보가 아직 비어 있으면 우리 집 기본값을 미리 채워 둬요(저장하면 그 값이 우선).
+       이미 저장된 값이 있으면 그 값이 항상 우선해요. */
+    const blank = !p.lawd && !p.umd && !p.apt;
+    const seed = (blank && DB.mode === 'live') ? RE_USER_DEFAULTS : null;
     el('prName').value = p.name;
     el('prBuy').value = Math.round(p.buy / 10000);
     el('prPrice').value = Math.round(realOf(state.ym) / 10000);
     el('prDate').value = p.buyDate;
-    el('propModalHint').textContent = ymLabel(state.ym) + ' 시세를 직접 넣어요. 매수가는 취득가 그대로 두고 시세만 바꿔도 돼요.';
+    el('prLawd').value = p.lawd || (seed ? seed.lawd : '');
+    el('prUmd').value = p.umd || (seed ? seed.umd : '');
+    el('prApt').value = p.apt || (seed ? seed.apt : '');
+    el('prArea').value = (typeof p.exclu === 'number' && p.exclu > 0) ? p.exclu : (seed ? seed.area : '');
+    el('propModalHint').textContent = seed
+      ? '실거래 조회 정보를 기본값으로 채워 뒀어요. 확인하고 저장을 누르면 다음부터 이 값으로 조회해요.'
+      : (ymLabel(state.ym) + ' 시세를 직접 넣어요. 법정동·단지명은 실거래가 조회에만 쓰고, 매수가는 그대로 둬도 돼요.');
     el('propErr').hidden = true;
     syncPropPreview();
     el('propModal').hidden = false;
@@ -4186,7 +4254,7 @@
   Array.prototype.forEach.call(document.querySelectorAll('[data-close-prop]'), function(b) {
     b.addEventListener('click', closePropModal);
   });
-  ['prName', 'prBuy', 'prPrice', 'prDate'].forEach(function(id) {
+  ['prName', 'prBuy', 'prPrice', 'prDate', 'prLawd', 'prUmd', 'prApt', 'prArea'].forEach(function(id) {
     el(id).addEventListener('input', function() {
       el('propErr').hidden = true;
       syncPropPreview();
@@ -4204,13 +4272,30 @@
     if (!priceM || priceM <= 0) { err.textContent = '현재 시세를 만원 단위로 넣어주세요. (예: 52000)'; err.hidden = false; return; }
     if (buyM > 500000 || priceM > 500000) { err.textContent = '금액이 너무 커요. 만원 단위인지 확인해주세요.'; err.hidden = false; return; }
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { err.textContent = '매수일을 골라주세요.'; err.hidden = false; return; }
+    const lawdRaw = el('prLawd').value.trim();
+    const umdRaw = el('prUmd').value.trim();
+    const aptRaw = el('prApt').value.trim();
+    const areaRaw = el('prArea').value.trim();
+    const areaNum = areaRaw ? parseFloat(areaRaw) : NaN;
+    if (lawdRaw && !/^(\d{5}|\d{10}|[가-힣A-Za-z][가-힣A-Za-z\s]*)$/.test(lawdRaw)) {
+      err.textContent = '법정동은 5자리 코드나 구·시 이름으로 넣어주세요. (예: 11560 또는 영등포구)'; err.hidden = false; return;
+    }
+    if (areaRaw && (!isFinite(areaNum) || areaNum <= 0 || areaNum > 1000)) {
+      err.textContent = '전용면적은 ㎡ 단위 숫자로 넣어주세요. (예: 84.9)'; err.hidden = false; return;
+    }
     state.prop.name = name.slice(0, 24);
     state.prop.buy = buyM * 10000;
     state.prop.buyDate = date;
     state.prop.price[state.ym] = priceM * 10000;
+    state.prop.lawd = lawdRaw;
+    state.prop.umd = umdRaw.slice(0, 20);
+    state.prop.apt = aptRaw.slice(0, 40);
+    state.prop.exclu = isFinite(areaNum) && areaNum > 0 ? Math.round(areaNum * 100) / 100 : null;
+    if (state.prop.exclu) state.prop.area = '전용 ' + state.prop.exclu + '㎡';
     if (DB.mode === 'live') DB.saveProp();
     save();
     closePropModal();
+    hideRe();
     renderAll();
     toast('부동산 시세를 고쳤어요 · ' + ymLabel(state.ym) + ' 순자산 다시 계산됨');
   });
@@ -4569,6 +4654,169 @@
     const b = el(id);
     if (b) b.addEventListener('click', refreshQuotes);
   });
+
+  /* ────────────── 11-8. 국토부 아파트 실거래가 조회 ────────────── */
+  /* Supabase Edge Function `get-realestate` 로 최근 12개월 실거래를 받아 와요.
+     · 법정동·단지명·전용면적은 ‘매수가·시세 수정’ 모달에서 넣어요.
+       Live 모드에서는 asset_snapshots.meta(lawd_cd·apt_name·exclu_area)에 남고, DB 컬럼은 건드리지 않아요.
+     · 결과 패널의 ‘최신 실거래가로 시세 반영’을 누르면 그 달 시세로 넣어요(Live 모드면 DB까지 저장). */
+  const RE_PATH = '/functions/v1/get-realestate';
+  /* 실거래 조회 기본값 (우리 집). 부동산 항목에 저장된 값이 있으면 그 값이 우선해요. */
+  const RE_USER_DEFAULTS = { lawd: '영등포구', umd: '영등포동7가', apt: '경남아너스빌', area: 59.9 };
+  const RE_MONTHS = 12;
+  let reBusy = false;
+  let reLast = null;     // 마지막 성공 응답 (시세 반영용)
+
+  function propQuery() {
+    const p = state.prop;
+    return {
+      lawd: String(p.lawd || '').trim(),
+      umd: String(p.umd || '').trim(),
+      apt: String(p.apt || '').trim(),
+      area: (typeof p.exclu === 'number' && p.exclu > 0) ? p.exclu : null
+    };
+  }
+  function setReButton(busy) {
+    const b = el('btnQuoteReal');
+    if (!b) return;
+    b.disabled = !!busy;
+    b.innerHTML = busy ? '<span class="spin">🔄</span> 조회 중…' : '🔄 실거래가 조회';
+  }
+  function hideRe() {
+    const box = el('propRePanel');
+    if (!box) return;
+    box.hidden = true;
+    box.className = 're-panel';
+    box.innerHTML = '';
+    reLast = null;
+  }
+  function bindReClose() {
+    const x = el('reClose');
+    if (x) x.addEventListener('click', function(e) { e.stopPropagation(); hideRe(); });
+  }
+  function reShell(cls, inner) {
+    const box = el('propRePanel');
+    box.hidden = false;
+    box.className = 're-panel' + (cls ? ' ' + cls : '');
+    box.innerHTML = '<div class="re-head"><span>🏢 국토부 실거래</span>' +
+      '<button type="button" class="re-x" id="reClose" aria-label="실거래 패널 닫기">✕</button></div>' + inner;
+    bindReClose();
+  }
+  function renderReInfo(msg, hint) {
+    reShell('warn', '<div class="re-empty">' + esc(msg) + (hint ? '<br>' + esc(hint) : '') + '</div>');
+  }
+  function renderReData(data) {
+    const q = data.query || {};
+    const rows = (data.recent || []).map(function(d, i) {
+      return '<div class="re-row' + (i === 0 ? ' top' : '') + '">' +
+        '<div class="re-line">' +
+          '<span class="re-d">' + esc(String(d.dealDate || '').replace(/-/g, '.')) + '</span>' +
+          (d.umdNm ? '<span class="re-u">' + esc(d.umdNm) + '</span>' : '') +
+          '<span class="re-p">' + won(d.priceKrw, { unit: false }) + '원</span>' +
+        '</div>' +
+        '<div class="re-m">' + (d.area ? Number(d.area).toFixed(2) + '㎡' : '면적 —') +
+          ' · ' + (d.floor !== null && d.floor !== undefined ? d.floor + '층' : '층 —') + '</div></div>';
+    }).join('');
+    reShell('', '<div class="re-sub">' + esc(q.lawdName || q.lawdCd || '') + (q.umdNm ? ' ' + esc(q.umdNm) : '') +
+      ' · ' + esc(q.aptName || '') + ' · 최근 ' + (q.months || RE_MONTHS) + '개월 <b>' + data.count + '건</b></div>' + rows +
+      '<div class="re-note">' + esc(data.note || '') + '</div>' +
+      '<button type="button" class="re-apply" id="reApply">⬇ 최신 실거래가로 시세 반영 · ' +
+        won(data.latest.priceKrw, { unit: false }) + '원</button>');
+    el('reApply').addEventListener('click', applyLatestDeal);
+  }
+  function applyLatestDeal() {
+    if (!reLast || !reLast.latest) return;
+    const price = Number(reLast.latest.priceKrw) || 0;
+    if (!price) { toast('반영할 실거래가가 없어요'); return; }
+    state.prop.price[state.ym] = price;
+    if (DB.mode === 'live') DB.saveProp();
+    save();
+    renderAll();
+    const b = el('reApply');
+    if (b) { b.disabled = true; b.textContent = '✅ ' + ymLabel(state.ym) + ' 시세에 반영했어요'; }
+    toast('실거래 ' + won(price, { unit: false }) + '원을 ' + ymLabel(state.ym) + ' 시세로 넣었어요' +
+      (DB.mode === 'live' ? ' · 실시간 DB에 저장' : ''));
+  }
+  async function refreshRealEstate() {
+    if (reBusy) return;
+    const q = propQuery();
+    if (!q.lawd || !q.apt) {
+      openPropModal();
+      toast(DB.mode === 'live'
+        ? '실거래 조회 정보를 기본값으로 채워 뒀어요 · 저장을 누르면 바로 조회돼요'
+        : '법정동·단지명을 넣으면 국토부 실거래를 조회해요');
+      setTimeout(function(){ el(q.lawd ? 'prApt' : 'prLawd').focus(); }, 80);
+      return;
+    }
+    let token = '';
+    if (DB.mode === 'live' && DB.sb) {
+      try {
+        const s = await DB.sb.auth.getSession();
+        token = (s && s.data && s.data.session && s.data.session.access_token) || '';
+      } catch (e) { token = ''; }
+      if (!token) { toast('로그인 세션이 만료됐어요 · 다시 로그인한 뒤 시도해 주세요'); return; }
+    }
+    reBusy = true;
+    reLast = null;
+    setReButton(true);
+    try {
+      const body = { lawdCd: q.lawd, aptName: q.apt, months: RE_MONTHS };
+      if (q.umd) body.umdNm = q.umd;
+      if (q.area) body.area = q.area;
+      const headers = { 'Content-Type': 'application/json', apikey: SB_KEY };
+      if (token) headers.Authorization = 'Bearer ' + token;
+      const res = await fetch(SB_URL + RE_PATH, { method: 'POST', headers: headers, body: JSON.stringify(body) });
+      let data = null;
+      try { data = await res.json(); } catch (e) { data = null; }
+      if (!res.ok || !data || data.ok === false) {
+        const err = new Error('HTTP ' + res.status);
+        err.status = res.status;
+        err.data = data;
+        throw err;
+      }
+      if (!data.count || !data.latest) {
+        const cand = Array.isArray(data.aptCandidates) ? data.aptCandidates.filter(Boolean).slice(0, 4) : [];
+        const dongs = Array.isArray(data.umdCandidates) ? data.umdCandidates.filter(Boolean).slice(0, 5) : [];
+        renderReInfo('최근 ' + RE_MONTHS + '개월 안에 「' + q.apt + '」' + (q.umd ? ' ' + q.umd : '') + ' 실거래가 없어요',
+          cand.length ? '이 지역 단지 이름 예: ' + cand.join(', ')
+            : (q.umd && dongs.length ? '이 지역 동 이름 예: ' + dongs.join(', ') : '단지명을 조금 짧게 넣으면 잘 찾아요 · 법정동도 확인해 주세요'));
+        toast('실거래 내역을 찾지 못했어요 · 단지명·동을 확인해 주세요');
+        return;
+      }
+      reLast = data;
+      renderReData(data);
+    } catch (e) {
+      const st0 = e && e.status;
+      /* 서버가 돌려준 안내(404·키 미설정 등)는 정상 흐름이라 경고로만 남겨요 */
+      if (st0) console.warn('[ledger] 실거래가 조회 안내 · HTTP ' + st0);
+      else console.error('[ledger] 실거래가 조회 실패', e);
+      const st = st0;
+      const d = (e && e.data) || null;
+      if (st === 404) {
+        renderReInfo('실거래 서버(get-realestate)가 아직 없어요', 'Supabase → Edge Functions 에서 이름을 get-realestate 로 함수를 배포하면 바로 조회돼요.');
+        toast('실거래 서버가 아직 없어요 · Supabase에 get-realestate 를 배포해 주세요');
+      } else if (d && d.needKey) {
+        renderReInfo(d.error || '인증키가 설정되지 않았어요', d.hint || 'Supabase Secrets 에 DATA_GO_KR_KEY 를 넣어 주세요.');
+        toast('공공데이터포털 인증키(DATA_GO_KR_KEY) 설정이 필요해요');
+      } else if (d && d.error) {
+        renderReInfo(d.error, d.hint || '');
+        toast('실거래가를 받아오지 못했어요 · ' + d.error);
+      } else if (st === 401 || st === 403) {
+        renderReInfo('실거래 서버가 인증을 거부했어요', 'get-realestate 의 Verify JWT 설정을 확인해 주세요.');
+        toast('실거래 서버가 인증을 거부했어요 · Verify JWT 설정을 확인해 주세요');
+      } else if (st) {
+        renderReInfo('실거래 서버 오류(' + st + ')', '잠시 뒤 다시 시도해 주세요.');
+        toast('실거래가를 가져오지 못했어요 · 서버 오류(' + st + ')');
+      } else {
+        renderReInfo('실거래 서버에 연결하지 못했어요', 'Supabase에 get-realestate Edge Function을 배포했는지 확인해 주세요.');
+        toast('실거래 서버에 연결하지 못했어요 · 배포 상태를 확인해 주세요');
+      }
+    } finally {
+      reBusy = false;
+      setReButton(false);
+    }
+  }
+  if (el('btnQuoteReal')) el('btnQuoteReal').addEventListener('click', refreshRealEstate);
 
   /* ────────────── 11-1. 월 네비게이터 · 기간 토글 ────────────── */
   el('mPrev').addEventListener('click', function() {
@@ -4936,6 +5184,10 @@
       state.prop.buy = Number(meta.buy_price) || 0;
       state.prop.buyDate = meta.buy_date || '';
       state.prop.area = meta.area || '';
+      state.prop.lawd = meta.lawd_cd || '';
+      state.prop.umd = meta.umd_name || '';
+      state.prop.apt = meta.apt_name || '';
+      state.prop.exclu = (meta.exclu_area && Number(meta.exclu_area) > 0) ? Number(meta.exclu_area) : null;
     }
     reRows.forEach(function(r){ state.prop.price[r.ym] = (state.prop.price[r.ym] || 0) + (Number(r.amount) || 0); });
 
@@ -5208,7 +5460,9 @@
     return commit(async function(){
       const found = (DB.snaps || []).filter(function(s){ return s.ym === ym && s.kind === 'real_estate'; })[0];
       const meta = Object.assign({}, (found && found.meta && typeof found.meta === 'object') ? found.meta : {}, {
-        buy_price: p.buy, buy_date: p.buyDate, area: p.area || ''
+        buy_price: p.buy, buy_date: p.buyDate, area: p.area || '',
+        lawd_cd: p.lawd || '', umd_name: p.umd || '',
+        apt_name: p.apt || '', exclu_area: p.exclu || null
       });
       if (found) {
         return DB.sb.from('asset_snapshots').update({ name: p.name, amount: price, meta: meta }).eq('id', found.id);
