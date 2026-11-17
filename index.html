@@ -4802,8 +4802,13 @@
         renderReInfo(d.error, d.hint || '');
         toast('실거래가를 받아오지 못했어요 · ' + d.error);
       } else if (st === 401 || st === 403) {
-        renderReInfo('실거래 서버가 인증을 거부했어요', 'get-realestate 의 Verify JWT 설정을 확인해 주세요.');
-        toast('실거래 서버가 인증을 거부했어요 · Verify JWT 설정을 확인해 주세요');
+        renderReInfo('실거래 서버가 인증을 거부했어요',
+          DB.mode === 'live'
+            ? 'get-realestate 의 Verify JWT 설정과 로그인 상태를 확인해 주세요.'
+            : '샘플 모드에서는 로그인 토큰이 없어요 · 로그인하거나 get-realestate 의 Verify JWT 를 끄면 조회돼요.');
+        toast(DB.mode === 'live'
+          ? '실거래 서버가 인증을 거부했어요 · Verify JWT 설정을 확인해 주세요'
+          : '샘플 모드예요 · 로그인하면 실거래가를 조회할 수 있어요');
       } else if (st) {
         renderReInfo('실거래 서버 오류(' + st + ')', '잠시 뒤 다시 시도해 주세요.');
         toast('실거래가를 가져오지 못했어요 · 서버 오류(' + st + ')');
