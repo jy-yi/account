@@ -149,7 +149,7 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 | 표시 | `#investQuoteMeta`, `#penQuoteMeta`, `#fxNoteRate` |
 | Edge Function | **`get-quotes`** — 저장소 문서·과거 메모에 `get-stock-price`로 적힌 곳이 있지만 **실제 배포·호출 이름은 `get-quotes`** 입니다. 이름을 바꾸면 `index.html`의 호출부도 같이 바꿔야 합니다. |
 | 입력 | 종목명 또는 티커. 티커는 localStorage에 이름 기준으로 저장(`symOf`, `saveSym`), 스코프는 `quoteScope()` |
-| 제약 | 수량(`quantity`)이 있는 종목만 갱신. 응답 60초 캐시(함수 측), 한 번에 최대 80종목 |
+| 제약 | 수량(`quantity`)이 있는 종목만 갱신. **청약 통장(`invIsSavings(name, invSubText(i))` — 이름·`sub_type`에 `청약`)은 시세가 없으므로 요청 `items`·실패(`failed`) 양쪽에서 제외** — 청약만 있으면 `get-quotes`를 호출하지 않고 안내 토스트만 띄웁니다. 응답 60초 캐시(함수 측), 한 번에 최대 80종목 |
 
 **실거래 (`🔄 실거래가 조회`)**
 

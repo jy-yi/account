@@ -742,6 +742,19 @@
     -webkit-appearance:none; appearance:none;
   }
   .field input:focus, .field select:focus{outline:2px solid #CFE7DE; border-color:#B9DCCF; background:#fff;}
+  /* 입력 전체 삭제(×) 버튼 */
+  .input-clear-wrap{position:relative; display:block;}
+  .input-clear-wrap input{padding-right:46px;}
+  .input-clear-btn{
+    position:absolute; right:5px; top:50%; transform:translateY(-50%);
+    width:34px; height:34px; min-width:34px; padding:0; display:none;
+    align-items:center; justify-content:center; border:0; border-radius:50%;
+    background:#E7E2D8; color:#6B6558; font:inherit; font-size:18px; line-height:1;
+    font-weight:800; cursor:pointer; -webkit-tap-highlight-color:transparent;
+    touch-action:manipulation;
+  }
+  .input-clear-btn.show{display:flex;}
+  .input-clear-btn:active{background:#D5CEC0;}
   .frow{display:flex; gap:10px;}
   .frow .field{flex:1;}
   .sheet .acts{display:flex; gap:8px; margin-top:14px;}
@@ -1208,7 +1221,10 @@
       <div id="expFields">
         <div class="field">
           <label for="fName">가맹점</label>
-          <input type="text" id="fName" placeholder="예: 이마트 장보기" maxlength="30" required />
+          <div class="input-clear-wrap">
+            <input type="text" id="fName" placeholder="예: 이마트 장보기" maxlength="30" required />
+            <button type="button" class="input-clear-btn" data-clear="fName" aria-label="입력 지우기">×</button>
+          </div>
         </div>
         <div class="frow">
           <div class="field">
@@ -1228,14 +1244,10 @@
       <div id="incFields" hidden>
         <div class="field">
           <label for="fIncName">항목명</label>
-          <input type="text" id="fIncName" placeholder="예: 부부 월급" maxlength="30" list="incNameList" />
-          <datalist id="incNameList">
-            <option value="부부 월급"></option>
-            <option value="상여·성과급"></option>
-            <option value="협찬·부수입"></option>
-            <option value="배당·이자"></option>
-            <option value="기타 수입"></option>
-          </datalist>
+          <div class="input-clear-wrap">
+            <input type="text" id="fIncName" placeholder="예: 부부 월급" maxlength="30" />
+            <button type="button" class="input-clear-btn" data-clear="fIncName" aria-label="입력 지우기">×</button>
+          </div>
         </div>
         <div class="frow">
           <div class="field">
@@ -4204,6 +4216,29 @@
   /* ────────────── 10. 모달 ────────────── */
   let modalKind = 'exp';
   let editTarget = null;   // {id, k} 수정 중인 내역
+  /* 입력칸 전체 삭제(×) 버튼 동기화 */
+  function syncClear(id) {
+    const inp = el(id);
+    const btn = document.querySelector('.input-clear-btn[data-clear="' + id + '"]');
+    if (!inp || !btn) return;
+    btn.classList.toggle('show', inp.value.trim() !== '');
+  }
+  (function bindClearButtons() {
+    ['fName', 'fIncName'].forEach(function(id) {
+      const inp = el(id);
+      const btn = document.querySelector('.input-clear-btn[data-clear="' + id + '"]');
+      if (!inp || !btn) return;
+      inp.addEventListener('input', function() { syncClear(id); });
+      inp.addEventListener('change', function() { syncClear(id); });
+      btn.addEventListener('mousedown', function(e) { e.preventDefault(); });   // 포커스 유지
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        inp.value = '';
+        syncClear(id);
+        inp.focus();
+      });
+    });
+  })();
   function catOptions() {
     return CATS.map(function(c) { return '<option value="' + c.id + '">' + c.emoji + ' ' + c.label + '</option>'; }).join('');
   }
@@ -4226,6 +4261,7 @@
     el('fAmount').placeholder = exp ? '32000' : '200000';
     el('addErr').hidden = true;
     setTimeout(function(){ (exp ? el('fName') : el('fIncName')).focus(); }, 40);
+    syncClear('fName'); syncClear('fIncName');
   }
   Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
     b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
@@ -4300,6 +4336,7 @@
     setEditChrome(true, t.k);
     el('modal').hidden = false;
     setTimeout(function(){ (isInc ? el('fIncName') : el('fName')).focus(); }, 40);
+    syncClear('fName'); syncClear('fIncName');
   }
   /* 직접 추가한 내역은 원본을 고치고, 샘플 내역은 수정분만 덮어써요 */
   function patchTx(id, patch) {
@@ -4440,7 +4477,7 @@
     openRuleModal(id);
   });
 
-  function closeModal() { el('modal').hidden = true; editTarget = null; setEditChrome(false, modalKind); }
+  function closeModal() { el('modal').hidden = true; editTarget = null; setEditChrome(false, modalKind); syncClear('fName'); syncClear('fIncName'); }
 
   el('btnAdd').addEventListener('click', openModal);
   Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function(b) {
@@ -5285,9 +5322,15 @@
   async function refreshQuotes() {
     if (quoteBusy) return;
     if (!state.invest.length) { toast('보유 종목이 없어요 · ＋ 종목 추가로 먼저 넣어주세요'); return; }
-    const targets = state.invest.filter(function(i) { return typeof i.qty === 'number' && i.qty > 0; });
-    if (!targets.length) {
+    const held = state.invest.filter(function(i) { return typeof i.qty === 'number' && i.qty > 0; });
+    if (!held.length) {
       toast('보유 수량이 적힌 종목이 없어요 · 종목을 눌러 수량을 넣으면 시세가 자동 반영돼요');
+      return;
+    }
+    /* 청약 통장은 주식처럼 사고파는 상품이 아니라 시세가 없어요 → 조회 요청·실패 목록에서 빼요 */
+    const targets = held.filter(function(i) { return !invIsSavings(i.name, invSubText(i)); });
+    if (!targets.length) {
+      toast('청약 통장은 시세 조회 대상이 아니에요 · 주식·연금 종목에 수량을 넣어 주세요');
       return;
     }
     let token = '';
