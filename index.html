@@ -1709,18 +1709,8 @@
 
   // 매달 반복되는 저축·투자 이체 규칙 (가상 샘플) — 지출로 잡히지 않고 통장 잔액만 옮겨요
   const TR_SAMPLE = [
-    {id:'t1', name:'정기적금 자동이체', amount:1000000, day:22, on:true,
-     from:'토스뱅크 생활비+비상금', to:'우리은행 나의 소원 적금', toKind:'cash', toItem:'', activeFrom:'', activeTo:null},
-    {id:'t2', name:'주택청약', amount:250000, day:22, on:true,
-     from:'토스뱅크 생활비+비상금', to:'신한은행 주택청약 (종윤)', toKind:'cash', toItem:'', activeFrom:'', activeTo:null},
-    {id:'t3', name:'연금저축', amount:350000, day:22, on:true,
-     from:'토스뱅크 생활비+비상금', to:'삼성증권 연금저축', toKind:'cash', toItem:'', activeFrom:'', activeTo:null},
-    {id:'t4', name:'ETF 자동매수', amount:700000, day:22, on:true,
-     from:'토스뱅크 생활비+비상금', to:'토스증권', toKind:'invest', toItem:'TIGER 미국S&P500', activeFrom:'', activeTo:null},
-    {id:'t5', name:'여행 적립', amount:200000, day:22, on:false,
-     from:'토스뱅크 생활비+비상금', to:'카카오뱅크 세이프박스', toKind:'cash', toItem:'', activeFrom:'', activeTo:null},
-    {id:'t6', name:'종윤 ISA', amount:300000, day:22, on:true,
-     from:'SC제일 입출금', to:'삼성증권 ISA', toKind:'cash', toItem:'', activeFrom:'', activeTo:null}
+    {id:'t1', name:'정기적금 자동이체', amount:1000000, day:25, on:true,
+     from:'비상금 통장', to:'정기적금', toKind:'cash', toItem:'', activeFrom:'', activeTo:null}
   ];
 
   // 보유 종목 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
@@ -2088,7 +2078,7 @@
     addedIncome: [],// 수입 {id, ym, d, n, c, m, a}
     rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
     transfers: TR_SAMPLE.map(function(r){ return Object.assign({}, r); }),   // 고정 저축·이체 규칙 (샘플 기본값)
-    transferLog: [{id:'trlv1', ym:'2026-11', ruleId:'t2', amount:250000, from:'토스뱅크 생활비+비상금', to:'신한은행 주택청약 (종윤)', toKind:'cash', toItem:'', ts:Date.now()}],   // 샘플 모드 이체 실행 기록 {id, ym, ruleId, amount, from, to, toKind, toItem, ts}
+    transferLog: [],   // 샘플 모드 이체 실행 기록 {id, ym, ruleId, amount, from, to, toKind, toItem, ts}
     trCash: null,      // 샘플 현금 계좌 금액 덮어쓰기 (계좌명 -> 금액)
     trSnap: null,      // 샘플 순자산 덮어쓰기 (ym -> {cash, stock})
     overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
