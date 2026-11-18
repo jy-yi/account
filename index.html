@@ -3841,12 +3841,16 @@
       refresh().then(function(){ renderAll(); }).catch(function(){});
       return;
     }
+    /* 이 달 자산 기록이 없어 최근 달 기준으로 반영했으면 알려줘요 */
+    const touched = [outRow.ym, inRow ? inRow.ym : inInv.ym];
+    const alt = touched.filter(function(x){ return x && x !== ym; })[0] || null;
     try {
       await refresh();
       renderAll();
       setBadge(DB.subs ? 'live' : 'wait');
     } catch (e) { console.error('[ledger] 이체 후 새로고침 실패', e); }
-    toast('이체 완료 · ' + rule.name + ' ' + nf.format(a) + '원 · ' + rule.from + '에서 빼고 ' + trTargetLabel(rule.to, rule.toItem) + '에 넣었어요');
+    toast('이체 완료 · ' + rule.name + ' ' + nf.format(a) + '원 · ' + rule.from + '에서 빼고 ' + trTargetLabel(rule.to, rule.toItem) + '에 넣었어요' +
+      (alt ? ' (' + ymLabel(ym) + ' 자산 기록이 없어 ' + ymLabel(alt) + ' 기준에 반영)' : ''));
   }
   async function trUndoLive(rule) {
     const ym = state.ym;
