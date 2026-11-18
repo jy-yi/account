@@ -3261,30 +3261,8 @@
       });
     });
 
-    /* 제외 목록 */
-    const ex = excludedTxs(ym);
-    const exI = excludedIncome(ym);
-    const exAll = ex.concat(exI);
-    el('exclBox').innerHTML = exAll.length ? '<div class="exclbox">' +
-      '<h3>공동 가계부에서 제외됨 · ' + exAll.length + '건' +
-        (ex.length ? ' · 지출 ' + nf.format(sum(ex)) + '원' : '') +
-        (exI.length ? ' · 수입 ' + nf.format(sum(exI)) + '원' : '') + '</h3>' +
-      exAll.map(function(t) {
-        return '<div class="exrow"><span class="ttag' + (t.k === 'i' ? '' : ' exp') + '">' + (t.k === 'i' ? '수입' : '지출') + '</span>' +
-          '<span>' + t.d.replace('-', '.') + '</span><s>' + esc(t.n) + ' ' + nf.format(t.a) + '원</s>' +
-          '<button data-id="' + t.id + '">되돌리기</button></div>';
-      }).join('') + '</div>' : '';
-    Array.prototype.forEach.call(el('exclBox').querySelectorAll('button'), function(b) {
-      b.addEventListener('click', function() {
-        const id = b.getAttribute('data-id');
-        const wasIncome = /@|^iadd/.test(id) || monthIncomeTxs(ym).some(function(x){ return x.id === id; });
-        delete state.excluded[id];
-        if (DB.mode === 'live') DB.setExcluded(id, false);
-        save();
-        renderAll();
-        toast(wasIncome ? '다시 공동 수입으로 넣었어요' : '다시 공동 지출로 넣었어요');
-      });
-    });
+    /* 제외 목록 — 화면에는 그리지 않음 (is_excluded 데이터·합계/차트/저축률 계산은 그대로 유지) */
+    el('exclBox').innerHTML = '';
   }
 
   /* ────────────── 8-0. 선택 연도 누적 ────────────── */
