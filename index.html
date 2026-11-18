@@ -3812,18 +3812,23 @@
     const inV = inInv ? (Number(inInv.eval_amount) || 0) : 0;
     const day = Math.min(Math.max(rule.day || 1, 1), daysIn(ym));
     DB.lastWrite = Date.now();
-    const ins = await DB.sb.from('transactions').insert({
+    /* 마커 id 는 미리 만들어 둠 — insert 결과를 돌려받지 못해도 되돌리기(롤백)가 가능해요 */
+    let mid = null;
+    try { if (window.crypto && window.crypto.randomUUID) mid = window.crypto.randomUUID(); } catch (e) { mid = null; }
+    const markerRow = {
       household_id: DB.hhId, ym: ym, tx_date: ym + '-' + String(day).padStart(2, '0'),
       kind: 'var', category_key: 'transfer', title: '이체 · ' + rule.name, amount: a,
       pay_method: TR_LOG_PREFIX + JSON.stringify({ from: rule.from, to: rule.to, toKind: rule.toKind, toItem: rule.toItem || '', amount: a }),
       is_excluded: true, rule_id: rule.id, created_by: DB.uid
-    }).select('id');
-    if (ins.error || !ins.data || !ins.data.length) {
+    };
+    if (mid) markerRow.id = mid;
+    const ins = await DB.sb.from('transactions').insert(markerRow).select('id');
+    if (ins.error) {
       console.error('[ledger] 이체 완료 기록 실패', ins.error);
       toast('이체 기록을 남기지 못했어요 · 잔액은 그대로예요');
       return;
     }
-    const mid = ins.data[0].id;
+    if (!mid) mid = (ins.data && ins.data.length) ? ins.data[0].id : null;
     const ops = [
       { table: 'asset_snapshots', id: outRow.id, patch: { amount: outAmt - a }, back: { amount: outAmt } }
     ];
@@ -3831,7 +3836,7 @@
     else ops.push({ table: 'investments', id: inInv.id, patch: { principal: inP + a, eval_amount: inV + a }, back: { principal: inP, eval_amount: inV } });
     const ok = await trApplyOps(ops);
     if (!ok) {
-      await DB.sb.from('transactions').delete().eq('id', mid);
+      if (mid) await DB.sb.from('transactions').delete().eq('id', mid);
       toast('잔액 반영에 실패해 이체를 취소했어요 · 잠시 뒤 다시 시도해 주세요');
       refresh().then(function(){ renderAll(); }).catch(function(){});
       return;
