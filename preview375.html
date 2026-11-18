@@ -5,10 +5,13 @@
 <title>375px 미리보기 (임시 검증용)</title>
 <style>
   html,body{margin:0;background:#eee;font:12px/1.4 -apple-system,sans-serif;}
-  .frame{width:375px;height:1600px;border:0;background:#fff;display:block;margin:0 auto;}
+  .frame{width:375px;height:1800px;border:0;background:#fff;display:block;margin:0 auto;}
 </style>
 </head>
 <body>
-<iframe class="frame" id="f" src="index.html" title="375px 미리보기"></iframe>
+<iframe class="frame" id="f" title="375px 미리보기"></iframe>
+<script>
+  document.getElementById('f').src = 'index.html?t=' + Date.now();
+</script>
 </body>
 </html>
