@@ -394,7 +394,7 @@
   .bbar i{display:block; height:100%; border-radius:99px; transition:width .45s ease;}
   .bbar u{position:absolute; top:-3px; width:0; height:14px; border-left:2px dashed #B9B1A2; opacity:.9;}
   /* 예산 카드 : 헤더 편집 버튼 · 합계 · 0원 제외 안내 */
-  .bh-right{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; min-width:0;}
+  .bh-right{display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:flex-end; min-width:0; max-width:100%; margin-left:auto;}
   .btn-budget{
     flex:none; border:1px solid var(--line); background:#fff; color:var(--ink-2);
     font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em;
@@ -1148,7 +1148,7 @@
     <div class="card">
       <div class="card-head">
         <h2>변동 생활비 예산 진행률</h2>
-        <div class="bh-right">
+        <div class="ch-right">
           <span class="muted" id="budgetNote"></span>
           <button type="button" class="btn-budget" id="btnBudgetEdit" aria-label="카테고리별 예산 설정">✎ 예산 설정</button>
         </div>
