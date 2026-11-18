@@ -563,6 +563,10 @@
   .accsum small.down{color:var(--down);}
   .invest-row.sub{padding-left:8px;}
   .invest-row.sub:last-child{padding-bottom:2px;}
+  .accrow.is-collapsed .invest-row.sub{display:none;}
+  .acchead .acc-toggle{flex:none; width:20px; height:20px; border-radius:7px; border:1px solid var(--line); background:#fff; color:var(--ink-3); font:inherit; font-size:10px; font-weight:800; line-height:1; display:grid; place-items:center; cursor:pointer; padding:0;}
+  .acchead .acc-toggle:hover{border-color:#2F8F7B; color:#2F8F7B; background:#EAF5F1;}
+  .invest-h .ibadge{align-self:center;}
   .invest-f.accts{align-items:center; gap:6px; margin-top:4px;}
   .ibadge{font-size:8.5px; font-weight:800; padding:2px 5px; border-radius:5px; background:var(--teal-soft); color:#1F7A63; flex:none;}
   /* 부동산 상세 카드 */
@@ -647,6 +651,11 @@
   .rule-row .rn small{display:block; font-size:9.5px; color:var(--ink-3); font-weight:600;}
   .rule-row .ra{font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap;}
   .rule-row.off .rn, .rule-row.off .ra{color:var(--ink-3);}
+  .rule-row .rn small{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .rule-row .btn-run{flex:none; padding:6px 9px; border-radius:9px; border:1px solid #2F8F7B; background:#EAF5F1; color:#2F8F7B; font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em; cursor:pointer; white-space:nowrap;}
+  .rule-row .btn-run:hover{background:#2F8F7B; color:#fff;}
+  .rule-row .trdone{flex:none; font-size:10px; font-weight:800; color:#2F8F7B; white-space:nowrap;}
+  .trnote{margin:10px 0 0; font-size:10.5px; color:var(--ink-3); font-weight:600; line-height:1.6;}
   .sw{position:relative; width:38px; height:22px; border-radius:99px; border:0; background:#E3DED4; cursor:pointer; flex:none; padding:0; transition:.16s ease;}
   .sw i{position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.16s ease; box-shadow:0 1px 3px rgba(0,0,0,.25);}
   .sw.on{background:var(--teal);}
@@ -1069,6 +1078,16 @@
 
     <div class="card">
       <div class="card-head">
+        <h2>🔄 고정 저축 · 이체 규칙</h2>
+        <span class="muted" id="trNote"></span>
+      </div>
+      <div id="trList"></div>
+      <button class="btn ghost btn-ruleadd" id="btnTrAdd">＋ 이체 규칙 추가</button>
+      <p class="trnote">등록해 두고 <b>[이체 실행]</b>을 누르면 출금 통장은 줄고 입금 통장·청약·예수금은 늘어나요. 지출 합계·차트·저축률에는 잡히지 않아요.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h2>어디를 줄여야 할까?</h2>
         <span class="chip-mini warn" id="insChip">전월 대비</span>
       </div>
@@ -1304,6 +1323,47 @@
       </div>
       <button type="button" class="btn-link" id="mfixReset" hidden>규칙 금액으로 되돌리기</button>
       <button type="button" class="btn-link" id="mfixToRule">이번 달뿐 아니라 규칙 자체 수정 →</button>
+    </form>
+  </div>
+</div>
+
+<!-- 고정 저축 · 이체 규칙 모달 -->
+<div class="modal" id="trModal" hidden>
+  <div class="bd" data-close-tr></div>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="trTitle">
+    <div class="grab"></div>
+    <h2 id="trTitle">이체 규칙 추가</h2>
+    <p class="hint">매달 반복되는 저축·투자 이체를 등록해요. 실행하면 통장 잔액만 옮겨가고 지출 합계·저축률은 그대로예요.</p>
+    <form id="trForm" novalidate>
+      <div class="field">
+        <label for="trName">규칙명</label>
+        <input type="text" id="trName" maxlength="24" placeholder="예: 우리은행 적금" />
+      </div>
+      <div class="field">
+        <label for="trFrom">출금 통장</label>
+        <select id="trFrom"></select>
+      </div>
+      <div class="field">
+        <label for="trTo">입금 대상 (통장 · 청약 · 연금 · 투자)</label>
+        <select id="trTo"></select>
+      </div>
+      <div class="frow">
+        <div class="field">
+          <label for="trDay">매월 며칠</label>
+          <input type="number" id="trDay" min="1" max="28" step="1" placeholder="25" />
+        </div>
+        <div class="field">
+          <label for="trAmount">금액 (원)</label>
+          <input type="number" id="trAmount" min="1" step="1" placeholder="500000" />
+        </div>
+      </div>
+      <label class="switchrow"><input type="checkbox" id="trOn" checked /> 이 규칙 켜기</label>
+      <p class="err" id="trErr" hidden></p>
+      <div class="acts">
+        <button type="button" class="btn ghost" data-close-tr>취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+      <button type="button" class="btn-link" id="trDelete" hidden>이 규칙 삭제</button>
     </form>
   </div>
 </div>
@@ -1606,6 +1666,12 @@
     '2026-11': {r2:{a:214600}, r3:{a:640000}}
   };
 
+  // 매달 반복되는 저축·투자 이체 규칙 (가상 샘플) — 지출로 잡히지 않고 통장 잔액만 옮겨요
+  const TR_SAMPLE = [
+    {id:'t1', name:'정기적금 자동이체', amount:1000000, day:25, on:true,
+     from:'비상금 통장', to:'정기적금', toKind:'cash', toItem:'', activeFrom:'', activeTo:null}
+  ];
+
   // 보유 종목 (2026-11 기준 / 가상 샘플). value 합계 = SNAP['2026-11'].stock
   // type: broker = 일반 위탁 계좌 / pension = ISA·연금저축·IRP·퇴직연금
   // qty: 보유 수량(소수점 6자리까지). 계좌·종목·원금·평가는 화면에서 직접 추가·수정할 수 있고 localStorage 에 남겨요
@@ -1654,6 +1720,10 @@
   function invSubText(i) {
     return i.sub || (i.type === 'pension' ? '연금·절세 상품' : '일반 계좌');
   }
+  /* 청약은 주식처럼 사고파는 상품이 아니라서 '1.0000주' 같은 수량을 보여주지 않아요 */
+  function invIsSavings(name, sub) {
+    return /청약/.test(String(sub || '') + ' ' + String(name || ''));
+  }
 
   // 부동산 상세 (2026-11 기준 / 가상 샘플). 매수가·시세는 직접 고칠 수 있고 localStorage 에 남겨요
   const PROP_DEFAULT = {
@@ -1686,6 +1756,9 @@
     debt:  [['주택담보대출',306000000], ['마이너스통장',15050000]]
   };
   const SAVE_PLAN = [['정기적금',1000000], ['ETF 자동매수',700000], ['연금저축',350000], ['청약',250000]];
+  /* 샘플 현금 계좌 기본 금액 (샘플 모드 이체 실행을 되돌릴 때 쓰는 기준값) */
+  const CASH_BASE = {};
+  SUBS.cash.forEach(function(s){ CASH_BASE[s[0]] = s[1]; });
 
   // 2024.01 ~ 2026.11 (35개월) 가상 데이터
   const MONTHS = (function() {
@@ -1947,6 +2020,8 @@
   })();
 
   MONTHS.forEach(function(ym) { if (!LEDGER[ym]) LEDGER[ym] = genLedger(ym); });
+  /* 샘플 순자산 기본값 (샘플 모드 이체 실행을 되돌릴 때 쓰는 기준값) */
+  const SNAP_BASE = JSON.parse(JSON.stringify(SNAP));
 
   /* ────────────── 2. 상태 & 저장 ────────────── */
   const STORE_KEY = 'jjong-couple-ledger-v1';
@@ -1961,6 +2036,10 @@
     added: [],      // 지출 {id, ym, d, n, c, m, a}
     addedIncome: [],// 수입 {id, ym, d, n, c, m, a}
     rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
+    transfers: TR_SAMPLE.map(function(r){ return Object.assign({}, r); }),   // 고정 저축·이체 규칙 (샘플 기본값)
+    transferLog: [],   // 샘플 모드 이체 실행 기록 {id, ym, ruleId, amount, from, to, toKind, toItem, ts}
+    trCash: null,      // 샘플 현금 계좌 금액 덮어쓰기 (계좌명 -> 금액)
+    trSnap: null,      // 샘플 순자산 덮어쓰기 (ym -> {cash, stock})
     overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
     range: '6m',      // 6m | 1y | all
     pickerYear: 2026,
@@ -1988,6 +2067,60 @@
         if (Array.isArray(s.added)) state.added = s.added;
         if (Array.isArray(s.addedIncome)) state.addedIncome = s.addedIncome;
         if (Array.isArray(s.rules)) state.rules = s.rules;
+        if (Array.isArray(s.transfers)) {
+          const list = [];
+          s.transfers.forEach(function(o) {
+            if (!o || typeof o !== 'object') return;
+            const nm = (typeof o.name === 'string' && o.name.trim()) ? o.name.trim().slice(0, 24) : '';
+            const amt = Math.round(Number(o.amount) || 0);
+            if (!nm || !(amt > 0)) return;
+            list.push({
+              id: (typeof o.id === 'string' && o.id) ? o.id : ('tr' + list.length + Date.now().toString(36)),
+              name: nm, amount: amt,
+              day: Math.min(28, Math.max(1, parseInt(o.day, 10) || 25)),
+              on: o.on !== false,
+              from: String(o.from || '').slice(0, 24), to: String(o.to || '').slice(0, 24),
+              toKind: (o.toKind === 'pension' || o.toKind === 'stock') ? o.toKind : 'cash',
+              toItem: String(o.toItem || '').slice(0, 24),
+              activeFrom: '', activeTo: null
+            });
+          });
+          state.transfers = list;
+        }
+        if (Array.isArray(s.transferLog)) {
+          state.transferLog = s.transferLog.filter(function(l) {
+            return l && typeof l === 'object' && /^\d{4}-\d{2}$/.test(String(l.ym || '')) && Number(l.amount) > 0;
+          }).map(function(l) {
+            return {
+              id: String(l.id || ('trl' + Math.random().toString(36).slice(2, 7))), ym: l.ym, ruleId: String(l.ruleId || ''),
+              amount: Math.round(Number(l.amount) || 0), from: String(l.from || ''), to: String(l.to || ''),
+              toKind: (l.toKind === 'pension' || l.toKind === 'stock') ? l.toKind : 'cash',
+              toItem: String(l.toItem || ''), ts: Number(l.ts) || 0
+            };
+          });
+        }
+        /* 샘플 모드 이체 실행으로 바뀐 금액 복원 */
+        if (s.trCash && typeof s.trCash === 'object') {
+          state.trCash = {};
+          Object.keys(s.trCash).forEach(function(k) {
+            const v = s.trCash[k];
+            if (typeof v !== 'number' || !isFinite(v)) return;
+            const row = SUBS.cash.filter(function(x){ return x[0] === k; })[0];
+            if (!row) return;
+            row[1] = Math.round(v);
+            state.trCash[k] = row[1];
+          });
+        }
+        if (s.trSnap && typeof s.trSnap === 'object') {
+          state.trSnap = {};
+          Object.keys(s.trSnap).forEach(function(k) {
+            const v = s.trSnap[k];
+            if (!SNAP[k] || !v || typeof v !== 'object') return;
+            if (typeof v.cash === 'number' && isFinite(v.cash)) SNAP[k].cash = Math.round(v.cash);
+            if (typeof v.stock === 'number' && isFinite(v.stock)) SNAP[k].stock = Math.round(v.stock);
+            state.trSnap[k] = { cash: SNAP[k].cash, stock: SNAP[k].stock };
+          });
+        }
         if (s.overrides && typeof s.overrides === 'object') state.overrides = s.overrides;
         if (s.range === '6m' || s.range === '1y' || s.range === 'all') state.range = s.range;
         if (MONTHS.indexOf(s.ym) >= 0) state.ym = s.ym;
@@ -2094,7 +2227,9 @@
         brand: state.brand, budgets: state.budgets, collapsed: state.collapsed,
         prop: state.prop, edits: state.edits,
         cats: state.cats, catRemap: state.catRemap, invView: state.invView,
-        invest: state.invest
+        invest: state.invest,
+        transfers: state.transfers, transferLog: state.transferLog,
+        trCash: state.trCash, trSnap: state.trSnap
       }));
     } catch (e) {}
   }
@@ -2603,9 +2738,11 @@
   function investItems(ym) {
     if (DB.mode === 'live') {
       return (DB.invByYm[ym] || []).map(function(it) {
+        const sub = invSubText(it);
+        const sav = invIsSavings(it.name, sub);
         return {
-          id: it.id, acct: it.acct, type: it.type, name: it.name, sub: invSubText(it),
-          units: invQtyText(it.qty), p: it.principal, v: it.value,
+          id: it.id, acct: it.acct, type: it.type, name: it.name, sub: sub, sav: sav,
+          units: sav ? '—' : invQtyText(it.qty), p: it.principal, v: it.value,
           g: it.value - it.principal, rate: it.principal ? (it.value - it.principal) / it.principal : 0
         };
       });
@@ -2615,9 +2752,11 @@
     const target = SNAP[ym] ? SNAP[ym].stock : baseTotal;
     const f = isBase ? 1 : (baseTotal ? target / baseTotal : 1);
     const items = state.invest.map(function(it) {
+      const sub = invSubText(it);
+      const sav = invIsSavings(it.name, sub);
       return {
-        id: it.id, acct: it.acct, type: it.type, name: it.name, sub: invSubText(it),
-        units: invQtyText(it.qty),
+        id: it.id, acct: it.acct, type: it.type, name: it.name, sub: sub, sav: sav,
+        units: sav ? '—' : invQtyText(it.qty),
         p: Math.round(it.principal * f / 1000) * 1000,
         v: Math.round(it.value * f / 1000) * 1000
       };
@@ -2677,8 +2816,28 @@
     el('investList').innerHTML = (state.invView === 'merged')
       ? mergedRows(all)
       : acctRows(all, false);
+    bindAccToggles(el('investList'));
   }
   /* 계좌별 보기 : 계좌 헤더 + 종목 */
+  function acctKey(acct, pension) { return 'invacct:' + (pension ? 'pen' : 'stock') + ':' + acct; }
+  function bindAccToggles(root) {
+    if (!root) return;
+    Array.prototype.forEach.call(root.querySelectorAll('[data-acc-key]'), function(b) {
+      b.addEventListener('click', function() {
+        const key = b.getAttribute('data-acc-key');
+        const on = !isCollapsed(key);
+        setCollapsed(key, on);
+        const card = b.closest ? b.closest('.accrow') : null;
+        if (card) card.classList.toggle('is-collapsed', on);
+        b.setAttribute('aria-expanded', on ? 'false' : 'true');
+        const lb = b.getAttribute('data-acc-label') || '계좌';
+        b.setAttribute('aria-label', lb + ' ' + (on ? '펼치기' : '접기'));
+        b.title = on ? '펼치기' : '접기';
+        const ch = b.querySelector('span');
+        if (ch) ch.textContent = on ? '⌄' : '⌃';
+      });
+    });
+  }
   function acctRows(items, pension) {
     const order = [];
     const map = {};
@@ -2689,9 +2848,17 @@
     return order.map(function(acct) {
       const list = map[acct];
       const t = invSumOf(list);
-      return '<div class="accrow">' +
-        '<div class="acchead"><b>' + esc(acct) + '</b>' +
+      const key = acctKey(acct, pension);
+      const open = !isCollapsed(key);
+      const sav = list.some(function(i){ return !!i.sav; });
+      return '<div class="accrow' + (open ? '' : ' is-collapsed') + '" data-accrow="' + esc(key) + '">' +
+        '<div class="acchead">' +
+          '<button type="button" class="acc-toggle" data-acc-key="' + esc(key) + '" data-acc-label="' + esc(acct) + '"' +
+            ' aria-expanded="' + (open ? 'true' : 'false') + '" aria-label="' + esc(acct) + ' ' + (open ? '접기' : '펼치기') + '"' +
+            ' title="' + (open ? '접기' : '펼치기') + '"><span aria-hidden="true">' + (open ? '⌃' : '⌄') + '</span></button>' +
+          '<b>' + esc(acct) + '</b>' +
           '<span class="accbadge">' + (pension ? list.length + '상품' : list.length + '종목') + '</span>' +
+          (sav ? '<span class="ibadge">청약</span>' : '') +
           '<span class="accsum">' + won(t.v) +
             '<small class="' + gainCls(t.g) + '">' + signedWon(t.g) + ' 원 (' + rateSign(t.rate) + ')</small>' +
           '</span>' +
@@ -2716,12 +2883,13 @@
     const map = {};
     items.forEach(function(i) {
       if (!map[i.name]) {
-        map[i.name] = { name: i.name, sub: i.sub, units: i.units, accts: [], p: 0, v: 0 };
+        map[i.name] = { name: i.name, sub: i.sub, units: i.units, accts: [], p: 0, v: 0, sav: false };
         order.push(i.name);
       }
       const g = map[i.name];
       g.p += i.p;
       g.v += i.v;
+      g.sav = g.sav || !!i.sav;
       g.accts.push(i.acct);
       if (g.units === '—' && i.units !== '—') g.units = i.units;
     });
@@ -2731,7 +2899,8 @@
       const rate = g.p ? gain / g.p : 0;
       return '<div class="invest-row">' +
         '<div class="invest-h"><span class="iname">' + esc(g.name) + '</span>' +
-          (g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
+          (g.sav ? '<span class="ibadge">청약</span>' : '') +
+          (!g.sav && g.units !== '—' && g.accts.length === 1 ? '<span class="iu">' + g.units + '</span>' : '') +
           '<b>' + won(g.v) + '</b></div>' +
         '<div class="invest-f"><span>원금 ' + won(g.p) + '</span>' +
           '<span class="' + gainCls(gain) + '">' + signedWon(gain) + ' 원 (' + rateSign(rate) + ')</span></div>' +
@@ -2750,6 +2919,7 @@
     el('penSum').innerHTML = invSumBox(t);
     syncInvSegs();
     el('penList').innerHTML = (state.invView === 'merged') ? mergedRows(items) : acctRows(items, true);
+    bindAccToggles(el('penList'));
   }
 
   /* ────────────── 7. SVG : 6개월 복합 차트 ────────────── */
@@ -2909,6 +3079,7 @@
           : (ongoing ? '남은 ' + (meta.days - meta.elapsed) + '일 쓸 수 있는 돈' : '월말에 남은 돈')) + '</small></span>' +
         '<span class="val">' + won(remain) + '</span></div>';
     renderFixedCard(ym, fixedList, upcoming);
+    renderTransferCard(ym);
 
     /* 선택 연도 누적 */
     const ys = yearSummary(ym);
@@ -3359,6 +3530,473 @@
     });
   }
 
+  /* ────────────── 8-2. 고정 저축 · 이체 규칙 ────────────── */
+  /* 규칙은 recurring_rules 에 category_key='transfer' 로 저장하고,
+     출금·입금 대상은 pay_method 에 'TRF:{...}' JSON 으로 인코딩해 둬요 (스키마 변경 없음).
+     실행 완료는 transactions 에 kind='var' · is_excluded=true · rule_id=규칙id 행 1건으로 남겨 부부 양쪽에서 중복 실행을 막아요. */
+  const TR_PREFIX = 'TRF:';
+  const TR_LOG_PREFIX = 'TRFLOG:';
+  let trEditingId = null, trCashList = [], trInvList = [];
+
+  function trKindOf(k) { return (k === 'pension' || k === 'stock') ? k : 'cash'; }
+  function trKindLabel(k) { return k === 'pension' ? '연금·청약' : (k === 'stock' ? '주식·투자' : '현금'); }
+  function trTargetLabel(acct, ticker) {
+    return (ticker && ticker !== acct) ? (acct + ' · ' + ticker) : (acct || '');
+  }
+  function parseTrRule(r) {
+    let m = {};
+    try {
+      const s = String(r.pay_method || '');
+      if (s.indexOf(TR_PREFIX) === 0) m = JSON.parse(s.slice(TR_PREFIX.length)) || {};
+    } catch (e) { m = {}; }
+    return {
+      id: r.id, name: r.title || '이체', amount: Number(r.amount) || 0,
+      day: Number(r.day_of_month) || 25, on: ruleOn(r),
+      from: m.from || '', to: m.to || '', toKind: trKindOf(m.toKind), toItem: m.toItem || '',
+      activeFrom: r.active_from || '', activeTo: r.active_to || null
+    };
+  }
+  function trPayMethod(rule) {
+    return TR_PREFIX + JSON.stringify({ from: rule.from, to: rule.to, toKind: rule.toKind, toItem: rule.toItem || '' });
+  }
+  /* 출금 후보 : 현금·예적금 계좌 (이 달 스냅샷, 없으면 가장 최근 달) */
+  function trCashAccounts() {
+    if (DB.mode !== 'live') return SUBS.cash.map(function(s){ return { name: s[0], amount: s[1] }; });
+    const months = [];
+    (DB.snaps || []).forEach(function(s){ if (s.kind === 'cash' && months.indexOf(s.ym) < 0) months.push(s.ym); });
+    months.sort();
+    const use = months.indexOf(state.ym) >= 0 ? state.ym : (months.length ? months[months.length - 1] : null);
+    if (!use) return [];
+    return (DB.snaps || []).filter(function(s){ return s.kind === 'cash' && s.ym === use; })
+      .map(function(s){ return { name: s.name || '현금', amount: Number(s.amount) || 0 }; });
+  }
+  /* 입금 후보 : 주식·연금·청약 보유 (이 달, 없으면 가장 최근 달) */
+  function trInvTargets() {
+    if (DB.mode !== 'live') {
+      return (state.invest || []).map(function(i){
+        return { acct: i.acct, ticker: i.name, kind: i.type === 'pension' ? 'pension' : 'stock' };
+      });
+    }
+    const months = [];
+    (DB.invs || []).forEach(function(r){ if (months.indexOf(r.ym) < 0) months.push(r.ym); });
+    months.sort();
+    const use = months.indexOf(state.ym) >= 0 ? state.ym : (months.length ? months[months.length - 1] : null);
+    if (!use) return [];
+    return (DB.invs || []).filter(function(r){ return r.ym === use; })
+      .map(function(r){ return { acct: r.account_name || '', ticker: r.ticker_name || '', kind: r.bucket === 'pension' ? 'pension' : 'stock' }; });
+  }
+  /* 그 달 자산 행 찾기 (그 달 기록이 없으면 그 이전 최근 달 행) */
+  function trFindSnap(kind, name, ym) {
+    const rows = (DB.snaps || []).filter(function(r){ return r.kind === kind && (r.name || '') === name; });
+    if (!rows.length) return null;
+    const same = rows.filter(function(r){ return r.ym === ym; });
+    if (same.length) return same[0];
+    const before = rows.filter(function(r){ return r.ym <= ym; }).sort(function(a, b){ return a.ym < b.ym ? -1 : 1; });
+    if (before.length) return before[before.length - 1];
+    return rows.slice().sort(function(a, b){ return a.ym < b.ym ? -1 : 1; })[0];
+  }
+  function trFindInv(acct, ticker, ym) {
+    const rows = (DB.invs || []).filter(function(r){
+      if ((r.account_name || '') !== acct) return false;
+      return !ticker || (r.ticker_name || '') === ticker;
+    });
+    if (!rows.length) return null;
+    const same = rows.filter(function(r){ return r.ym === ym; });
+    if (same.length) return same[0];
+    const before = rows.filter(function(r){ return r.ym <= ym; }).sort(function(a, b){ return a.ym < b.ym ? -1 : 1; });
+    if (before.length) return before[before.length - 1];
+    return rows.slice().sort(function(a, b){ return a.ym < b.ym ? -1 : 1; })[0];
+  }
+  /* 이 달 이체 완료 기록 (부부 양쪽 공유) */
+  function trDone(rule, ym) {
+    if (!rule) return null;
+    if (DB.mode === 'live') {
+      const t = (DB.txs || []).filter(function(x){ return x.rule_id === rule.id && x.ym === ym && x.category_key === 'transfer'; })[0];
+      return t ? { id: t.id, amount: Number(t.amount) || 0, ym: ym, row: t } : null;
+    }
+    const l = (state.transferLog || []).filter(function(x){ return x.ruleId === rule.id && x.ym === ym; })[0];
+    return l ? { id: l.id, amount: Number(l.amount) || 0, ym: ym, log: l } : null;
+  }
+
+  function renderTransferCard(ym) {
+    const rules = state.transfers || [];
+    const done = rules.filter(function(r){ return !!trDone(r, ym); });
+    const doneSum = done.reduce(function(s, r){ const d = trDone(r, ym); return s + (d ? d.amount : 0); }, 0);
+    el('trNote').textContent = rules.length
+      ? ('규칙 ' + rules.length + '개 · ' + ymLabel(ym) + ' 실행 ' + done.length + '건')
+      : '규칙 없음';
+    if (!rules.length) {
+      el('trList').innerHTML = '<div class="tx-empty">매달 반복되는 저축·투자 이체를 등록해 두면 여기서 바로 실행할 수 있어요.<br>지출 합계·저축률은 건드리지 않고 통장 잔액만 옮겨요.</div>';
+      return;
+    }
+    let html = '<div class="fixsec">이체 규칙 · 실행하면 통장 잔액만 옮겨요</div>';
+    html += rules.map(function(r) {
+      const mk = trDone(r, ym);
+      return '<div class="rule-row' + (r.on ? '' : ' off') + '">' +
+        '<span class="fe" style="width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:12px; flex:none; background:rgba(47,143,123,.13);">🔄</span>' +
+        '<span class="rn">' + esc(r.name) + '<small>매월 ' + r.day + '일 · ' + esc(r.from) + ' → ' + esc(trTargetLabel(r.to, r.toItem)) + '</small></span>' +
+        '<span class="ra">' + nf.format(r.amount) + '원</span>' +
+        (mk
+          ? '<span class="trdone">완료됨 ✅</span>' +
+            '<button type="button" class="icon-btn" data-tr-undo="' + esc(r.id) + '" title="이번 달 이체 되돌리기" aria-label="' + esc(r.name) + ' 이체 되돌리기">↩</button>'
+          : '<button type="button" class="btn-run" data-tr-run="' + esc(r.id) + '" aria-label="' + esc(r.name) + ' 이체 실행">이체 실행</button>') +
+        '<button type="button" class="sw' + (r.on ? ' on' : '') + '" data-tr-on="' + esc(r.id) + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
+        '<button type="button" class="icon-btn" data-tr-edit="' + esc(r.id) + '" title="규칙 수정" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
+      '</div>';
+    }).join('');
+    if (done.length) {
+      html += '<div class="fixsub"><span>이번 달 실행 ' + done.length + '건</span><b>' + nf.format(doneSum) + '원</b></div>';
+    }
+    el('trList').innerHTML = html;
+
+    Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-run]'), function(b) {
+      b.addEventListener('click', function() { trConfirmRun(b.getAttribute('data-tr-run')); });
+    });
+    Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-undo]'), function(b) {
+      b.addEventListener('click', function() { trConfirmUndo(b.getAttribute('data-tr-undo')); });
+    });
+    Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-edit]'), function(b) {
+      b.addEventListener('click', function() { openTrModal(b.getAttribute('data-tr-edit')); });
+    });
+    Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-on]'), function(b) {
+      b.addEventListener('click', function() {
+        const id = b.getAttribute('data-tr-on');
+        const r = (state.transfers || []).filter(function(x){ return x.id === id; })[0];
+        if (!r) return;
+        r.on = !r.on;
+        if (DB.mode === 'live') DB.setTransferOn(id, r.on);
+        if (save) save();
+        renderAll();
+        toast(r.on ? r.name + ' 규칙을 켰어요' : r.name + ' 규칙을 껐어요');
+      });
+    });
+  }
+
+  function trRuleById(id) { return (state.transfers || []).filter(function(x){ return x.id === id; })[0] || null; }
+  function trConfirmRun(id) {
+    const rule = trRuleById(id);
+    if (!rule) return;
+    const ym = state.ym;
+    if (trDone(rule, ym)) { toast('이번 달은 이미 이체 완료로 기록돼 있어요'); return; }
+    const msg = '🔄 ' + rule.name + '\n\n' +
+      rule.from + ' → ' + trTargetLabel(rule.to, rule.toItem) + '\n' +
+      nf.format(rule.amount) + '원 · ' + ymLabel(ym) + ' ' + rule.day + '일\n\n' +
+      '자산 잔액에 바로 반영되고, 지출 합계·저축률에는 잡히지 않아요. 실행할까요?';
+    if (!window.confirm(msg)) return;
+    if (DB.mode === 'live') trRunLive(rule);
+    else trRunSample(rule, ym);
+  }
+  function trConfirmUndo(id) {
+    const rule = trRuleById(id);
+    if (!rule) return;
+    if (!window.confirm('↩ ' + rule.name + ' 이체를 되돌릴까요?\n출금·입금 통장 금액이 실행 전으로 돌아가고 이번 달 완료 표시가 풀려요.')) return;
+    if (DB.mode === 'live') trUndoLive(rule);
+    else trUndoSample(rule, state.ym);
+  }
+
+  /* ── 샘플 모드 : 통장 금액·보유 종목을 화면 상태에서 직접 옮겨요 ── */
+  function trRunSample(rule, ym) {
+    const a = Math.round(Number(rule.amount) || 0);
+    if (!(a > 0)) { toast('금액을 확인해 주세요'); return; }
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === rule.from; })[0];
+    if (!fromRow) { toast(rule.from + ' 통장을 자산에서 찾지 못했어요'); return; }
+    let item = null;
+    if (rule.toKind === 'cash') {
+      const toRow = SUBS.cash.filter(function(s){ return s[0] === rule.to; })[0];
+      if (!toRow) { toast(rule.to + ' 통장을 자산에서 찾지 못했어요'); return; }
+      if (toRow === fromRow) { toast('출금 통장과 입금 통장이 같아요'); return; }
+      fromRow[1] -= a;
+      toRow[1] += a;
+    } else {
+      item = (state.invest || []).filter(function(i){ return i.acct === rule.to && (!rule.toItem || i.name === rule.toItem); })[0];
+      if (!item) { toast(trTargetLabel(rule.to, rule.toItem) + ' 를 자산에서 찾지 못했어요'); return; }
+      fromRow[1] -= a;
+      if (SNAP[ym]) SNAP[ym].cash = (SNAP[ym].cash || 0) - a;
+      item.principal += a;
+      item.value += a;
+    }
+    state.transferLog.push({
+      id: 'trl' + Date.now().toString(36), ym: ym, ruleId: rule.id, amount: a,
+      from: rule.from, to: rule.to, toKind: rule.toKind, toItem: rule.toItem || '', ts: Date.now()
+    });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    if (SNAP[ym]) {
+      state.trSnap = state.trSnap || {};
+      state.trSnap[ym] = { cash: SNAP[ym].cash, stock: SNAP[ym].stock };
+    }
+    save();
+    renderAll();
+    toast('이체 완료 · ' + rule.name + ' ' + nf.format(a) + '원 · 통장 잔액에 반영했어요 (지출 합계 그대로)');
+  }
+  function trUndoSample(rule, ym) {
+    const mk = trDone(rule, ym);
+    if (!mk) { toast('이번 달 이체 기록이 없어요'); return; }
+    const log = mk.log || {};
+    const a = Number(mk.amount) || 0;
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === (log.from || rule.from); })[0];
+    if (!fromRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    if ((log.toKind || rule.toKind) === 'cash') {
+      const toRow = SUBS.cash.filter(function(s){ return s[0] === (log.to || rule.to); })[0];
+      if (!toRow) { toast('입금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+      fromRow[1] += a;
+      toRow[1] -= a;
+    } else {
+      const item = (state.invest || []).filter(function(i){
+        return i.acct === (log.to || rule.to) && (!(log.toItem || rule.toItem) || i.name === (log.toItem || rule.toItem));
+      })[0];
+      if (!item) { toast('입금 대상을 찾지 못해 되돌리지 못했어요'); return; }
+      fromRow[1] += a;
+      if (SNAP[ym]) SNAP[ym].cash = (SNAP[ym].cash || 0) + a;
+      item.principal -= a;
+      item.value -= a;
+    }
+    state.transferLog = (state.transferLog || []).filter(function(l){ return l.id !== mk.id; });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    if (SNAP[ym]) {
+      state.trSnap = state.trSnap || {};
+      state.trSnap[ym] = { cash: SNAP[ym].cash, stock: SNAP[ym].stock };
+    }
+    save();
+    renderAll();
+    toast('이체를 되돌렸어요 · 잔액이 실행 전으로 돌아갔어요');
+  }
+
+  /* ── 라이브 모드 : 완료 마커 + 자산 잔액 반영 ── */
+  async function trApplyOps(ops) {
+    for (let i = 0; i < ops.length; i++) {
+      const o = ops[i];
+      const r = await DB.sb.from(o.table).update(o.patch).eq('id', o.id);
+      if (r.error) {
+        console.error('[ledger] 자산 잔액 반영 실패', r.error);
+        for (let j = 0; j < i; j++) {
+          await DB.sb.from(ops[j].table).update(ops[j].back).eq('id', ops[j].id);
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+  async function trRunLive(rule) {
+    const ym = state.ym, a = Math.round(Number(rule.amount) || 0);
+    if (!DB.sb || !DB.hhId) { toast('DB 연결이 없어 이체를 기록하지 못했어요'); return; }
+    if (!(a > 0)) { toast('금액을 확인해 주세요'); return; }
+    const dup = await DB.sb.from('transactions').select('id')
+      .eq('household_id', DB.hhId).eq('rule_id', rule.id).eq('ym', ym).eq('category_key', 'transfer');
+    if (dup.error) {
+      console.error('[ledger] 이체 완료 확인 실패', dup.error);
+      toast('이체 기록을 확인하지 못했어요 · 잠시 뒤 다시 시도해 주세요');
+      return;
+    }
+    if ((dup.data || []).length) {
+      await refresh().catch(function(){});
+      renderAll();
+      toast('이번 달은 이미 이체 완료로 기록돼 있어요');
+      return;
+    }
+    const outRow = trFindSnap('cash', rule.from, ym);
+    if (!outRow) { toast(rule.from + ' 통장을 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+    let inRow = null, inInv = null;
+    if (rule.toKind === 'cash') {
+      inRow = trFindSnap('cash', rule.to, ym);
+      if (!inRow) { toast(rule.to + ' 통장을 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+      if (inRow.id === outRow.id) { toast('출금 통장과 입금 통장이 같아요'); return; }
+    } else {
+      inInv = trFindInv(rule.to, rule.toItem, ym);
+      if (!inInv) { toast(trTargetLabel(rule.to, rule.toItem) + ' 를 자산에서 찾지 못했어요 · 자산 탭에서 확인해 주세요'); return; }
+    }
+    const outAmt = Number(outRow.amount) || 0;
+    const inAmt = inRow ? (Number(inRow.amount) || 0) : 0;
+    const inP = inInv ? (Number(inInv.principal) || 0) : 0;
+    const inV = inInv ? (Number(inInv.eval_amount) || 0) : 0;
+    const day = Math.min(Math.max(rule.day || 1, 1), daysIn(ym));
+    DB.lastWrite = Date.now();
+    const ins = await DB.sb.from('transactions').insert({
+      household_id: DB.hhId, ym: ym, tx_date: ym + '-' + String(day).padStart(2, '0'),
+      kind: 'var', category_key: 'transfer', title: '이체 · ' + rule.name, amount: a,
+      pay_method: TR_LOG_PREFIX + JSON.stringify({ from: rule.from, to: rule.to, toKind: rule.toKind, toItem: rule.toItem || '', amount: a }),
+      is_excluded: true, rule_id: rule.id, created_by: DB.uid
+    }).select('id');
+    if (ins.error || !ins.data || !ins.data.length) {
+      console.error('[ledger] 이체 완료 기록 실패', ins.error);
+      toast('이체 기록을 남기지 못했어요 · 잔액은 그대로예요');
+      return;
+    }
+    const mid = ins.data[0].id;
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: outAmt - a }, back: { amount: outAmt } }
+    ];
+    if (inRow) ops.push({ table: 'asset_snapshots', id: inRow.id, patch: { amount: inAmt + a }, back: { amount: inAmt } });
+    else ops.push({ table: 'investments', id: inInv.id, patch: { principal: inP + a, eval_amount: inV + a }, back: { principal: inP, eval_amount: inV } });
+    const ok = await trApplyOps(ops);
+    if (!ok) {
+      await DB.sb.from('transactions').delete().eq('id', mid);
+      toast('잔액 반영에 실패해 이체를 취소했어요 · 잠시 뒤 다시 시도해 주세요');
+      refresh().then(function(){ renderAll(); }).catch(function(){});
+      return;
+    }
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 이체 후 새로고침 실패', e); }
+    toast('이체 완료 · ' + rule.name + ' ' + nf.format(a) + '원 · ' + rule.from + '에서 빼고 ' + trTargetLabel(rule.to, rule.toItem) + '에 넣었어요');
+  }
+  async function trUndoLive(rule) {
+    const ym = state.ym;
+    const mk = trDone(rule, ym);
+    if (!mk || !mk.row) { toast('이번 달 이체 기록이 없어요'); return; }
+    const row = mk.row;
+    let info = {};
+    try {
+      const s = String(row.pay_method || '');
+      if (s.indexOf(TR_LOG_PREFIX) === 0) info = JSON.parse(s.slice(TR_LOG_PREFIX.length)) || {};
+    } catch (e) { info = {}; }
+    const a = Number(row.amount) || 0;
+    const outRow = trFindSnap('cash', info.from || rule.from, ym);
+    if (!outRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: (Number(outRow.amount) || 0) + a }, back: { amount: Number(outRow.amount) || 0 } }
+    ];
+    if ((info.toKind || rule.toKind) === 'cash') {
+      const inRow = trFindSnap('cash', info.to || rule.to, ym);
+      if (!inRow) { toast('입금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+      ops.push({ table: 'asset_snapshots', id: inRow.id, patch: { amount: (Number(inRow.amount) || 0) - a }, back: { amount: Number(inRow.amount) || 0 } });
+    } else {
+      const inInv = trFindInv(info.to || rule.to, (info.toItem !== undefined ? info.toItem : rule.toItem), ym);
+      if (!inInv) { toast('입금 대상을 찾지 못해 되돌리지 못했어요'); return; }
+      ops.push({
+        table: 'investments', id: inInv.id,
+        patch: { principal: (Number(inInv.principal) || 0) - a, eval_amount: (Number(inInv.eval_amount) || 0) - a },
+        back: { principal: Number(inInv.principal) || 0, eval_amount: Number(inInv.eval_amount) || 0 }
+      });
+    }
+    DB.lastWrite = Date.now();
+    const ok = await trApplyOps(ops);
+    if (!ok) { toast('잔액을 되돌리지 못했어요 · 잠시 뒤 다시 시도해 주세요'); return; }
+    const del = await DB.sb.from('transactions').delete().eq('id', row.id);
+    if (del.error) {
+      console.error('[ledger] 이체 완료 기록 삭제 실패', del.error);
+      await trApplyOps(ops.map(function(o){ return { table: o.table, id: o.id, patch: o.back, back: o.patch }; }));
+      toast('완료 표시를 지우지 못해 되돌리기를 취소했어요');
+      return;
+    }
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 되돌리기 후 새로고침 실패', e); }
+    toast('이체를 되돌렸어요 · 잔액이 실행 전으로 돌아갔어요');
+  }
+
+  /* ── 이체 규칙 모달 ── */
+  function openTrModal(id) {
+    trEditingId = id || null;
+    const r = id ? trRuleById(id) : null;
+    trCashList = trCashAccounts();
+    trInvList = trInvTargets();
+    el('trTitle').textContent = r ? '이체 규칙 수정' : '이체 규칙 추가';
+    el('trName').value = r ? r.name : '';
+    el('trDay').value = r ? r.day : 25;
+    el('trAmount').value = r ? r.amount : '';
+    el('trOn').checked = r ? !!r.on : true;
+    if (trCashList.length) {
+      el('trFrom').innerHTML = trCashList.map(function(a, i) {
+        return '<option value="c|' + i + '">' + esc(a.name) + ' · ' + won(a.amount) + '</option>';
+      }).join('');
+      let fi = r ? trCashList.findIndex(function(a){ return a.name === r.from; }) : 0;
+      el('trFrom').value = 'c|' + Math.max(0, fi);
+    } else {
+      el('trFrom').innerHTML = '<option value="">현금 계좌 없음</option>';
+    }
+    const opts = [];
+    trCashList.forEach(function(a, i) {
+      opts.push({ v: 'c|' + i, label: a.name + ' · 현금·예적금', name: a.name, ticker: '', kind: 'cash' });
+    });
+    trInvList.forEach(function(t, j) {
+      opts.push({ v: 'i|' + j, label: trTargetLabel(t.acct, t.ticker) + ' · ' + trKindLabel(t.kind), name: t.acct, ticker: t.ticker, kind: t.kind });
+    });
+    if (opts.length) {
+      el('trTo').innerHTML = opts.map(function(o){ return '<option value="' + o.v + '">' + esc(o.label) + '</option>'; }).join('');
+      let ti = 0;
+      if (r) {
+        const hit = opts.findIndex(function(o){
+          return o.kind === r.toKind && o.name === r.to && (!r.toItem || o.ticker === r.toItem);
+        });
+        if (hit >= 0) ti = hit;
+      }
+      el('trTo').value = opts[ti] ? opts[ti].v : '';
+    } else {
+      el('trTo').innerHTML = '<option value="">입금 대상 없음</option>';
+    }
+    el('trErr').hidden = true;
+    el('trDelete').hidden = !r;
+    el('trModal').hidden = false;
+    setTimeout(function(){ el('trName').focus(); }, 40);
+  }
+  function closeTrModal() { el('trModal').hidden = true; trEditingId = null; }
+
+  el('btnTrAdd').addEventListener('click', function(){ openTrModal(null); });
+  document.querySelectorAll('[data-close-tr]').forEach(function(b){ b.addEventListener('click', closeTrModal); });
+  el('trForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const err = el('trErr');
+    const name = el('trName').value.trim();
+    const day = parseInt(el('trDay').value, 10);
+    const amount = parseInt(el('trAmount').value, 10);
+    const fv = el('trFrom').value || '';
+    const tv = el('trTo').value || '';
+    const fromA = fv.indexOf('c|') === 0 ? trCashList[+fv.slice(2)] : null;
+    let to = null;
+    if (tv.indexOf('c|') === 0) {
+      const a = trCashList[+tv.slice(2)];
+      if (a) to = { name: a.name, ticker: '', kind: 'cash' };
+    } else if (tv.indexOf('i|') === 0) {
+      const t = trInvList[+tv.slice(2)];
+      if (t) to = { name: t.acct, ticker: t.ticker, kind: trKindOf(t.kind) };
+    }
+    if (!name) { err.textContent = '규칙명을 적어주세요.'; err.hidden = false; return; }
+    if (!fromA) { err.textContent = '출금 통장을 골라주세요. 자산 탭 ✎ 현금·부채에서 통장을 먼저 넣어 주세요.'; err.hidden = false; return; }
+    if (!to) { err.textContent = '입금 대상을 골라주세요.'; err.hidden = false; return; }
+    if (to.kind === 'cash' && to.name === fromA.name) { err.textContent = '출금 통장과 입금 통장이 같아요.'; err.hidden = false; return; }
+    if (!day || day < 1 || day > 28) { err.textContent = '매월 며칠은 1~28일로 정해주세요.'; err.hidden = false; return; }
+    if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
+    const data = {
+      name: name, amount: amount, day: day, on: el('trOn').checked,
+      from: fromA.name, to: to.name, toKind: to.kind, toItem: to.ticker || ''
+    };
+    const editing = !!trEditingId;
+    if (DB.mode === 'live') {
+      DB.saveTransfer(data, editing ? trEditingId : null);
+      closeTrModal();
+      return;
+    }
+    if (editing) {
+      const r = trRuleById(trEditingId);
+      if (r) Object.assign(r, data);
+    } else {
+      state.transfers.push(Object.assign({ id: 'tr' + Date.now().toString(36), activeFrom: '', activeTo: null }, data));
+    }
+    save();
+    closeTrModal();
+    renderAll();
+    toast(editing ? '이체 규칙을 수정했어요' : '이체 규칙을 추가했어요 · 매월 ' + day + '일 [이체 실행]을 누르면 돼요');
+  });
+  el('trDelete').addEventListener('click', function() {
+    if (!trEditingId) return;
+    const r = trRuleById(trEditingId);
+    if (!window.confirm((r ? r.name : '이체') + ' 규칙을 삭제할까요?\n이미 실행한 이체와 통장 잔액은 그대로 남아요.')) return;
+    const id = trEditingId;
+    if (DB.mode === 'live') DB.deleteTransfer(id);
+    state.transfers = (state.transfers || []).filter(function(x){ return x.id !== id; });
+    state.transferLog = (state.transferLog || []).filter(function(l){ return l.ruleId !== id; });
+    save();
+    closeTrModal();
+    renderAll();
+    if (DB.mode !== 'live') toast((r ? r.name : '이체') + ' 규칙을 삭제했어요');
+  });
+
   function row(ico, label, sub, val) {
     return '<div class="srow"><span class="ico">' + ico + '</span>' +
       '<span class="lb">' + label + '<small>' + sub + '</small></span>' +
@@ -3419,7 +4057,7 @@
     }).filter(function(x){ return x.d > 0; }).sort(function(a,b){ return b.d - a.d; }).slice(0,3);
     const ex = excludedTxs(ym);
     const exFixed = ex.filter(function(t){ return t.k === 'f'; });
-    const exVar = ex.filter(function(t){ return t.k !== 'f'; });
+    const exVar = ex.filter(function(t){ return t.k !== 'f' && t.c !== 'transfer'; });
     const exI = excludedIncome(ym);
     const added = state.added.filter(function(t){ return t.ym === ym; });
     const addedInc = state.addedIncome.filter(function(t){ return t.ym === ym; });
@@ -3860,6 +4498,12 @@
     state.added = [];
     state.addedIncome = [];
     state.rules = FIXED_RULES.map(function(r){ return Object.assign({}, r); });
+    state.transfers = TR_SAMPLE.map(function(r){ return Object.assign({}, r); });
+    state.transferLog = [];
+    state.trCash = null;
+    state.trSnap = null;
+    SUBS.cash.forEach(function(s){ if (typeof CASH_BASE[s[0]] === 'number') s[1] = CASH_BASE[s[0]]; });
+    Object.keys(SNAP).forEach(function(k){ if (SNAP_BASE[k]) SNAP[k] = Object.assign({}, SNAP_BASE[k]); });
     state.overrides = JSON.parse(JSON.stringify(FIXED_OVERRIDE));
     state.cat = null;
     state.icat = null;
@@ -4871,7 +5515,8 @@
     'view-asset:부동산 상세': true,
     'view-asset:부채': true,
     'view-spend:이번 달 수입 내역': true,
-    'view-spend:고정 지출 · 자동 규칙': true
+    'view-spend:고정 지출 · 자동 규칙': true,
+    'view-spend:🔄 고정 저축 · 이체 규칙': true
   };
   function isCollapsed(key) {
     if (Object.prototype.hasOwnProperty.call(state.collapsed, key)) return state.collapsed[key] === true;
@@ -5167,8 +5812,9 @@
     state.overrides = {};
     state.catRemap = {};
 
-    /* 6) 고정 지출 규칙 */
-    state.rules = (DB.rules || []).map(function(r) {
+    /* 6) 고정 지출 규칙 / 고정 저축·이체 규칙 (category_key = 'transfer') */
+    state.transfers = (DB.rules || []).filter(function(r){ return r.category_key === 'transfer'; }).map(parseTrRule);
+    state.rules = (DB.rules || []).filter(function(r){ return r.category_key !== 'transfer'; }).map(function(r) {
       return {
         id: r.id, name: r.title, cat: r.category_key || 'etc',
         day: r.day_of_month || 25, amount: Number(r.amount) || 0,
@@ -5314,7 +5960,8 @@
     const have = {};
     (DB.txs || []).forEach(function(t){ if (t.ym === ym && t.rule_id) have[t.rule_id] = 1; });
     const rows = (DB.rules || []).filter(function(r) {
-      return ruleActiveIn({ activeFrom: r.active_from || '', activeTo: r.active_to || null }, ym)
+      return r.category_key !== 'transfer'
+        && ruleActiveIn({ activeFrom: r.active_from || '', activeTo: r.active_to || null }, ym)
         && (r.day_of_month || 0) <= lim && !have[r.id];
     }).map(function(r) {
       const day = Math.min(Math.max(r.day_of_month || 1, 1), daysIn(ym));
@@ -5415,6 +6062,29 @@
     return commit(function(){
       return DB.sb.from('recurring_rules').update({ active_to: on ? null : relYM(CUR_YM, -1) }).eq('id', id);
     }).then(afterRuleChange);
+  };
+  /* 고정 저축·이체 규칙 : recurring_rules 에 category_key='transfer' 로 저장 (스키마 변경 없음) */
+  DB.saveTransfer = function(data, id) {
+    return commit(function(){
+      const row = {
+        title: data.name, amount: data.amount, category_key: 'transfer',
+        pay_method: TR_PREFIX + JSON.stringify({ from: data.from, to: data.to, toKind: data.toKind, toItem: data.toItem || '' }),
+        day_of_month: data.day,
+        active_to: data.on ? null : relYM(CUR_YM, -1)
+      };
+      if (id) return DB.sb.from('recurring_rules').update(row).eq('id', id);
+      return DB.sb.from('recurring_rules').insert(Object.assign({ household_id: DB.hhId, active_from: CUR_YM }, row));
+    }, '이체 규칙을 저장했어요');
+  };
+  DB.deleteTransfer = function(id) {
+    return commit(function(){
+      return DB.sb.from('recurring_rules').delete().eq('id', id);
+    }, '이체 규칙을 삭제했어요 · 통장 잔액은 그대로예요');
+  };
+  DB.setTransferOn = function(id, on) {
+    return commit(function(){
+      return DB.sb.from('recurring_rules').update({ active_to: on ? null : relYM(CUR_YM, -1) }).eq('id', id);
+    });
   };
   DB.setMonthFix = function(ruleId, ym, day, amount) {
     const rule = (DB.rules || []).filter(function(r){ return r.id === ruleId; })[0];
