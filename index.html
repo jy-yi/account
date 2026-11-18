@@ -663,6 +663,36 @@
   .rule-row .btn-run{flex:none; padding:6px 9px; border-radius:9px; border:1px solid #2F8F7B; background:#EAF5F1; color:#2F8F7B; font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em; cursor:pointer; white-space:nowrap;}
   .rule-row .btn-run:hover{background:#2F8F7B; color:#fff;}
   .rule-row .trdone{flex:none; font-size:10px; font-weight:800; color:#2F8F7B; white-space:nowrap;}
+  /* 고정 저축·이체 규칙 : 모바일에서 통장 이름이 …로 잘리지 않게 2단(이름/금액 · 통장 줄 · 버튼 줄) 배치 */
+  .tr-row{
+    display:grid; grid-template-columns:26px minmax(0,1fr); column-gap:8px; row-gap:5px;
+    align-items:start; padding:10px 0; border-bottom:1px solid var(--line-2);
+  }
+  .tr-row:last-child{border-bottom:0;}
+  .tr-row .tr-ico{
+    grid-column:1; grid-row:1; width:26px; height:26px; border-radius:9px; flex:none;
+    display:grid; place-items:center; font-size:12px; line-height:1; background:rgba(47,143,123,.13);
+  }
+  .tr-row .tr-main{grid-column:2; grid-row:1; min-width:0; display:flex; flex-direction:column; gap:2px;}
+  .tr-row .tr-head{display:flex; align-items:baseline; gap:8px; min-width:0;}
+  .tr-row .tr-nm{
+    flex:1 1 auto; min-width:0; font-size:12.5px; font-weight:700; letter-spacing:-.01em;
+    white-space:normal; word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .tr-row .tr-amt{flex:none; font-size:12.5px; font-weight:800; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .tr-row .tr-desc{
+    font-size:9.5px; color:var(--ink-3); font-weight:600; line-height:1.55;
+    white-space:normal; word-break:keep-all; overflow-wrap:anywhere;
+  }
+  .tr-row .tr-act{grid-column:2; grid-row:2; display:flex; align-items:center; justify-content:flex-end; gap:6px;}
+  .tr-row.off .tr-nm, .tr-row.off .tr-amt, .tr-row.off .tr-desc{color:var(--ink-3);}
+  .tr-row .btn-run{flex:none; padding:6px 10px; border-radius:9px; border:1px solid #2F8F7B; background:#EAF5F1; color:#2F8F7B; font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em; cursor:pointer; white-space:nowrap;}
+  .tr-row .btn-run:hover{background:#2F8F7B; color:#fff;}
+  .tr-row .trdone{flex:none; font-size:10px; font-weight:800; color:#2F8F7B; white-space:nowrap;}
+  @media (min-width:480px){
+    .tr-row{grid-template-columns:26px minmax(0,1fr) auto; align-items:center;}
+    .tr-row .tr-act{grid-column:3; grid-row:1;}
+  }
   .trnote{margin:10px 0 0; font-size:10.5px; color:var(--ink-3); font-weight:600; line-height:1.6;}
   .sw{position:relative; width:38px; height:22px; border-radius:99px; border:0; background:#E3DED4; cursor:pointer; flex:none; padding:0; transition:.16s ease;}
   .sw i{position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:.16s ease; box-shadow:0 1px 3px rgba(0,0,0,.25);}
@@ -3641,16 +3671,23 @@
     let html = '<div class="fixsec">이체 규칙 · 실행하면 통장 잔액만 옮겨요</div>';
     html += rules.map(function(r) {
       const mk = trDone(r, ym);
-      return '<div class="rule-row' + (r.on ? '' : ' off') + '">' +
-        '<span class="fe" style="width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:12px; flex:none; background:rgba(47,143,123,.13);">🔄</span>' +
-        '<span class="rn">' + esc(r.name) + '<small>매월 ' + r.day + '일 · ' + esc(r.from) + ' → ' + esc(trTargetLabel(r.to, r.toItem)) + '</small></span>' +
-        '<span class="ra">' + nf.format(r.amount) + '원</span>' +
+      return '<div class="tr-row' + (r.on ? '' : ' off') + '">' +
+        '<span class="tr-ico" aria-hidden="true">🔄</span>' +
+        '<div class="tr-main">' +
+          '<div class="tr-head">' +
+            '<span class="tr-nm">' + esc(r.name) + '</span>' +
+            '<span class="tr-amt">' + nf.format(r.amount) + '원</span>' +
+          '</div>' +
+          '<span class="tr-desc">매월 ' + r.day + '일 · ' + esc(r.from) + ' → ' + esc(trTargetLabel(r.to, r.toItem)) + '</span>' +
+        '</div>' +
+        '<div class="tr-act">' +
         (mk
           ? '<span class="trdone">완료됨 ✅</span>' +
             '<button type="button" class="icon-btn" data-tr-undo="' + esc(r.id) + '" title="이번 달 이체 되돌리기" aria-label="' + esc(r.name) + ' 이체 되돌리기">↩</button>'
           : '<button type="button" class="btn-run" data-tr-run="' + esc(r.id) + '" aria-label="' + esc(r.name) + ' 이체 실행">이체 실행</button>') +
         '<button type="button" class="sw' + (r.on ? ' on' : '') + '" data-tr-on="' + esc(r.id) + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
         '<button type="button" class="icon-btn" data-tr-edit="' + esc(r.id) + '" title="규칙 수정" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
+        '</div>' +
       '</div>';
     }).join('');
     if (done.length) {
