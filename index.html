@@ -4075,7 +4075,11 @@
       return '<option value="' + o.v + '"' + o.attrs + (o.dis ? ' disabled' : '') + '>' + esc(o.label) + '</option>';
     }).join('');
     const usable = opts.filter(function(o){ return !o.dis; });
-    const pick = (keep && opts.some(function(o){ return o.v === keep && !o.dis; })) ? keep : (usable[0] ? usable[0].v : '');
+    if (!usable.length) {
+      el('fTrTo').innerHTML = '<option value="">입금 계좌 없음 · 자산 탭에서 계좌를 추가해 주세요</option>';
+      return;
+    }
+    const pick = (keep && opts.some(function(o){ return o.v === keep && !o.dis; })) ? keep : usable[0].v;
     if (pick) el('fTrTo').value = pick;
   }
   function syncTrOnceHint() {
