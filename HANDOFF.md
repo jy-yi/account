@@ -2,7 +2,7 @@
 
 > 이 문서 하나만 읽고 **바로 `index.html`을 수정·배포**할 수 있게 쓴 기술 인수인계서입니다.
 > 대상: 이 저장소를 이어받는 AI 또는 개발자.
-> 작성 기준: 2026-11-19, `index.html` 6,526줄 / `main` 브랜치.
+> 작성 기준: 2026-11-19, `index.html` 6,987줄 / `main` 브랜치.
 
 ---
 
@@ -84,15 +84,16 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 | 3085~3477 | 지출 탭 렌더 — `renderSpend` (결산·인사이트·도넛·예산·내역) |
 | 3478~3495 | 선택 연도 누적 |
 | 3496~3571 | 고정 지출 카드 — `renderFixedCard`, `upcomingFixed` |
-| 3572~4080 | **고정 저축·이체 규칙** — `parseTrRule`, `renderTransferCard`, `trRunLive`, `trUndoLive`, `trRunSample`, `trUndoSample` |
-| 4081~4203 | 토스트, `buildMessage`(요약 복사) |
-| 4204~4541 | 모달 로직 — `openModal`, `openEditModal`, `patchTx`, `openRuleModal`, `openMonthFix` |
-| 4542~4906 | 이름·이모지, 예산·카테고리 모달 (`renderBudgetFields`, `applyCats`) |
-| 4907~5180 | 부동산 매수가·시세 모달, 종목 추가·수정 모달 |
-| 5181~5510 | 실시간 시세(`refreshQuotes`), 국토부 실거래(`refreshRealEstate`) |
-| 5511~5658 | 월 네비게이터·기간 토글, **카드 접기**(`DEFAULT_COLLAPSED`, `isCollapsed`, `applyCollapsed`) |
-| 5659~6508 | **Supabase** — 로그인 게이트, `DB` 객체, `applyModel`, `refresh`, `ensureSeed`, `ensureFixed`, `commit`, `subscribe` |
-| 6509~6526 | 12. 시작 — 게이트 부팅 |
+| 3572~4023 | **고정 저축·이체 규칙** — `parseTrRule`, `renderTransferCard`, `trRunLive`, `trUndoLive`, `trRunSample`, `trUndoSample` |
+| 4024~4479 | **단순(1회성) 이체** — `trOneRunLive`/`trOneUndoLive`, `trOneRunSample`/`trOneUndoSample`, `trOneLogs`, `submitTransfer`, `trOnceFillSelects` |
+| 4480~4602 | 토스트, `buildMessage`(요약 복사) |
+| 4603~4996 | 모달 로직 — `openModal`, `setModalKind`, `openTransferModal`, `openEditModal`, `patchTx`, `openRuleModal`, `openMonthFix` |
+| 4997~5361 | 이름·이모지, 예산·카테고리 모달 (`renderBudgetFields`, `applyCats`) |
+| 5362~5635 | 부동산 매수가·시세 모달, 종목 추가·수정 모달 |
+| 5636~5971 | 실시간 시세(`refreshQuotes`), 국토부 실거래(`refreshRealEstate`) |
+| 5972~6060 | 월 네비게이터·기간 토글, **카드 접기**(`DEFAULT_COLLAPSED`, `isCollapsed`, `applyCollapsed`) |
+| 6061~6978 | **Supabase** — 로그인 게이트, `DB` 객체, `applyModel`, `refresh`, `ensureSeed`, `ensureFixed`, `commit`, `subscribe` |
+| 6979~6987 | 12. 시작 — 게이트 부팅 |
 
 ---
 
@@ -189,6 +190,15 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 - 출금 통장은 `asset_snapshots(kind='cash')`에서 이름으로 찾습니다(`trFindSnap`). 그 달 행이 없으면 최근 달 행을 쓰고 토스트로 알립니다. 입금 대상이 통장이면 `asset_snapshots`, 청약·투자면 `investments`의 `principal`과 `eval_amount`를 같이 올립니다.
 - 샘플 모드에는 같은 동작의 `trRunSample`/`trUndoSample`이 따로 있습니다(화면 상태만 변경). 한쪽만 고치면 샘플 체험과 실전이 갈라집니다.
 
+### 3.6-1 🔄 단순(1회성) 이체
+
+- 입구: `＋ 내역 추가` 모달의 `🔄 이체` 탭(`setModalKind('tr')`, 필드 `#fTrDate`·`#fTrAmt`·`#fTrFrom`·`#fTrTo`·`#fTrNote`) + 지출 탭 🔄 카드의 `🔄 단순 이체` 버튼(`#btnTrOnce` → `openTransferModal()`).
+- 계좌 목록: `trCashAccounts()`(출금·현금 입금) + `trSavingsTargets()`(이름·sub 에 `청약`이 들어간 `investments`). 출금으로 고른 계좌는 입금 목록에서 `disabled`로 잠그고, 저장 시에도 같은 계좌면 막습니다(`#fTrFrom` change → `trOnceFillTo()`).
+- **스키마 변경 없음**: `transactions`에 `kind='var'`·`category_key='transfer'`·`is_excluded=true`·`rule_id=null` 마커 1행 + `pay_method='TR1:'+JSON({from,to,toKind,toItem,amount,note,fromId,toId,ts})`. `kind='transfer'`는 CHECK 제약(`income|fixed|var`)에 걸리므로 쓰면 안 됩니다.
+- 잔액 반영은 `trApplyOps()`로 `asset_snapshots.amount`(입금이 청약이면 `investments.principal`·`eval_amount`)를 증감. 실패 시 마커 삭제 + 롤백. 되돌리기는 `fromId`/`toId`로 같은 행을 찾아 역방향 patch 후 마커 삭제(`trOneUndoLive`).
+- 샘플 모드 `trOneRunSample`/`trOneUndoSample`은 `SUBS.cash`·`state.invest`를 직접 고치고 `state.transferLog`에 `oneOff:true` 기록을 넣습니다(현금→현금이면 `SNAP[ym].cash`는 그대로, 현금→청약이면 차감).
+- 목록: `trOneLogs(ym)` → `renderTransferCard()`의 `{ym} 단순 이체` 섹션(`↩` 되돌리기). 라이브는 `DB.txs`의 `TR1:` 마커를 읽으므로 부부 양쪽에 같이 보입니다.
+
 ### 3.7 카테고리 · 예산
 
 - 기본 카테고리 **9개**: `식비·장보기 / 외식·배달 / 주거·관리비 / 공과금·통신 / 생활·구독 / 교통·주유 / 경조사·선물 / 여행·여가 / 의료·건강`.
@@ -204,6 +214,7 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 | 동작 | 함수 | 저장 |
 | --- | --- | --- |
 | 추가 | `openModal()`, `#addForm` | `transactions` insert (`kind='var'` 또는 `'income'`) |
+| 단순 이체 | `openTransferModal()` → `submitTransfer()` | `transactions` 마커(`kind='var'`, `category_key='transfer'`, `pay_method='TR1:'…`) + `asset_snapshots`/`investments` 증감 |
 | 수정 | `openEditModal(id)` → `patchTx()` | `transactions` update (`title`, `category_key`, `pay_method`, `amount`, `tx_date`, `updated_at`) |
 | 고정 지출 금액만 이번 달 수정 | `openMonthFix()` → `DB.setMonthFix()` | `transactions` update 또는 insert |
 | 규칙 자체 수정 | `openRuleModal()` → `DB.saveRule()` | `recurring_rules` update/insert |
@@ -257,7 +268,7 @@ DB.byYm / incByYm / invByYm / snapByYm   ym 별 인덱스
 | `households` | `id`, `name`, `emoji` | 부부 한 쌍 = 1행. 이름·이모지는 헤더 ✎에서 수정 |
 | `household_members` | `household_id`, `user_id`, `role`, `label` | `label`은 `아내`/`남편`. 로그인 후 멤버 행이 없으면 게이트가 연결 SQL을 화면에 보여줍니다(`showMemberMissing()`) |
 | `categories` | `household_id`, `key`, `label`, `emoji`, `color`, `budget_amount`, `sort_order` | `key`는 앱 내부 식별자(`food`, `dine`, …). `sort_order`가 화면 순서 |
-| `transactions` | `household_id`, `ym`, `tx_date`, `kind`, `category_key`, `title`, `amount`, `pay_method`, `is_excluded`, `rule_id`, `created_by`, `updated_at` | `kind ∈ ('income','fixed','var')` · `tx_date`는 `YYYY-MM-DD` · 제외는 `is_excluded` |
+| `transactions` | `household_id`, `ym`, `tx_date`, `kind`, `category_key`, `title`, `amount`, `pay_method`, `is_excluded`, `rule_id`, `created_by`, `updated_at` | `kind ∈ ('income','fixed','var')` · `tx_date`는 `YYYY-MM-DD` · 제외는 `is_excluded` · 단순 이체는 `category_key='transfer'` + `pay_method='TR1:…'` + `rule_id=null` |
 | `recurring_rules` | `household_id`, `title`, `category_key`, `day_of_month`, `amount`, `pay_method`, `active_from`, `active_to` | `category_key='transfer'`면 이체 규칙. `active_to`가 지난 달이면 종료된 규칙 |
 | `asset_snapshots` | `household_id`, `ym`, `kind`, `name`, `amount`, `meta` | `kind ∈ ('cash','debt','real_estate')`. `meta`(jsonb)에 부동산 매수가·매도 정보 |
 | `investments` | `household_id`, `ym`, `bucket`, `account_name`, `ticker_name`, `sub_type`, `quantity`, `principal`, `eval_amount` | `bucket ∈ ('broker','pension')`. `quantity`는 소수 6자리까지 |
@@ -276,7 +287,7 @@ DB.byYm / incByYm / invByYm / snapByYm   ym 별 인덱스
 
 - `ym`은 항상 `YYYY-MM` 문자열. `tx_date`는 `YYYY-MM-DD`. 날짜 계산은 `relYM()`, `daysIn()`, `toTxDate()`만 씁니다.
 - 금액은 원 단위 정수(`bigint`). 소수점 금액은 넣지 않습니다.
-- 이체 규칙·이체 완료 마커는 §3.6의 `TRF:` / `TRFLOG:` 인코딩을 그대로 따릅니다. `pay_method`를 사람이 읽는 문자열로 바꾸면 이체 카드가 규칙을 못 읽습니다.
+- 이체 규칙·이체 완료 마커는 §3.6의 `TRF:` / `TRFLOG:` 인코딩을 그대로 따릅니다. 단순 이체는 §3.6-1의 `TR1:`입니다. `pay_method`를 사람이 읽는 문자열로 바꾸면 이체 카드가 이체 기록을 못 읽습니다.
 - 스키마를 바꿔야 하면 **기존 행 마이그레이션 계획을 먼저** 세우고, 라이브가 아닌 별도 프로젝트에서 검증한 뒤 적용하세요.
 
 ---

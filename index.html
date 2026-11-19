@@ -535,6 +535,11 @@
   }
   .kindtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 6px 14px -12px rgba(35,38,43,.7), inset 0 0 0 1px var(--line-2);}
   .kindtoggle button.on[data-kind="inc"]{color:var(--teal);}
+  .kindtoggle button.on[data-kind="tr"]{color:#2E6FA8;}
+  .tr-actions{display:flex; gap:8px; margin-top:12px;}
+  .tr-actions .btn-ruleadd{margin-top:0; flex:1 1 0; padding:12px 10px;}
+  .tr-once-amt{color:#2E6FA8;}
+  .tr-row .tr-ico.tr-ico-once{background:rgba(46,111,168,.13);}
   /* 투자 상세 */
   .invest-sum{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; padding:12px 10px; border-radius:16px; background:#FBF8F1; border:1px solid var(--line-2); margin-bottom:12px;}
   .invest-sum div{text-align:center;}
@@ -1133,8 +1138,11 @@
         <span class="muted" id="trNote"></span>
       </div>
       <div id="trList"></div>
-      <button class="btn ghost btn-ruleadd" id="btnTrAdd">＋ 이체 규칙 추가</button>
-      <p class="trnote">등록해 두고 <b>[이체 실행]</b>을 누르면 출금 통장은 줄고 입금 통장·청약·예수금은 늘어나요. 지출 합계·차트·저축률에는 잡히지 않아요.</p>
+      <div class="tr-actions">
+        <button class="btn ghost btn-ruleadd" id="btnTrOnce">🔄 단순 이체</button>
+        <button class="btn ghost btn-ruleadd" id="btnTrAdd">＋ 이체 규칙 추가</button>
+      </div>
+      <p class="trnote">한 번만 옮기는 돈은 <b>[🔄 단순 이체]</b>로 바로 옮겨요. 등록해 둔 규칙은 <b>[이체 실행]</b>으로 실행하고, 두 경우 모두 출금 통장은 줄고 입금 통장·청약·예수금은 늘어나며 지출 합계·차트·저축률에는 잡히지 않아요.</p>
     </div>
 
     <div class="card">
@@ -1203,12 +1211,13 @@
     <div class="grab"></div>
     <h2 id="sheetTitle">내역 추가</h2>
     <p class="hint" id="sheetHint">공동 가계부에 넣을 지출이나 수입을 적어요. 개인 용돈은 넣지 않아요.</p>
-    <div class="kindtoggle" id="kindToggle" role="tablist" aria-label="지출 또는 수입">
+    <div class="kindtoggle" id="kindToggle" role="tablist" aria-label="지출 · 수입 · 이체">
       <button type="button" role="tab" data-kind="exp" class="on" aria-selected="true">🧾 지출</button>
       <button type="button" role="tab" data-kind="inc" aria-selected="false">💰 수입</button>
+      <button type="button" role="tab" data-kind="tr" aria-selected="false">🔄 이체</button>
     </div>
     <form id="addForm" novalidate>
-      <div class="frow">
+      <div class="frow" id="commonFields">
         <div class="field">
           <label for="fDate">날짜</label>
           <input type="date" id="fDate" required />
@@ -1264,6 +1273,34 @@
             </select>
           </div>
         </div>
+      </div>
+      <div id="trFields" hidden>
+        <div class="frow">
+          <div class="field">
+            <label for="fTrDate">날짜</label>
+            <input type="date" id="fTrDate" required />
+          </div>
+          <div class="field">
+            <label for="fTrAmt">금액 (원)</label>
+            <input type="number" id="fTrAmt" inputmode="numeric" placeholder="100000" min="1" step="1" required />
+          </div>
+        </div>
+        <div class="field">
+          <label for="fTrFrom">출금 계좌</label>
+          <select id="fTrFrom"></select>
+        </div>
+        <div class="field">
+          <label for="fTrTo">입금 계좌</label>
+          <select id="fTrTo"></select>
+        </div>
+        <div class="field">
+          <label for="fTrNote">메모 (선택)</label>
+          <div class="input-clear-wrap">
+            <input type="text" id="fTrNote" placeholder="예: 비상금 이동" maxlength="24" />
+            <button type="button" class="input-clear-btn" data-clear="fTrNote" aria-label="메모 지우기">×</button>
+          </div>
+        </div>
+        <p class="fieldnote" id="trOnceHint"></p>
       </div>
       <p class="err" id="addErr" hidden></p>
       <div class="acts">
@@ -2148,7 +2185,8 @@
               id: String(l.id || ('trl' + Math.random().toString(36).slice(2, 7))), ym: l.ym, ruleId: String(l.ruleId || ''),
               amount: Math.round(Number(l.amount) || 0), from: String(l.from || ''), to: String(l.to || ''),
               toKind: (l.toKind === 'pension' || l.toKind === 'stock') ? l.toKind : 'cash',
-              toItem: String(l.toItem || ''), ts: Number(l.ts) || 0
+              toItem: String(l.toItem || ''), ts: Number(l.ts) || 0,
+              oneOff: !!l.oneOff, note: String(l.note || '').slice(0, 24), d: String(l.d || '').slice(0, 5)
             };
           });
         }
@@ -3671,39 +3709,62 @@
 
   function renderTransferCard(ym) {
     const rules = state.transfers || [];
+    const ones = trOneLogs(ym);
     const done = rules.filter(function(r){ return !!trDone(r, ym); });
     const doneSum = done.reduce(function(s, r){ const d = trDone(r, ym); return s + (d ? d.amount : 0); }, 0);
-    el('trNote').textContent = rules.length
-      ? ('규칙 ' + rules.length + '개 · ' + ymLabel(ym) + ' 실행 ' + done.length + '건')
-      : '규칙 없음';
+    el('trNote').textContent = (rules.length ? '규칙 ' + rules.length + '개' : '규칙 없음') +
+      ' · ' + ymLabel(ym) + ' 단순 이체 ' + ones.length + '건';
+    let html = '';
     if (!rules.length) {
-      el('trList').innerHTML = '<div class="tx-empty">매달 반복되는 저축·투자 이체를 등록해 두면 여기서 바로 실행할 수 있어요.<br>지출 합계·저축률은 건드리지 않고 통장 잔액만 옮겨요.</div>';
-      return;
-    }
-    let html = '<div class="fixsec">이체 규칙 · 실행하면 통장 잔액만 옮겨요</div>';
-    html += rules.map(function(r) {
-      const mk = trDone(r, ym);
-      return '<div class="tr-row' + (r.on ? '' : ' off') + '">' +
-        '<span class="tr-ico" aria-hidden="true">🔄</span>' +
-        '<div class="tr-main">' +
-          '<div class="tr-head">' +
-            '<span class="tr-nm">' + esc(r.name) + '</span>' +
-            '<span class="tr-amt">' + nf.format(r.amount) + '원</span>' +
+      html += '<div class="tx-empty">매달 반복되는 저축·투자 이체를 등록해 두면 여기서 바로 실행할 수 있어요.<br>한 번만 옮기는 돈은 아래 <b>🔄 단순 이체</b>로 바로 옮겨요.</div>';
+    } else {
+      html += '<div class="fixsec">이체 규칙 · 실행하면 통장 잔액만 옮겨요</div>';
+      html += rules.map(function(r) {
+        const mk = trDone(r, ym);
+        return '<div class="tr-row' + (r.on ? '' : ' off') + '">' +
+          '<span class="tr-ico" aria-hidden="true">🔄</span>' +
+          '<div class="tr-main">' +
+            '<div class="tr-head">' +
+              '<span class="tr-nm">' + esc(r.name) + '</span>' +
+              '<span class="tr-amt">' + nf.format(r.amount) + '원</span>' +
+            '</div>' +
+            '<span class="tr-desc">매월 ' + r.day + '일 · ' + esc(r.from) + ' → ' + esc(trTargetLabel(r.to, r.toItem)) + '</span>' +
           '</div>' +
-          '<span class="tr-desc">매월 ' + r.day + '일 · ' + esc(r.from) + ' → ' + esc(trTargetLabel(r.to, r.toItem)) + '</span>' +
-        '</div>' +
-        '<div class="tr-act">' +
-        (mk
-          ? '<span class="trdone">완료됨 ✅</span>' +
-            '<button type="button" class="icon-btn" data-tr-undo="' + esc(r.id) + '" title="이번 달 이체 되돌리기" aria-label="' + esc(r.name) + ' 이체 되돌리기">↩</button>'
-          : '<button type="button" class="btn-run" data-tr-run="' + esc(r.id) + '" aria-label="' + esc(r.name) + ' 이체 실행">이체 실행</button>') +
-        '<button type="button" class="sw' + (r.on ? ' on' : '') + '" data-tr-on="' + esc(r.id) + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
-        '<button type="button" class="icon-btn" data-tr-edit="' + esc(r.id) + '" title="규칙 수정" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
-        '</div>' +
-      '</div>';
-    }).join('');
-    if (done.length) {
-      html += '<div class="fixsub"><span>이번 달 실행 ' + done.length + '건</span><b>' + nf.format(doneSum) + '원</b></div>';
+          '<div class="tr-act">' +
+          (mk
+            ? '<span class="trdone">완료됨 ✅</span>' +
+              '<button type="button" class="icon-btn" data-tr-undo="' + esc(r.id) + '" title="이번 달 이체 되돌리기" aria-label="' + esc(r.name) + ' 이체 되돌리기">↩</button>'
+            : '<button type="button" class="btn-run" data-tr-run="' + esc(r.id) + '" aria-label="' + esc(r.name) + ' 이체 실행">이체 실행</button>') +
+          '<button type="button" class="sw' + (r.on ? ' on' : '') + '" data-tr-on="' + esc(r.id) + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
+          '<button type="button" class="icon-btn" data-tr-edit="' + esc(r.id) + '" title="규칙 수정" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      if (done.length) {
+        html += '<div class="fixsub"><span>이번 달 실행 ' + done.length + '건</span><b>' + nf.format(doneSum) + '원</b></div>';
+      }
+    }
+    if (ones.length) {
+      const oneSum = ones.reduce(function(s, l){ return s + (Number(l.amount) || 0); }, 0);
+      html += '<div class="fixsec">' + ymLabel(ym) + ' 단순 이체 · ' + ones.length + '건</div>';
+      html += ones.map(function(l) {
+        const nm = l.note || '단순 이체';
+        const desc = (l.d ? l.d + ' · ' : '') + esc(l.from) + ' → ' + esc(trTargetLabel(l.to, l.toItem));
+        return '<div class="tr-row">' +
+          '<span class="tr-ico tr-ico-once" aria-hidden="true">💸</span>' +
+          '<div class="tr-main">' +
+            '<div class="tr-head">' +
+              '<span class="tr-nm">' + esc(nm) + '</span>' +
+              '<span class="tr-amt tr-once-amt">' + nf.format(l.amount) + '원</span>' +
+            '</div>' +
+            '<span class="tr-desc">' + desc + '</span>' +
+          '</div>' +
+          '<div class="tr-act">' +
+            '<button type="button" class="icon-btn" data-tr1-undo="' + esc(l.id) + '" title="이체 되돌리기" aria-label="' + esc(nm) + ' 이체 되돌리기">↩</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      html += '<div class="fixsub"><span>단순 이체 합계 · 지출 아님</span><b>' + nf.format(oneSum) + '원</b></div>';
     }
     el('trList').innerHTML = html;
 
@@ -3712,6 +3773,9 @@
     });
     Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-undo]'), function(b) {
       b.addEventListener('click', function() { trConfirmUndo(b.getAttribute('data-tr-undo')); });
+    });
+    Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr1-undo]'), function(b) {
+      b.addEventListener('click', function() { trOneConfirmUndo(b.getAttribute('data-tr1-undo')); });
     });
     Array.prototype.forEach.call(el('trList').querySelectorAll('[data-tr-edit]'), function(b) {
       b.addEventListener('click', function() { openTrModal(b.getAttribute('data-tr-edit')); });
@@ -3955,6 +4019,329 @@
       setBadge(DB.subs ? 'live' : 'wait');
     } catch (e) { console.error('[ledger] 되돌리기 후 새로고침 실패', e); }
     toast('이체를 되돌렸어요 · 잔액이 실행 전으로 돌아갔어요');
+  }
+
+  /* ────────────── 8-3. 단순(1회성) 이체 ────────────── */
+  /* DB 스키마는 그대로 둡니다. 라이브 모드는 기존 이체 완료 마커와 같은 방식
+     (transactions kind='var' · is_excluded=true · category_key='transfer')에
+     pay_method='TR1:{...}' 로 출금·입금·메모를 담고, 잔액은 asset_snapshots/investments 를 직접 고쳐요. */
+  const TR1_PREFIX = 'TR1:';
+  let trOnceFrom = [], trOnceSav = [];
+
+  function trSavingsTargets() {
+    if (DB.mode !== 'live') {
+      return (state.invest || []).filter(function(i){ return invIsSavings(i.name, invSubText(i)); })
+        .map(function(i){ return { acct: i.acct, ticker: i.name, sub: invSubText(i) }; });
+    }
+    const rows = (DB.invByYm && DB.invByYm[state.ym] && DB.invByYm[state.ym].length)
+      ? DB.invByYm[state.ym]
+      : (state.invest || []);
+    return rows.filter(function(i){ return invIsSavings(i.name, i.sub); })
+      .map(function(i){ return { acct: i.acct, ticker: i.name, sub: i.sub || '청약' }; });
+  }
+  function trOnceFromName() {
+    const o = el('fTrFrom').selectedOptions && el('fTrFrom').selectedOptions[0];
+    return o ? (o.getAttribute('data-name') || '') : '';
+  }
+  function trOnceToPick() {
+    const o = el('fTrTo').selectedOptions && el('fTrTo').selectedOptions[0];
+    if (!o || !o.value) return null;
+    return {
+      kind: o.getAttribute('data-kind') === 'cash' ? 'cash' : 'pension',
+      name: o.getAttribute('data-name') || '',
+      ticker: o.getAttribute('data-ticker') || ''
+    };
+  }
+  function trOnceFillTo(keep) {
+    const fromName = trOnceFromName();
+    const opts = [];
+    trOnceFrom.forEach(function(a, i) {
+      const same = !!fromName && a.name === fromName;
+      opts.push({
+        v: 'c|' + i, dis: same,
+        label: a.name + ' · ' + won(a.amount) + (same ? ' · 출금 계좌' : ''),
+        attrs: ' data-kind="cash" data-name="' + esc(a.name) + '"'
+      });
+    });
+    trOnceSav.forEach(function(s, j) {
+      opts.push({
+        v: 'p|' + j, dis: false,
+        label: trTargetLabel(s.acct, s.ticker) + ' · 청약',
+        attrs: ' data-kind="pension" data-name="' + esc(s.acct) + '" data-ticker="' + esc(s.ticker) + '"'
+      });
+    });
+    if (!opts.length) { el('fTrTo').innerHTML = '<option value="">입금 계좌 없음</option>'; return; }
+    el('fTrTo').innerHTML = opts.map(function(o){
+      return '<option value="' + o.v + '"' + o.attrs + (o.dis ? ' disabled' : '') + '>' + esc(o.label) + '</option>';
+    }).join('');
+    const usable = opts.filter(function(o){ return !o.dis; });
+    const pick = (keep && opts.some(function(o){ return o.v === keep && !o.dis; })) ? keep : (usable[0] ? usable[0].v : '');
+    if (pick) el('fTrTo').value = pick;
+  }
+  function syncTrOnceHint() {
+    const from = trOnceFrom.filter(function(a){ return a.name === trOnceFromName(); })[0];
+    const to = trOnceToPick();
+    const toTxt = !to ? '' : (to.kind === 'cash' ? to.name : trTargetLabel(to.name, to.ticker));
+    el('trOnceHint').textContent = from
+      ? from.name + ' ' + won(from.amount) + ' → ' + (toTxt || '입금 계좌') + ' · 지출·수입 합계와 저축률은 그대로예요.'
+      : '출금·입금 계좌를 먼저 골라주세요.';
+  }
+  function trOnceFillSelects() {
+    trOnceFrom = trCashAccounts();
+    trOnceSav = trSavingsTargets();
+    const meta = LEDGER[state.ym];
+    el('fTrDate').min = state.ym + '-01';
+    if (meta) el('fTrDate').max = state.ym + '-' + String(meta.days).padStart(2, '0');
+    if (trOnceFrom.length) {
+      el('fTrFrom').innerHTML = trOnceFrom.map(function(a, i){
+        return '<option value="c|' + i + '" data-name="' + esc(a.name) + '">' + esc(a.name) + ' · ' + won(a.amount) + '</option>';
+      }).join('');
+      el('fTrFrom').value = 'c|0';
+    } else {
+      el('fTrFrom').innerHTML = '<option value="">현금·입출금 계좌 없음</option>';
+    }
+    trOnceFillTo('');
+    syncTrOnceHint();
+  }
+
+  /* 샘플 모드 : 화면 상태의 통장·청약 금액을 직접 옮겨요 */
+  function trOneRunSample(t) {
+    const a = Math.round(Number(t.amount) || 0);
+    if (!(a > 0)) { toast('금액을 확인해 주세요'); return false; }
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === t.from; })[0];
+    if (!fromRow) { toast(t.from + ' 통장을 자산에서 찾지 못했어요'); return false; }
+    let toCash = null, item = null;
+    if (t.toKind === 'cash') {
+      toCash = SUBS.cash.filter(function(s){ return s[0] === t.to; })[0];
+      if (!toCash) { toast(t.to + ' 통장을 자산에서 찾지 못했어요'); return false; }
+      if (toCash === fromRow) { toast('출금 계좌와 입금 계좌가 같아요'); return false; }
+    } else {
+      item = (state.invest || []).filter(function(i){ return i.acct === t.to && i.name === t.toItem; })[0];
+      if (!item) { toast(trTargetLabel(t.to, t.toItem) + ' 를 자산에서 찾지 못했어요'); return false; }
+    }
+    if (fromRow[1] < a && !window.confirm('출금 잔액(' + won(fromRow[1]) + ')보다 큰 금액이에요.\n그래도 ' + won(a) + '을 이체할까요?')) return false;
+    fromRow[1] -= a;
+    if (toCash) {
+      toCash[1] += a;
+    } else {
+      if (SNAP[t.ym]) SNAP[t.ym].cash = (SNAP[t.ym].cash || 0) - a;
+      item.principal += a;
+      item.value += a;
+    }
+    state.transferLog.push({
+      id: 'tro' + Date.now().toString(36) + Math.floor(Math.random() * 100).toString(36),
+      ym: t.ym, ruleId: '', oneOff: true, amount: a,
+      from: t.from, to: t.to, toKind: t.toKind, toItem: t.toItem || '',
+      note: t.note || '', d: String(t.date).slice(5, 10), ts: Date.now()
+    });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    if (SNAP[t.ym]) {
+      state.trSnap = state.trSnap || {};
+      state.trSnap[t.ym] = { cash: SNAP[t.ym].cash, stock: SNAP[t.ym].stock };
+    }
+    save();
+    renderAll();
+    toast('🔄 ' + t.from + ' → ' + trTargetLabel(t.to, t.toItem) + ' ' + nf.format(a) + '원 이체 완료');
+    return true;
+  }
+  function trOneUndoSample(log) {
+    if (!log) return;
+    const a = Number(log.amount) || 0;
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === log.from; })[0];
+    if (!fromRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    let toCash = null, item = null;
+    if (log.toKind === 'cash') {
+      toCash = SUBS.cash.filter(function(s){ return s[0] === log.to; })[0];
+      if (!toCash) { toast('입금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    } else {
+      item = (state.invest || []).filter(function(i){ return i.acct === log.to && i.name === log.toItem; })[0];
+      if (!item) { toast('입금 대상을 찾지 못해 되돌리지 못했어요'); return; }
+    }
+    fromRow[1] += a;
+    if (toCash) {
+      toCash[1] -= a;
+    } else {
+      if (SNAP[log.ym]) SNAP[log.ym].cash = (SNAP[log.ym].cash || 0) + a;
+      item.principal -= a;
+      item.value -= a;
+    }
+    state.transferLog = (state.transferLog || []).filter(function(l){ return l.id !== log.id; });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    if (SNAP[log.ym]) {
+      state.trSnap = state.trSnap || {};
+      state.trSnap[log.ym] = { cash: SNAP[log.ym].cash, stock: SNAP[log.ym].stock };
+    }
+    save();
+    renderAll();
+    toast('이체를 되돌렸어요 · 잔액이 실행 전으로 돌아갔어요');
+  }
+
+  /* 라이브 모드 : 마커 1행 + 잔액 patch (스키마 변경 없음) */
+  async function trOneRunLive(t) {
+    const ym = t.ym, a = Math.round(Number(t.amount) || 0);
+    if (!DB.sb || !DB.hhId) { toast('DB 연결이 없어 이체를 기록하지 못했어요'); return; }
+    if (!(a > 0)) { toast('금액을 확인해 주세요'); return; }
+    const outRow = trFindSnap('cash', t.from, ym);
+    if (!outRow) { toast(t.from + ' 통장을 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+    let inRow = null, inInv = null;
+    if (t.toKind === 'cash') {
+      inRow = trFindSnap('cash', t.to, ym);
+      if (!inRow) { toast(t.to + ' 통장을 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+      if (inRow.id === outRow.id) { toast('출금 계좌와 입금 계좌가 같아요'); return; }
+    } else {
+      inInv = trFindInv(t.to, t.toItem, ym);
+      if (!inInv) { toast(trTargetLabel(t.to, t.toItem) + ' 를 자산에서 찾지 못했어요 · 자산 탭에서 확인해 주세요'); return; }
+    }
+    const outAmt = Number(outRow.amount) || 0;
+    const inAmt = inRow ? (Number(inRow.amount) || 0) : 0;
+    const inP = inInv ? (Number(inInv.principal) || 0) : 0;
+    const inV = inInv ? (Number(inInv.eval_amount) || 0) : 0;
+    const day = Math.min(Math.max(parseInt(String(t.date).slice(8, 10), 10) || 1, 1), daysIn(ym));
+    const info = {
+      from: t.from, to: t.to, toKind: t.toKind, toItem: t.toItem || '', amount: a, note: t.note || '',
+      fromId: outRow.id, toId: inRow ? inRow.id : inInv.id, ts: Date.now()
+    };
+    DB.lastWrite = Date.now();
+    let mid = null;
+    try { if (window.crypto && window.crypto.randomUUID) mid = window.crypto.randomUUID(); } catch (e) { mid = null; }
+    const markerRow = {
+      household_id: DB.hhId, ym: ym, tx_date: toTxDate(ym, day),
+      kind: 'var', category_key: 'transfer',
+      title: '이체 · ' + (t.note || (t.from + ' → ' + trTargetLabel(t.to, t.toItem))),
+      amount: a,
+      pay_method: TR1_PREFIX + JSON.stringify(info),
+      is_excluded: true, rule_id: null, created_by: DB.uid
+    };
+    if (mid) markerRow.id = mid;
+    const ins = await DB.sb.from('transactions').insert(markerRow).select('id');
+    if (ins.error) {
+      console.error('[ledger] 단순 이체 기록 실패', ins.error);
+      toast('이체 기록을 남기지 못했어요 · 잔액은 그대로예요');
+      return;
+    }
+    if (!mid) mid = (ins.data && ins.data.length) ? ins.data[0].id : null;
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: outAmt - a }, back: { amount: outAmt } }
+    ];
+    if (inRow) ops.push({ table: 'asset_snapshots', id: inRow.id, patch: { amount: inAmt + a }, back: { amount: inAmt } });
+    else ops.push({ table: 'investments', id: inInv.id, patch: { principal: inP + a, eval_amount: inV + a }, back: { principal: inP, eval_amount: inV } });
+    const ok = await trApplyOps(ops);
+    if (!ok) {
+      if (mid) await DB.sb.from('transactions').delete().eq('id', mid);
+      toast('잔액 반영에 실패해 이체를 취소했어요 · 잠시 뒤 다시 시도해 주세요');
+      refresh().then(function(){ renderAll(); }).catch(function(){});
+      return;
+    }
+    const alt = [outRow.ym, inRow ? inRow.ym : inInv.ym].filter(function(x){ return x && x !== ym; })[0] || null;
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 단순 이체 후 새로고침 실패', e); }
+    toast('🔄 ' + t.from + ' → ' + trTargetLabel(t.to, t.toItem) + ' ' + nf.format(a) + '원 이체 완료' +
+      (alt ? ' (' + ymLabel(ym) + ' 자산 기록이 없어 ' + ymLabel(alt) + ' 기준에 반영)' : ''));
+  }
+  async function trOneUndoLive(log) {
+    if (!log || !log.row) { toast('이체 기록을 찾지 못했어요'); return; }
+    const ym = log.ym, a = Number(log.amount) || 0;
+    const info = log.info || {};
+    const byId = function(table, id) {
+      if (!id) return null;
+      const arr = table === 'asset_snapshots' ? (DB.snaps || []) : (DB.invs || []);
+      return arr.filter(function(r){ return r.id === id; })[0] || null;
+    };
+    const outRow = byId('asset_snapshots', info.fromId) || trFindSnap('cash', info.from || log.from, ym);
+    if (!outRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: (Number(outRow.amount) || 0) + a }, back: { amount: Number(outRow.amount) || 0 } }
+    ];
+    if ((info.toKind || log.toKind) === 'cash') {
+      const inRow = byId('asset_snapshots', info.toId) || trFindSnap('cash', info.to || log.to, ym);
+      if (!inRow) { toast('입금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+      ops.push({ table: 'asset_snapshots', id: inRow.id, patch: { amount: (Number(inRow.amount) || 0) - a }, back: { amount: Number(inRow.amount) || 0 } });
+    } else {
+      const inInv = byId('investments', info.toId) || trFindInv(info.to || log.to, (info.toItem !== undefined ? info.toItem : log.toItem), ym);
+      if (!inInv) { toast('입금 대상을 찾지 못해 되돌리지 못했어요'); return; }
+      ops.push({
+        table: 'investments', id: inInv.id,
+        patch: { principal: (Number(inInv.principal) || 0) - a, eval_amount: (Number(inInv.eval_amount) || 0) - a },
+        back: { principal: Number(inInv.principal) || 0, eval_amount: Number(inInv.eval_amount) || 0 }
+      });
+    }
+    DB.lastWrite = Date.now();
+    const ok = await trApplyOps(ops);
+    if (!ok) { toast('잔액을 되돌리지 못했어요 · 잠시 뒤 다시 시도해 주세요'); return; }
+    const del = await DB.sb.from('transactions').delete().eq('id', log.row.id);
+    if (del.error) {
+      console.error('[ledger] 단순 이체 기록 삭제 실패', del.error);
+      await trApplyOps(ops.map(function(o){ return { table: o.table, id: o.id, patch: o.back, back: o.patch }; }));
+      toast('이체 기록을 지우지 못해 되돌리기를 취소했어요');
+      return;
+    }
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 단순 이체 되돌리기 후 새로고침 실패', e); }
+    toast('이체를 되돌렸어요 · 잔액이 실행 전으로 돌아갔어요');
+  }
+
+  /* 그 달 단순 이체 기록 (샘플: state.transferLog / 라이브: TR1 마커 행) */
+  function trOneLogs(ym) {
+    if (DB.mode === 'live') {
+      const out = [];
+      (DB.txs || []).forEach(function(row) {
+        if (row.category_key !== 'transfer' || !row.is_excluded || row.ym !== ym) return;
+        const s = String(row.pay_method || '');
+        if (s.indexOf(TR1_PREFIX) !== 0) return;
+        let m = {};
+        try { m = JSON.parse(s.slice(TR1_PREFIX.length)) || {}; } catch (e) { m = {}; }
+        out.push({
+          id: row.id, row: row, info: m, ym: row.ym, amount: Number(row.amount) || 0,
+          from: m.from || '', to: m.to || '',
+          toKind: (m.toKind === 'pension' || m.toKind === 'stock') ? m.toKind : 'cash',
+          toItem: m.toItem || '', note: m.note || '',
+          d: String(row.tx_date || '').slice(5, 10), ts: Number(m.ts) || 0
+        });
+      });
+      return out.sort(function(a, b){ return String(b.d).localeCompare(String(a.d)) || (b.ts - a.ts); });
+    }
+    return (state.transferLog || []).filter(function(l){ return l.oneOff && l.ym === ym; }).slice().reverse();
+  }
+  function trOneConfirmUndo(id) {
+    const log = trOneLogs(state.ym).filter(function(l){ return l.id === id; })[0];
+    if (!log) { toast('이체 기록을 찾지 못했어요'); return; }
+    const label = log.from + ' → ' + trTargetLabel(log.to, log.toItem);
+    if (!window.confirm('↩ ' + label + ' ' + nf.format(log.amount) + '원 이체를 되돌릴까요?\n양쪽 계좌 금액이 이체 전으로 돌아가고 이 기록이 지워져요.')) return;
+    if (DB.mode === 'live') trOneUndoLive(log);
+    else trOneUndoSample(log);
+  }
+
+  /* 이체 탭 저장 */
+  function submitTransfer() {
+    const errEl = el('addErr');
+    const fail = function(msg) { errEl.textContent = msg; errEl.hidden = false; };
+    const dv = el('fTrDate').value;
+    const amt = parseInt(el('fTrAmt').value, 10);
+    const fromName = trOnceFromName();
+    const to = trOnceToPick();
+    if (!dv) { fail('날짜를 골라주세요.'); return; }
+    if (dv.slice(0, 7) !== state.ym) { fail(ymLabel(state.ym) + ' 날짜로 넣어주세요.'); return; }
+    if (!amt || amt <= 0) { fail('금액을 넣어주세요.'); return; }
+    if (!fromName) { fail('출금 계좌를 골라주세요.'); return; }
+    if (!to) { fail('입금 계좌를 골라주세요.'); return; }
+    if (to.kind === 'cash' && to.name === fromName) { fail('출금 계좌와 입금 계좌가 같아요. 다른 계좌를 골라주세요.'); return; }
+    errEl.hidden = true;
+    const t = {
+      ym: state.ym, date: dv, amount: amt, from: fromName,
+      toKind: to.kind, to: to.name, toItem: to.kind === 'cash' ? '' : to.ticker,
+      note: el('fTrNote').value.trim().slice(0, 24)
+    };
+    closeModal();
+    if (DB.mode === 'live') trOneRunLive(t);
+    else trOneRunSample(t);
   }
 
   /* ── 이체 규칙 모달 ── */
@@ -4224,7 +4611,7 @@
     btn.classList.toggle('show', inp.value.trim() !== '');
   }
   (function bindClearButtons() {
-    ['fName', 'fIncName'].forEach(function(id) {
+    ['fName', 'fIncName', 'fTrNote'].forEach(function(id) {
       const inp = el(id);
       const btn = document.querySelector('.input-clear-btn[data-clear="' + id + '"]');
       if (!inp || !btn) return;
@@ -4247,21 +4634,33 @@
   }
   function setModalKind(k) {
     modalKind = k;
-    const exp = k === 'exp';
+    const exp = k === 'exp', inc = k === 'inc', tr = k === 'tr';
+    el('commonFields').hidden = tr;
     el('expFields').hidden = !exp;
-    el('incFields').hidden = exp;
+    el('incFields').hidden = !inc;
+    el('trFields').hidden = !tr;
     Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
       const on = b.getAttribute('data-kind') === k;
       b.classList.toggle('on', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    el('sheetHint').textContent = exp
-      ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
-      : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·남은 돈·저축률이 바로 다시 계산돼요.';
+    el('sheetHint').textContent = tr
+      ? ymLabel(state.ym) + ' 계좌 사이로 금액만 옮겨요. 지출·수입 합계·저축률은 건드리지 않아요.'
+      : exp
+        ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
+        : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·남은 돈·저축률이 바로 다시 계산돼요.';
     el('fAmount').placeholder = exp ? '32000' : '200000';
     el('addErr').hidden = true;
-    setTimeout(function(){ (exp ? el('fName') : el('fIncName')).focus(); }, 40);
-    syncClear('fName'); syncClear('fIncName');
+    if (!editTarget) {
+      el('sheetTitle').textContent = tr ? '이체 추가' : '내역 추가';
+      el('addSubmit').textContent = tr ? '이체하기' : '추가하기';
+    }
+    if (tr) trOnceFillSelects();
+    setTimeout(function(){
+      if (tr) el('fTrAmt').focus();
+      else (exp ? el('fName') : el('fIncName')).focus();
+    }, 40);
+    syncClear('fName'); syncClear('fIncName'); syncClear('fTrNote');
   }
   Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
     b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
@@ -4276,6 +4675,9 @@
     el('fName').value = '';
     el('fIncName').value = '';
     el('fAmount').value = '';
+    el('fTrAmt').value = '';
+    el('fTrNote').value = '';
+    el('fTrDate').value = state.ym + '-' + String(lastDay).padStart(2, '0');
     el('fCat').innerHTML = catOptions();
     el('fIncCat').innerHTML = incomeCatOptions();
     el('addErr').hidden = true;
@@ -4287,8 +4689,8 @@
   /* ── 내역 수정 (일반 변동 지출·수입) ── */
   function setEditChrome(on, k) {
     el('kindToggle').hidden = !!on;
-    el('sheetTitle').textContent = on ? (k === 'i' ? '수입 수정' : '지출 수정') : '내역 추가';
-    el('addSubmit').textContent = on ? '저장' : '추가하기';
+    el('sheetTitle').textContent = on ? (k === 'i' ? '수입 수정' : '지출 수정') : (k === 'tr' ? '이체 추가' : '내역 추가');
+    el('addSubmit').textContent = on ? '저장' : (k === 'tr' ? '이체하기' : '추가하기');
     if (on) {
       el('sheetHint').textContent = ymLabel(state.ym) + (k === 'i' ? ' 공동 수입' : ' 공동 지출') +
         ' 내역을 고쳐요. 저장하면 결산·도넛·예산·연간 누적이 바로 다시 계산돼요.';
@@ -4477,9 +4879,24 @@
     openRuleModal(id);
   });
 
-  function closeModal() { el('modal').hidden = true; editTarget = null; setEditChrome(false, modalKind); syncClear('fName'); syncClear('fIncName'); }
+  function closeModal() { el('modal').hidden = true; editTarget = null; setEditChrome(false, modalKind); syncClear('fName'); syncClear('fIncName'); syncClear('fTrNote'); }
 
   el('btnAdd').addEventListener('click', openModal);
+  /* 단순 이체: 내역 추가 시트를 이체 탭으로 바로 열어요 */
+  function openTransferModal() {
+    openModal();
+    setModalKind('tr');
+  }
+  el('btnTrOnce').addEventListener('click', openTransferModal);
+  el('fTrFrom').addEventListener('change', function(){ trOnceFillTo(''); syncTrOnceHint(); });
+  el('fTrTo').addEventListener('change', syncTrOnceHint);
+  ['fTrDate', 'fTrAmt', 'fTrFrom', 'fTrTo', 'fTrNote'].forEach(function(id) {
+    ['input', 'change'].forEach(function(ev) {
+      el(id).addEventListener(ev, function() {
+        if (modalKind === 'tr') el('addErr').hidden = true;
+      });
+    });
+  });
   Array.prototype.forEach.call(document.querySelectorAll('[data-close]'), function(b) {
     b.addEventListener('click', closeModal);
   });
@@ -4490,6 +4907,7 @@
 
   el('addForm').addEventListener('submit', function(e) {
     e.preventDefault();
+    if (modalKind === 'tr' && !editTarget) { submitTransfer(); return; }
     const v = el('fDate').value;
     const amt = parseInt(el('fAmount').value, 10);
     const errEl = el('addErr');
