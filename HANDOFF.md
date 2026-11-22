@@ -199,6 +199,21 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 - 샘플 모드 `trOneRunSample`/`trOneUndoSample`은 `SUBS.cash`·`state.invest`를 직접 고치고 `state.transferLog`에 `oneOff:true` 기록을 넣습니다(현금→현금이면 `SNAP[ym].cash`는 그대로, 현금→청약이면 차감).
 - 목록: `trOneLogs(ym)` → `renderTransferCard()`의 `{ym} 단순 이체` 섹션(`↩` 되돌리기). 라이브는 `DB.txs`의 `TR1:` 마커를 읽으므로 부부 양쪽에 같이 보입니다.
 
+### 3.6-2 💰 수입 입금처 ↔ 자산 계좌 잔액 연동
+
+- 입구: `＋ 내역 추가` → `💰 수입` 탭, 그리고 수입 내역 줄의 `✎`(`openEditModal`). 필드 `#fIncName`·`#fIncCat`·`#fAccount`(입금처)·`#fIncApply`(잔액 반영 체크, 기본 ON).
+- 입금처 목록은 **코드에 박지 않고 자산 데이터에서 동적 생성**(`incomeAccountList()` → `incomeAccountOptions()`): `trCashAccounts()`(현금·입출금·예적금) + `trSavingsTargets()`(청약) + `trInvTargets()` 중 예수금·CMA·MMF·RP 행. 옵션은 `<optgroup>`으로 묶고 통장에는 현재 잔액을 붙여 보여줍니다.
+- 공개 저장소 원칙: 실제 통장명은 `index.html`에 하드코딩하지 않습니다. 계좌 이름은 전부 `asset_snapshots.name` / `investments.account_name`에서 읽습니다.
+- 기존 값 호환: 예전 가상 라벨(`공동통장`·`생활비 통장`·`증권계좌`·`공동 현금`·`기타`)은 목록에 `(자산에 없음)` 옵션으로 남겨 선택 상태를 유지합니다. 실계좌와 매칭되지 않으면 잔액은 건드리지 않고 `#incAcctHint`에 안내만 표시합니다.
+- 잔액 매칭(`acctTargetOf(name, ym)`): ① `asset_snapshots(kind='cash')` 이름 일치 → `amount`, ② `investments`의 `account_name`/`ticker_name` 일치(여러 행이면 예수금 행 우선) → `principal`·`eval_amount`를 같이 증감(이체와 같은 방식).
+- 반영 규칙(`DB.insertIncome` / `DB.updateIncome` / `DB.excludeIncome`):
+  - 추가: 계좌 +금액
+  - 수정: 같은 계좌면 **차액만**, 계좌가 바뀌면 예전 계좌 −이전금액 / 새 계좌 +새금액. 예전 라벨이 가상 라벨(자산에 없음)이면 새 계좌에만 +
+  - 제외(`−`): 계좌 −금액 (되돌리기 시 +금액)
+  - 잔액 patch 실패 시 수입 기록 변경을 되돌려 반쪽 상태를 만들지 않습니다.
+- 수입 화면은 여전히 `transactions(kind='income')`이고 `pay_method`에 계좌명을 그대로 저장합니다(스키마 변경 없음). 지출은 이 연동 대상이 아닙니다(카드 결제·월말 잔액 수동 반영 방식 유지).
+- 수정 모달은 이체 탭을 먼저 열었더라도 `#commonFields`를 되살리고 `#trFields`를 닫습니다(`openEditModal`). 이 처리가 빠지면 날짜·금액 없이 이체 칸이 같이 뜹니다.
+
 ### 3.7 카테고리 · 예산
 
 - 기본 카테고리 **9개**: `식비·장보기 / 외식·배달 / 주거·관리비 / 공과금·통신 / 생활·구독 / 교통·주유 / 경조사·선물 / 여행·여가 / 의료·건강`.
@@ -215,13 +230,14 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 | --- | --- | --- |
 | 추가 | `openModal()`, `#addForm` | `transactions` insert (`kind='var'` 또는 `'income'`) |
 | 단순 이체 | `openTransferModal()` → `submitTransfer()` | `transactions` 마커(`kind='var'`, `category_key='transfer'`, `pay_method='TR1:'…`) + `asset_snapshots`/`investments` 증감 |
-| 수정 | `openEditModal(id)` → `patchTx()` | `transactions` update (`title`, `category_key`, `pay_method`, `amount`, `tx_date`, `updated_at`) |
+| 수정 | `openEditModal(id)` → `patchTx()` (수입은 `DB.updateIncome()`) | `transactions` update (`title`, `category_key`, `pay_method`, `amount`, `tx_date`, `updated_at`) + 수입이면 입금처 잔액 증감 |
 | 고정 지출 금액만 이번 달 수정 | `openMonthFix()` → `DB.setMonthFix()` | `transactions` update 또는 insert |
 | 규칙 자체 수정 | `openRuleModal()` → `DB.saveRule()` | `recurring_rules` update/insert |
 | 제외 | `－` 버튼 → `DB.setExcluded(id, true)` | `transactions.is_excluded` — **삭제 아님** |
 
 - **날짜는 항상 `toTxDate(ym, d)`로 정규화**합니다. `'11-02'`, `'2'`, `'2026-11-02'`가 섞여 들어오면 `YYYY-MM-DD` 하나로 맞춥니다. 이 함수를 우회해 `tx_date`를 직접 넣지 마세요.
 - 제외는 합계·도넛·예산·저축률에서만 빼고 기록은 남깁니다. 과거에 "제외됨" 목록 박스(`#exclBox`)를 화면에 보여줬는데, 지금은 `renderSpend()` 끝에서 `el('exclBox').innerHTML = ''`로 **비워 둡니다**(숨김 적용 상태). 다시 보여주려면 이 줄을 지우고 렌더 코드를 넣어야 합니다.
+- **금액 입력란은 예외 없이 `type="text" inputmode="numeric" data-money`**: `#fAmount`(수입·지출 공통), `#fTrAmt`, `#rAmount`, `#mAmount`, `#trAmount`, `#prBuy`/`#prPrice`(만원 단위), `#ivPrincipal`/`#ivValue`, `#newCatBudget`, 예산 카드의 `[data-bud]`, 현금·부채 모달의 `.snap-amt`. `document`의 `input`/`blur` 캡처 리스너가 `commaStr()`로 `4,698,950`처럼 자동 포맷하고 커서 위치를 숫자 개수 기준으로 되돌립니다(`fmtMoneyInput`). 값을 읽을 때는 **반드시 `moneyNum()`** — `parseInt('4,698,950')`은 `4`가 됩니다. 화면에 값을 넣을 때는 `setMoney(el, v)`, HTML 템플릿에서는 `commaStr(v)`를 쓰세요.
 - 수정 후에는 `commit()`이 `refresh()` + `renderAll()`을 다시 돌립니다. 화면 일부만 갱신하는 코드를 따로 만들지 마세요.
 
 ### 3.9 카드 접힘 기본값 · 쉐브론

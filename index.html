@@ -927,6 +927,9 @@
     padding:1px 5px; border-radius:6px; margin-left:2px;
   }
   .fieldnote{font-size:10px; color:var(--ink-3); font-weight:600; margin:5px 0 0; letter-spacing:-.01em; line-height:1.5;}
+  .inc-link{display:flex; align-items:center; gap:7px; font-size:11.5px; font-weight:700; color:var(--ink-2); margin:2px 0 12px; cursor:pointer;}
+  .inc-link input{width:17px; height:17px; accent-color:#2F8F7B;}
+  .fieldnote.ok{color:#2F8F7B;}
 </style>
 </head>
 <body>
@@ -1224,7 +1227,7 @@
         </div>
         <div class="field">
           <label for="fAmount">금액 (원)</label>
-          <input type="number" id="fAmount" inputmode="numeric" placeholder="32000" min="1" step="1" required />
+          <input type="text" id="fAmount" inputmode="numeric" data-money autocomplete="off" placeholder="32,000" required />
         </div>
       </div>
       <div id="expFields">
@@ -1258,21 +1261,19 @@
             <button type="button" class="input-clear-btn" data-clear="fIncName" aria-label="입력 지우기">×</button>
           </div>
         </div>
-        <div class="frow">
-          <div class="field">
-            <label for="fIncCat">수입 카테고리</label>
-            <select id="fIncCat"></select>
-          </div>
-          <div class="field">
-            <label for="fAccount">입금처</label>
-            <select id="fAccount">
-              <option>공동통장</option>
-              <option>생활비 통장</option>
-              <option>증권계좌</option>
-              <option>기타</option>
-            </select>
-          </div>
+        <div class="field">
+          <label for="fIncCat">수입 카테고리</label>
+          <select id="fIncCat"></select>
         </div>
+        <div class="field">
+          <label for="fAccount">입금처 (자산에 등록된 계좌)</label>
+          <select id="fAccount"></select>
+        </div>
+        <p class="fieldnote" id="incAcctHint"></p>
+        <label class="inc-link" for="fIncApply">
+          <input type="checkbox" id="fIncApply" checked />
+          <span>이 통장 잔액에도 함께 반영</span>
+        </label>
       </div>
       <div id="trFields" hidden>
         <div class="frow">
@@ -1282,7 +1283,7 @@
           </div>
           <div class="field">
             <label for="fTrAmt">금액 (원)</label>
-            <input type="number" id="fTrAmt" inputmode="numeric" placeholder="100000" min="1" step="1" required />
+            <input type="text" id="fTrAmt" inputmode="numeric" data-money autocomplete="off" placeholder="100,000" required />
           </div>
         </div>
         <div class="field">
@@ -1357,7 +1358,7 @@
         </div>
         <div class="field">
           <label for="rAmount">금액 (원)</label>
-          <input type="number" id="rAmount" min="1" step="1" placeholder="640000" />
+          <input type="text" id="rAmount" inputmode="numeric" data-money autocomplete="off" placeholder="640,000" />
         </div>
       </div>
       <div class="frow">
@@ -1400,7 +1401,7 @@
         </div>
         <div class="field">
           <label for="mAmount">이번 달 금액 (원)</label>
-          <input type="number" id="mAmount" min="1" step="1" />
+          <input type="text" id="mAmount" inputmode="numeric" data-money autocomplete="off" />
         </div>
       </div>
       <p class="err" id="mfixErr" hidden></p>
@@ -1441,7 +1442,7 @@
         </div>
         <div class="field">
           <label for="trAmount">금액 (원)</label>
-          <input type="number" id="trAmount" min="1" step="1" placeholder="500000" />
+          <input type="text" id="trAmount" inputmode="numeric" data-money autocomplete="off" placeholder="500,000" />
         </div>
       </div>
       <label class="switchrow"><input type="checkbox" id="trOn" checked /> 이 규칙 켜기</label>
@@ -1510,11 +1511,11 @@
       <div class="frow">
         <div class="field">
           <label for="prBuy">매수가 (만원)</label>
-          <input type="number" id="prBuy" inputmode="numeric" min="1" step="100" placeholder="47500" />
+          <input type="text" id="prBuy" inputmode="numeric" data-money autocomplete="off" placeholder="47,500" />
         </div>
         <div class="field">
           <label for="prPrice">현재 시세 (만원)</label>
-          <input type="number" id="prPrice" inputmode="numeric" min="1" step="100" placeholder="52000" />
+          <input type="text" id="prPrice" inputmode="numeric" data-money autocomplete="off" placeholder="52,000" />
         </div>
       </div>
       <div class="field">
@@ -1597,11 +1598,11 @@
       <div class="frow">
         <div class="field">
           <label for="ivPrincipal">총 투자 원금 (원)</label>
-          <input type="number" id="ivPrincipal" inputmode="numeric" min="0" step="1000" placeholder="1000000" />
+          <input type="text" id="ivPrincipal" inputmode="numeric" data-money autocomplete="off" placeholder="1,000,000" />
         </div>
         <div class="field">
           <label for="ivValue">현재 평가금액 (원)</label>
-          <input type="number" id="ivValue" inputmode="numeric" min="0" step="1000" placeholder="1200000" />
+          <input type="text" id="ivValue" inputmode="numeric" data-money autocomplete="off" placeholder="1,200,000" />
         </div>
       </div>
       <div class="invprev">
@@ -1656,7 +1657,7 @@
         <div class="frow">
           <div class="field">
             <label for="newCatBudget">월 예산 (원)</label>
-            <input type="number" id="newCatBudget" inputmode="numeric" min="0" max="99999999" step="10000" placeholder="150000" />
+            <input type="text" id="newCatBudget" inputmode="numeric" data-money autocomplete="off" placeholder="150,000" maxlength="11" />
           </div>
           <div class="field" style="flex:0 0 132px;">
             <label>색상</label>
@@ -2365,6 +2366,43 @@
     const d = digits === undefined ? 1 : digits;
     return (Math.abs(x) * 100).toFixed(d);
   }
+
+  /* ── 금액 입력란 : 원 단위 천단위 쉼표 ──
+     input[data-money] 는 type="text" + inputmode="numeric" 이라 모바일 숫자 키패드가 뜨고,
+     입력·붙여넣기할 때마다 4,698,950 처럼 자동으로 쉼표가 들어가요.
+     값를 읽을 때는 반드시 moneyNum() 으로 쉼표를 걷어내야 해요(parseInt 는 '4,698'에서 끊깁니다). */
+  function digitsOf(v) { return String(v === null || v === undefined ? '' : v).replace(/[^0-9]/g, ''); }
+  function commaStr(v) {
+    const d = digitsOf(v).replace(/^0+(?=\d)/, '');
+    return d ? d.replace(/\B(?=(\d{3})+(?!\d))/g, ',') : (digitsOf(v) ? '0' : '');
+  }
+  function moneyNum(v) { const d = digitsOf(v); return d ? parseInt(d, 10) : 0; }
+  function setMoney(inp, v) { if (inp) inp.value = (v === '' || v === null || v === undefined) ? '' : commaStr(v); }
+  function fmtMoneyInput(inp) {
+    const raw = inp.value;
+    const caret = (typeof inp.selectionStart === 'number' && inp.selectionStart !== null) ? inp.selectionStart : raw.length;
+    const left = digitsOf(raw.slice(0, caret)).length;
+    const out = commaStr(raw);
+    if (out !== raw) {
+      inp.value = out;
+      let pos = 0, seen = 0;
+      while (pos < out.length && seen < left) {
+        const c = out.charCodeAt(pos);
+        if (c >= 48 && c <= 57) seen++;
+        pos++;
+      }
+      try { inp.setSelectionRange(pos, pos); } catch (e) {}
+    }
+    return out;
+  }
+  document.addEventListener('input', function(e) {
+    const t = e.target;
+    if (t && t.getAttribute && t.getAttribute('data-money') !== null) fmtMoneyInput(t);
+  }, true);
+  document.addEventListener('blur', function(e) {
+    const t = e.target;
+    if (t && t.getAttribute && t.getAttribute('data-money') !== null) fmtMoneyInput(t);
+  }, true);
   function relYM(ym, delta) {
     const y = +ym.slice(0, 4), m = +ym.slice(5, 7) + delta;
     const d = new Date(y, m - 1, 1);
@@ -3210,8 +3248,14 @@
     Array.prototype.forEach.call(el('incomeBlock').querySelectorAll('.inc-del'), function(b) {
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
+        if (DB.mode === 'live') {
+          /* 수입에서 빼면 그 입금처 잔액에서도 같이 빼요 */
+          DB.excludeIncome(id, true);
+          return;
+        }
         state.excluded[id] = true;
-        if (DB.mode === 'live') DB.setExcluded(id, true);
+        const incTx = monthIncomeTxs(state.ym).filter(function(x){ return x.id === id; })[0];
+        if (incTx) incomeBalApply(incTx.m, -incTx.a, state.ym);
         save();
         renderAll();
         toast('공동 수입에서 뺐어요 · 공동 수입과 저축률을 다시 계산했어요');
@@ -3511,6 +3555,7 @@
       b.addEventListener('click', function() {
         const id = b.getAttribute('data-id');
         const k = b.getAttribute('data-k');
+        if (k === 'i' && DB.mode === 'live') { DB.excludeIncome(id, true); return; }
         state.excluded[id] = true;
         if (DB.mode === 'live') DB.setExcluded(id, true);
         save();
@@ -4328,7 +4373,7 @@
     const errEl = el('addErr');
     const fail = function(msg) { errEl.textContent = msg; errEl.hidden = false; };
     const dv = el('fTrDate').value;
-    const amt = parseInt(el('fTrAmt').value, 10);
+    const amt = moneyNum(el('fTrAmt').value);
     const fromName = trOnceFromName();
     const to = trOnceToPick();
     if (!dv) { fail('날짜를 골라주세요.'); return; }
@@ -4357,7 +4402,7 @@
     el('trTitle').textContent = r ? '이체 규칙 수정' : '이체 규칙 추가';
     el('trName').value = r ? r.name : '';
     el('trDay').value = r ? r.day : 25;
-    el('trAmount').value = r ? r.amount : '';
+    setMoney(el('trAmount'), r ? r.amount : '');
     el('trOn').checked = r ? !!r.on : true;
     if (trCashList.length) {
       el('trFrom').innerHTML = trCashList.map(function(a, i) {
@@ -4402,7 +4447,7 @@
     const err = el('trErr');
     const name = el('trName').value.trim();
     const day = parseInt(el('trDay').value, 10);
-    const amount = parseInt(el('trAmount').value, 10);
+    const amount = moneyNum(el('trAmount').value);
     const fv = el('trFrom').value || '';
     const tv = el('trTo').value || '';
     const fromA = fv.indexOf('c|') === 0 ? trCashList[+fv.slice(2)] : null;
@@ -4660,6 +4705,7 @@
       el('addSubmit').textContent = tr ? '이체하기' : '추가하기';
     }
     if (tr) trOnceFillSelects();
+    if (inc) updateIncAcctHint();
     setTimeout(function(){
       if (tr) el('fTrAmt').focus();
       else (exp ? el('fName') : el('fIncName')).focus();
@@ -4669,6 +4715,7 @@
   Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
     b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
   });
+  el('fAccount').addEventListener('change', updateIncAcctHint);
   function openModal() {
     const meta = LEDGER[state.ym];
     const lastDay = Math.min(meta.elapsed, meta.days);
@@ -4684,10 +4731,164 @@
     el('fTrDate').value = state.ym + '-' + String(lastDay).padStart(2, '0');
     el('fCat').innerHTML = catOptions();
     el('fIncCat').innerHTML = incomeCatOptions();
+    el('fAccount').innerHTML = incomeAccountOptions();
+    if (el('fIncApply')) el('fIncApply').checked = true;
     el('addErr').hidden = true;
     el('modal').hidden = false;
     setModalKind(state.kind === 'inc' ? 'inc' : 'exp');
     setEditChrome(false, modalKind);
+    updateIncAcctHint();
+  }
+
+  /* ────────────── 8-3. 수입 입금처 ↔ 자산 계좌 잔액 연동 ────────────── */
+  /* 입금처 목록은 코드에 박아 넣지 않고, 자산 탭에 등록된 실제 계좌(asset_snapshots · investments)에서
+     동적으로 만들어요(공개 저장소라 실제 통장명을 코드에 두지 않습니다).
+     수입을 추가·수정·제외하면 그 계좌 잔액도 같이 움직이고, 모달의 체크박스로 끌 수 있어요. */
+  const INC_VIRTUAL = ['공동통장', '생활비 통장', '증권계좌', '공동 현금', '공동카드', '기타'];
+
+  function incDepositLike(name, sub) {
+    return /예수금|CMA|MMF|RP|청약/i.test(String(name || '') + ' ' + String(sub || ''));
+  }
+  /* 입금처 후보 : 현금·입출금·예적금 통장 + 청약·저축 + 증권 예수금 */
+  function incomeAccountList() {
+    const out = [], seen = {};
+    function add(o) {
+      if (!o || !o.name || seen[o.name]) return;
+      seen[o.name] = 1;
+      out.push(o);
+    }
+    trCashAccounts().forEach(function(a) {
+      add({ name: a.name, group: 'cash', amount: a.amount,
+        optLabel: a.name + (typeof a.amount === 'number' ? ' · ' + won(a.amount) : '') });
+    });
+    trSavingsTargets().forEach(function(s) {
+      const nm = s.acct || s.ticker;
+      add({ name: nm, group: 'saving', optLabel: trTargetLabel(s.acct, s.ticker) });
+    });
+    trInvTargets().forEach(function(t) {
+      if (t.kind === 'cash') return;
+      if (!incDepositLike(t.ticker, '')) return;
+      const nm = t.acct || t.ticker;
+      add({ name: nm, group: 'stock', optLabel: nm + ' 예수금' });
+    });
+    return out;
+  }
+  function incomeAccountOptions(keep) {
+    const list = incomeAccountList();
+    const groups = [
+      ['cash', '💧 현금·입출금·예적금'],
+      ['saving', '🏦 청약·저축'],
+      ['stock', '📈 증권 예수금']
+    ];
+    let html = '';
+    groups.forEach(function(g) {
+      const rows = list.filter(function(a){ return a.group === g[0]; });
+      if (!rows.length) return;
+      html += '<optgroup label="' + g[1] + '">' + rows.map(function(a) {
+        return '<option value="' + esc(a.name) + '">' + esc(a.optLabel || a.name) + '</option>';
+      }).join('') + '</optgroup>';
+    });
+    if (keep && !list.some(function(a){ return a.name === keep; })) {
+      html = '<option value="' + esc(keep) + '">' + esc(keep) + ' (자산에 없음)</option>' + html;
+    }
+    if (!list.length && !keep) {
+      return INC_VIRTUAL.map(function(v){ return '<option value="' + esc(v) + '">' + esc(v) + '</option>'; }).join('');
+    }
+    html += '<optgroup label="기타"><option value="기타">✏️ 기타 (자산 미연동)</option></optgroup>';
+    return html;
+  }
+  /* 이름 → 자산 계좌 행. 못 찾으면 null (잔액 미연동) */
+  function acctTargetOf(name, ym) {
+    name = String(name || '').trim();
+    if (!name) return null;
+    ym = ym || state.ym;
+    if (DB.mode !== 'live') {
+      const c = SUBS.cash.filter(function(s){ return s[0] === name; })[0];
+      if (c) return { table: 'sample_cash', row: c, ym: ym };
+      const inv = (state.invest || []).filter(function(i){ return i.acct === name || i.name === name; })[0];
+      if (inv) return { table: 'sample_inv', row: inv, ym: ym };
+      return null;
+    }
+    const row = trFindSnap('cash', name, ym);
+    if (row) return { table: 'asset_snapshots', row: row, ym: row.ym };
+    const cands = (DB.invs || []).filter(function(r) {
+      return (r.account_name || '') === name || (r.ticker_name || '') === name;
+    });
+    if (!cands.length) return null;
+    const dep = cands.filter(function(r){ return incDepositLike(r.ticker_name, r.sub_type); })[0];
+    const pick = dep || (cands.length === 1 ? cands[0] : null); /* 어느 종목인지 특정 불가면 나지 않게 null */
+    if (!pick) return null;
+    return { table: 'investments', row: pick, ym: pick.ym };
+  }
+  function acctBalOf(t) {
+    if (!t) return 0;
+    if (t.table === 'asset_snapshots') return Number(t.row.amount) || 0;
+    if (t.table === 'investments') return Number(t.row.eval_amount) || 0;
+    if (t.table === 'sample_cash') return Number(t.row[1]) || 0;
+    if (t.table === 'sample_inv') return Number(t.row.value) || 0;
+    return 0;
+  }
+  /* delta 를 반영한 patch/back (투자는 이체와 같이 원금·평가액을 같이 올리고 내려요) */
+  function acctPatchOf(t, delta) {
+    if (t.table === 'investments') {
+      return {
+        principal: (Number(t.row.principal) || 0) + delta,
+        eval_amount: (Number(t.row.eval_amount) || 0) + delta
+      };
+    }
+    return { amount: acctBalOf(t) + delta };
+  }
+  function acctMirror(t, delta) {
+    if (!t) return;
+    if (t.table === 'asset_snapshots' || t.table === 'sample_cash') {
+      if (t.table === 'asset_snapshots') t.row.amount = (Number(t.row.amount) || 0) + delta;
+      else t.row[1] = (Number(t.row[1]) || 0) + delta;
+      if (SNAP[t.ym]) SNAP[t.ym].cash = (SNAP[t.ym].cash || 0) + delta;
+      return;
+    }
+    if (t.table === 'investments') {
+      t.row.principal = (Number(t.row.principal) || 0) + delta;
+      t.row.eval_amount = (Number(t.row.eval_amount) || 0) + delta;
+    } else {
+      t.row.principal = (Number(t.row.principal) || 0) + delta;
+      t.row.value = (Number(t.row.value) || 0) + delta;
+    }
+  }
+  /* 계좌 잔액에 delta 반영 : {ok, matched} */
+  async function incomeBalApply(name, delta, ym) {
+    if (!delta) return { ok: true, matched: false };
+    const t = acctTargetOf(name, ym);
+    if (!t) return { ok: true, matched: false };
+    if (DB.mode !== 'live') { acctMirror(t, delta); return { ok: true, matched: true }; }
+    const ops = [{ table: t.table, id: t.row.id, patch: acctPatchOf(t, delta), back: acctPatchOf(t, 0) }];
+    for (let i = 0; i < ops.length; i++) {
+      const r = await DB.sb.from(ops[i].table).update(ops[i].patch).eq('id', ops[i].id);
+      if (r.error) {
+        console.error('[ledger] 수입 입금처 잔액 반영 실패', r.error);
+        for (let j = 0; j < i; j++) await DB.sb.from(ops[j].table).update(ops[j].back).eq('id', ops[j].id);
+        return { ok: false, matched: true };
+      }
+    }
+    acctMirror(t, delta);
+    return { ok: true, matched: true };
+  }
+  function updateIncAcctHint() {
+    const sel = el('fAccount'), hint = el('incAcctHint');
+    if (!sel || !hint) return;
+    const nm = sel.value;
+    const t = acctTargetOf(nm, state.ym);
+    if (t) {
+      const kindTxt = (t.table === 'investments' || t.table === 'sample_inv') ? '투자·저축 계좌' : '통장';
+      hint.textContent = '✓ 자산의 ' + kindTxt + ' · 지금 ' + nf.format(acctBalOf(t)) + '원 → 수입만큼 잔액에 반영돼요' +
+        (t.ym && t.ym !== state.ym ? ' (' + ymLabel(state.ym) + ' 자산 기록이 없어 ' + ymLabel(t.ym) + ' 기준)' : '');
+      hint.className = 'fieldnote ok';
+    } else if (!nm) {
+      hint.textContent = '';
+      hint.className = 'fieldnote';
+    } else {
+      hint.textContent = '자산에 등록되지 않은 이름이라 잔액에는 반영되지 않아요 · 자산 탭 ✎ 현금·부채에서 계좌를 추가하면 목록에 나와요';
+      hint.className = 'fieldnote';
+    }
   }
 
   /* ── 내역 수정 (일반 변동 지출·수입) ── */
@@ -4715,15 +4916,21 @@
     el('fDate').value = toTxDate(state.ym, t.d);
     el('fDate').min = state.ym + '-01';
     el('fDate').max = state.ym + '-' + String(meta.days).padStart(2, '0');
-    el('fAmount').value = t.a;
+    setMoney(el('fAmount'), t.a);
     el('fCat').innerHTML = catOptions();
     el('fIncCat').innerHTML = incomeCatOptions();
+    el('fAccount').innerHTML = incomeAccountOptions(isInc ? t.m : '');
+    if (el('fIncApply')) el('fIncApply').checked = true;
     if (isInc) {
       el('fIncName').value = t.n;
       el('fIncCat').value = t.c;
       el('fAccount').value = t.m;
       if (!el('fIncCat').value) el('fIncCat').value = 'etc';
-      if (!el('fAccount').value) el('fAccount').value = '공동통장';
+      if (!el('fAccount').value) {
+        const first = el('fAccount').querySelector('option');
+        el('fAccount').value = first ? first.value : '기타';
+      }
+      updateIncAcctHint();
     } else {
       el('fName').value = t.n;
       el('fCat').value = t.c;
@@ -4733,6 +4940,9 @@
     }
     el('expFields').hidden = isInc;
     el('incFields').hidden = !isInc;
+    /* 이체 탭을 먼저 열어 둔 상태에서 ✎ 수정으로 들어와도 날짜·금액이 살아 있도록 되돌려요 */
+    el('commonFields').hidden = false;
+    el('trFields').hidden = true;
     Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
       const on = b.getAttribute('data-kind') === modalKind;
       b.classList.toggle('on', on);
@@ -4770,7 +4980,7 @@
     el('ruleTitle').textContent = r ? '고정 지출 규칙 수정' : '고정 지출 규칙 추가';
     el('rName').value = r ? r.name : '';
     el('rDay').value = r ? r.day : 25;
-    el('rAmount').value = r ? r.amount : '';
+    setMoney(el('rAmount'), r ? r.amount : '');
     el('rCat').innerHTML = ruleCatOptions();
     el('rCat').value = r ? r.cat : 'home';
     el('rMethod').value = r ? r.method : '자동이체';
@@ -4789,7 +4999,7 @@
     el('mfixTitle').textContent = r.name + ' · 이번 달만 수정';
     el('mfixHint').textContent = ymLabel(state.ym) + ' 내역에만 적용되고, 규칙(' + nf.format(r.amount) + '원)은 그대로 둬요.';
     el('mDay').value = ruleDay(r, state.ym);
-    el('mAmount').value = ruleAmount(r, state.ym);
+    setMoney(el('mAmount'), ruleAmount(r, state.ym));
     el('mfixReset').hidden = !ruleOverride(r, state.ym);
     el('mfixErr').hidden = true;
     el('monthFixModal').hidden = false;
@@ -4809,7 +5019,7 @@
     e.preventDefault();
     const name = el('rName').value.trim();
     const day = parseInt(el('rDay').value, 10);
-    const amount = parseInt(el('rAmount').value, 10);
+    const amount = moneyNum(el('rAmount').value);
     const err = el('ruleErr');
     if (!name) { err.textContent = '항목명을 적어주세요.'; err.hidden = false; return; }
     if (!day || day < 1 || day > 28) { err.textContent = '이체일은 1~28일로 정해주세요.'; err.hidden = false; return; }
@@ -4855,7 +5065,7 @@
     e.preventDefault();
     if (!mfixRuleId) return;
     const day = parseInt(el('mDay').value, 10);
-    const amount = parseInt(el('mAmount').value, 10);
+    const amount = moneyNum(el('mAmount').value);
     const err = el('mfixErr');
     if (!day || day < 1 || day > 28) { err.textContent = '이체일은 1~28일로 정해주세요.'; err.hidden = false; return; }
     if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
@@ -4913,7 +5123,7 @@
     e.preventDefault();
     if (modalKind === 'tr' && !editTarget) { submitTransfer(); return; }
     const v = el('fDate').value;
-    const amt = parseInt(el('fAmount').value, 10);
+    const amt = moneyNum(el('fAmount').value);
     const errEl = el('addErr');
     if (!v || !amt || amt <= 0) {
       errEl.textContent = '날짜와 금액을 먼저 채워주세요.';
@@ -4933,9 +5143,29 @@
         errEl.hidden = false;
         return;
       }
-      patchTx(editTarget.id, isInc
+      const patch = isInc
         ? { d: v.slice(5, 10), n: nm, c: el('fIncCat').value, m: el('fAccount').value, a: amt }
-        : { d: v.slice(5, 10), n: nm, c: el('fCat').value, m: el('fMethod').value, a: amt });
+        : { d: v.slice(5, 10), n: nm, c: el('fCat').value, m: el('fMethod').value, a: amt };
+      if (isInc && DB.mode === 'live') {
+        /* 입금처가 바뀌거나 금액이 바뀌면 그 차이만큼 계좌 잔액도 같이 고쳐요 */
+        DB.updateIncome(editTarget.id, patch, el('fIncApply') ? el('fIncApply').checked : true);
+        closeModal();
+        return;
+      }
+      if (isInc) {
+        /* 샘플 체험 모드 : 같은 규칙으로 화면 잔액만 맞춰요 */
+        const old = findTxById(editTarget.id);
+        if (old && (el('fIncApply') ? el('fIncApply').checked : true)) {
+          const aT = acctTargetOf(old.m, state.ym), bT = acctTargetOf(patch.m, state.ym);
+          if (aT && bT && aT.row === bT.row) {
+            if (patch.a !== old.a) incomeBalApply(patch.m, patch.a - old.a, state.ym);
+          } else {
+            if (aT) incomeBalApply(old.m, -old.a, state.ym);
+            if (bT) incomeBalApply(patch.m, patch.a, state.ym);
+          }
+        }
+      }
+      patchTx(editTarget.id, patch);
       save();
       closeModal();
       renderAll();
@@ -4959,8 +5189,19 @@
         a: amt,
         k: 'i'
       };
-      if (DB.mode === 'live') DB.insertTx(incRow, 'income');
-      else state.addedIncome.push(incRow);
+      const applyBal = el('fIncApply') ? el('fIncApply').checked : true;
+      if (DB.mode === 'live') {
+        /* 수입 기록 + 선택한 입금처 잔액을 한 번에 반영 (실패하면 기록도 되돌려요) */
+        DB.insertIncome(incRow, applyBal);
+        closeModal();
+        state.tab = 'spend';
+        state.kind = 'inc';
+        state.cat = null;
+        state.icat = null;
+        return;
+      }
+      state.addedIncome.push(incRow);
+      if (applyBal) incomeBalApply(incRow.m, amt, state.ym);
       save();
       closeModal();
       state.tab = 'spend';
@@ -4968,7 +5209,8 @@
       state.cat = null;
       state.icat = null;
       renderAll();
-      toast('수입 추가했어요 · 공동 수입 +' + nf.format(amt) + '원 · 저축률 다시 계산됨');
+      toast('수입 추가했어요 · 공동 수입 +' + nf.format(amt) + '원 · 저축률 다시 계산됨' +
+        (applyBal && acctTargetOf(incRow.m, state.ym) ? ' · ' + incRow.m + ' 잔액에도 반영' : ''));
       return;
     }
     const name = el('fName').value.trim();
@@ -5138,7 +5380,7 @@
         '<div class="bfr-bot">' +
           '<span class="bfs2">' + (now ? '이번 달 ' + won(now) + ' 썼어요' : '이번 달 지출 없음') +
             (n ? ' · 전체 ' + n + '건' : '') + '</span>' +
-          '<span class="bfi"><input type="number" data-bud="' + c.id + '" inputmode="numeric" min="0" max="99999999" step="10000" value="' + (c.budget || 0) + '" aria-label="' + esc(c.label) + ' 월 예산"><span class="bfu">원</span></span>' +
+          '<span class="bfi"><input type="text" data-money data-bud="' + c.id + '" inputmode="numeric" maxlength="11" value="' + commaStr(c.budget || 0) + '" aria-label="' + esc(c.label) + ' 월 예산"><span class="bfu">원</span></span>' +
         '</div>' +
       '</div>';
     }).join('');
@@ -5236,8 +5478,8 @@
     const nameEl = el('newCatName');
     const nm = nameEl.value.trim();
     const emoji = firstGrapheme(el('newCatEmoji').value.trim() || budgetDraft.emoji || '') || '🏷️';
-    const bRaw = el('newCatBudget').value.trim();
-    const budget = bRaw === '' ? 0 : Math.round(Number(bRaw));
+    const bRaw = digitsOf(el('newCatBudget').value);
+    const budget = bRaw === '' ? 0 : moneyNum(bRaw);
     if (!nm) { err.textContent = '새 카테고리 이름을 적어주세요.'; err.hidden = false; nameEl.focus(); return; }
     if (!isFinite(budget) || budget < 0 || budget > 99999999) { err.textContent = '월 예산은 0원 이상 금액으로 넣어주세요.'; err.hidden = false; return; }
     if (budgetDraft.cats.length >= 20) { err.textContent = '카테고리는 20개까지 만들 수 있어요.'; err.hidden = false; return; }
@@ -5269,7 +5511,7 @@
     const idName = t.getAttribute && t.getAttribute('data-name');
     const idEmoji = t.getAttribute && t.getAttribute('data-emoji');
     if (idBud) {
-      const n = Math.round(Number(t.value));
+      const n = moneyNum(t.value);
       const c = draftCat(idBud);
       if (c) c.budget = (isFinite(n) && n > 0) ? Math.min(n, 99999999) : 0;
       el('budgetErr').hidden = true;
@@ -5366,8 +5608,8 @@
   /* ────────────── 11-5. 부동산 매수가·시세 수정 ────────────── */
   function syncPropPreview() {
     if (el('propModal').hidden && !el('prBuy').value && !el('prPrice').value) return;
-    const buy = Math.round((parseFloat(el('prBuy').value) || 0) * 10000);
-    const price = Math.round((parseFloat(el('prPrice').value) || 0) * 10000);
+    const buy = Math.round(moneyNum(el('prBuy').value) * 10000);
+    const price = Math.round(moneyNum(el('prPrice').value) * 10000);
     const g = price - buy;
     const r = buy ? g / buy : 0;
     el('propPrevSign').textContent = !buy ? '🏠' : (g > 0 ? '📈' : (g < 0 ? '📉' : '🏠'));
@@ -5380,8 +5622,8 @@
     /* 저장된 실거래 조회 정보가 있을 때만 그 값을 채워요. 없으면 빈 칸으로 두고 직접 입력해요.
        (소스에 거주지 기본값을 두지 않아요 — 저장된 값은 DB asset_snapshots.meta 에서 옵니다.) */
     el('prName').value = p.name;
-    el('prBuy').value = Math.round(p.buy / 10000);
-    el('prPrice').value = Math.round(realOf(state.ym) / 10000);
+    setMoney(el('prBuy'), Math.round(p.buy / 10000));
+    setMoney(el('prPrice'), Math.round(realOf(state.ym) / 10000));
     el('prDate').value = p.buyDate;
     el('prLawd').value = p.lawd || '';
     el('prUmd').value = p.umd || '';
@@ -5408,8 +5650,8 @@
     e.preventDefault();
     const err = el('propErr');
     const name = el('prName').value.trim();
-    const buyM = parseInt(el('prBuy').value, 10);
-    const priceM = parseInt(el('prPrice').value, 10);
+    const buyM = moneyNum(el('prBuy').value);
+    const priceM = moneyNum(el('prPrice').value);
     const date = el('prDate').value;
     if (!name) { err.textContent = '물건명을 적어주세요.'; err.hidden = false; return; }
     if (!buyM || buyM <= 0) { err.textContent = '매수가를 만원 단위로 넣어주세요. (예: 47500)'; err.hidden = false; return; }
@@ -5488,10 +5730,10 @@
   }
   function syncIvPreview() {
     if (el('invModal').hidden) return;
-    const pRaw = el('ivPrincipal').value.trim();
-    const vRaw = el('ivValue').value.trim();
-    const p = pRaw ? Math.max(0, Math.round(parseFloat(pRaw) || 0)) : 0;
-    const v = vRaw ? Math.max(0, Math.round(parseFloat(vRaw) || 0)) : 0;
+    const pRaw = digitsOf(el('ivPrincipal').value);
+    const vRaw = digitsOf(el('ivValue').value);
+    const p = pRaw ? Math.max(0, moneyNum(pRaw)) : 0;
+    const v = vRaw ? Math.max(0, moneyNum(vRaw)) : 0;
     el('ivpP').textContent = pRaw ? won(p) : '—';
     el('ivpV').textContent = vRaw ? won(v) : '—';
     const gEl = el('ivpG');
@@ -5525,8 +5767,8 @@
     el('ivSub').value = rec ? rec.sub : '';
     el('ivQty').value = (rec && rec.qty) ? String(rec.qty) : '';
     el('ivSymbol').value = rec ? symOf(rec.name) : '';
-    el('ivPrincipal').value = rec ? String(rec.principal || '') : '';
-    el('ivValue').value = rec ? String(rec.value || '') : '';
+    setMoney(el('ivPrincipal'), rec ? (rec.principal || '') : '');
+    setMoney(el('ivValue'), rec ? (rec.value || '') : '');
     el('ivErr').hidden = true;
     el('invModal').hidden = false;   // 미리보기가 계산되려면 먼저 열려 있어야 해요
     syncIvPreview();
@@ -5583,11 +5825,11 @@
     const name = el('ivName').value.trim().slice(0, 24);
     const sub = el('ivSub').value.trim().slice(0, 20);
     const qtyRaw = el('ivQty').value.trim();
-    const pRaw = el('ivPrincipal').value.trim();
-    const vRaw = el('ivValue').value.trim();
+    const pRaw = digitsOf(el('ivPrincipal').value);
+    const vRaw = digitsOf(el('ivValue').value);
     const qty = qtyRaw ? parseFloat(qtyRaw) : null;
-    const p = pRaw ? Math.round(parseFloat(pRaw) || 0) : 0;
-    const v = vRaw ? Math.round(parseFloat(vRaw) || 0) : 0;
+    const p = pRaw ? moneyNum(pRaw) : 0;
+    const v = vRaw ? moneyNum(vRaw) : 0;
     function fail(m) { err.textContent = m; err.hidden = false; el('invModal').querySelector('.sheet').scrollTop = 0; return; }
     if (!acct) return fail(acctPick === '__new' ? '새 계좌명을 적어주세요.' : '계좌를 골라주세요.');
     if (!name) return fail('종목명을 적어주세요. (예: NVDA)');
@@ -6566,6 +6808,138 @@
       return DB.sb.from('transactions').update({ is_excluded: !!val, updated_at: new Date().toISOString() }).eq('id', id);
     });
   };
+
+  /* ── 수입 ↔ 입금처 잔액 연동 (추가 · 수정 · 제외) ──
+     transactions 한 행 + asset_snapshots/investments 한 행을 같이 고쳐야 해서 commit() 대신 직접 다룹니다.
+     잔액 반영이 실패하면 수입 기록 변경도 되돌려서 반쪽 상태를 만들지 않습니다. */
+  function incomeRowOf(id) {
+    return (DB.txs || []).filter(function(x){ return x.id === id; })[0] || null;
+  }
+  function incomeRowBackup(row) {
+    if (!row) return {};
+    return {
+      tx_date: row.tx_date, title: row.title, category_key: row.category_key,
+      amount: row.amount, pay_method: row.pay_method, is_excluded: row.is_excluded,
+      updated_at: row.updated_at || null
+    };
+  }
+  DB.insertIncome = function(o, applyBal) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const date = toTxDate(o.ym || state.ym, o.d);
+      const row = {
+        household_id: DB.hhId, ym: o.ym || date.slice(0, 7), tx_date: date,
+        kind: 'income', category_key: o.c || null, title: o.n, amount: o.a,
+        pay_method: o.m || null, is_excluded: false, created_by: DB.uid
+      };
+      let insId = null;
+      try {
+        const ins = await DB.sb.from('transactions').insert(row).select('id');
+        if (ins.error) throw ins.error;
+        insId = (ins.data && ins.data[0]) ? ins.data[0].id : null;
+      } catch (e) {
+        console.error('[ledger] 수입 저장 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        setBadge('off', '🔴 저장 실패');
+        return false;
+      }
+      const res = applyBal ? await incomeBalApply(o.m, Math.round(o.a), row.ym) : { ok: true, matched: false };
+      if (!res.ok) {
+        if (insId) await DB.sb.from('transactions').delete().eq('id', insId);
+        toast('입금처 잔액 반영에 실패해 수입 기록을 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 수입 저장 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast('수입 추가했어요 · 공동 수입 +' + nf.format(o.a) + '원' +
+        (res.matched ? ' · ' + o.m + ' 잔액에도 반영' : ' (입금처가 자산 계좌가 아니라 잔액은 그대로)'));
+      return true;
+    })();
+  };
+  DB.updateIncome = function(id, patch, applyBal) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const row = incomeRowOf(id);
+      if (!row) { toast('수입 내역을 찾지 못했어요 · 새로고침 후 다시 시도해 주세요'); return false; }
+      const ym = row.ym || state.ym;
+      const oldM = row.pay_method || '';
+      const oldA = Number(row.amount) || 0;
+      const wasExcluded = !!row.is_excluded;
+      const nextM = (patch.m === undefined) ? oldM : patch.m;
+      const nextA = (typeof patch.a === 'number') ? patch.a : oldA;
+      try {
+        const r = await DB.sb.from('transactions').update(txPatchToRow(Object.assign({ ym: ym }, patch))).eq('id', id);
+        if (r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] 수입 수정 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      /* 같은 계좌면 차액만, 계좌가 바뀌면 예전 계좌 − / 새 계좌 + (예전 라벨이 자산에 없으면 새 계좌에만 +) */
+      let res = { ok: true, matched: false };
+      if (applyBal && !wasExcluded) {
+        const aT = acctTargetOf(oldM, ym);
+        const bT = acctTargetOf(nextM, ym);
+        const same = !!(aT && bT && aT.table === bT.table && aT.row.id === bT.row.id);
+        if (same) {
+          if (nextA !== oldA) res = await incomeBalApply(nextM, nextA - oldA, ym);
+          else res.matched = true;
+        } else {
+          if (aT && oldA) res = await incomeBalApply(oldM, -oldA, ym);
+          if (res.ok && bT && nextA) res = await incomeBalApply(nextM, nextA, ym);
+        }
+      }
+      if (!res.ok) {
+        const back = incomeRowBackup(row);
+        await DB.sb.from('transactions').update(back).eq('id', id).then(function(){}, function(){});
+        toast('입금처 잔액 반영에 실패해 수정을 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 수입 수정 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast('수입 내역을 수정했어요 · 결산·저축률 다시 계산됨' +
+        (res.matched ? ' · ' + nextM + ' 잔액에도 반영' : ''));
+      return true;
+    })();
+  };
+  DB.excludeIncome = function(id, val) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const row = incomeRowOf(id);
+      if (!row) { toast('수입 내역을 찾지 못했어요 · 새로고침 후 다시 시도해 주세요'); return false; }
+      const a = Number(row.amount) || 0;
+      const m = row.pay_method || '';
+      const ym = row.ym || state.ym;
+      try {
+        const r = await DB.sb.from('transactions').update({ is_excluded: !!val, updated_at: new Date().toISOString() }).eq('id', id);
+        if (r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] 수입 제외 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      const res = await incomeBalApply(m, val ? -a : a, ym);
+      if (!res.ok) {
+        await DB.sb.from('transactions').update({ is_excluded: !val }).eq('id', id).then(function(){}, function(){});
+        toast('입금처 잔액 반영에 실패해 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 수입 제외 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast((val ? '공동 수입에서 뺐어요' : '공동 수입에 다시 넣었어요') + ' · ' +
+        nf.format(a) + '원' + (res.matched ? ' · ' + m + ' 잔액에도 반영' : ''));
+      return true;
+    })();
+  };
   DB.saveRule = function(data, id) {
     return commit(function(){
       if (id) {
@@ -6872,7 +7246,7 @@
     return list.map(function(r, i) {
       return '<div class="snaprow">' +
         '<input class="snap-name" data-k="' + kind + '" data-i="' + i + '" value="' + esc(r.name) + '" placeholder="' + (kind === 'cash' ? '비상금 통장' : '주택담보대출') + '" />' +
-        '<input class="snap-amt" type="number" inputmode="numeric" min="0" step="10000" data-k="' + kind + '" data-i="' + i + '" value="' + (r.amount || 0) + '" placeholder="0" />' +
+        '<input class="snap-amt" type="text" inputmode="numeric" data-money maxlength="12" data-k="' + kind + '" data-i="' + i + '" value="' + commaStr(r.amount || 0) + '" placeholder="0" />' +
         '<button type="button" class="icon-btn del" data-del="' + kind + ':' + i + '" aria-label="삭제">−</button>' +
         '</div>';
     }).join('');
@@ -6904,7 +7278,7 @@
       const t = e.target;
       const k = t.getAttribute('data-k'), i = +t.getAttribute('data-i');
       if (!snapDraft || !k || !snapDraft[k] || !snapDraft[k][i]) return;
-      if (t.classList.contains('snap-amt')) snapDraft[k][i].amount = Math.max(0, Math.round(Number(t.value) || 0));
+      if (t.classList.contains('snap-amt')) snapDraft[k][i].amount = Math.max(0, moneyNum(t.value));
       else snapDraft[k][i].name = t.value;
     });
     el(id).addEventListener('click', function(e) {
