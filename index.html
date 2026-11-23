@@ -305,6 +305,17 @@
   .pitem .pv.down{color:var(--down);}
   .pitem .pm{flex:none; color:var(--ink-3); font-weight:700; font-variant-numeric:tabular-nums; font-size:11px; letter-spacing:-.01em; white-space:nowrap;}
   .pitem .pbadge{margin:0; flex:none;}
+  /* 현금·예적금 세부 계좌 목록 접기 (기본 접힘) */
+  .cashfold{margin-top:9px;}
+  .cash-toggle{display:flex; align-items:center; gap:6px; width:100%; padding:8px 11px;
+    border:1px solid #EFE9DC; border-radius:12px; background:#FCFAF5; color:var(--ink-3);
+    font:inherit; font-size:10.5px; font-weight:800; letter-spacing:-.01em; cursor:pointer; text-align:left;}
+  .cash-toggle:hover{border-color:#2F8F7B; color:#2F8F7B;}
+  .cash-toggle b{margin-left:auto; color:var(--ink-2); font-weight:800; font-variant-numeric:tabular-nums;}
+  .cash-toggle .chev{width:12px; height:12px; stroke-width:1.8;}
+  .cash-toggle[aria-expanded="false"] .chev{transform:rotate(0deg);}
+  .cashfold .pdetail{margin-top:6px;}
+  .cashfold.is-collapsed .pdetail{display:none;}
   /* 자산 포트폴리오 하위 상세 : 원금·평가·수익 3칸 */
   .pgrid{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:9px; border:1px solid #EFE9DC; border-radius:14px; background:#FCFAF5; padding:10px 4px 9px;}
   .pgrid > div{min-width:0; text-align:center;}
@@ -355,12 +366,14 @@
     margin-top:10px; padding:13px 14px; border-radius:16px;
     background:linear-gradient(140deg,#F4F9F6,#FBF8F1); border:1px solid #E4EFE8;
   }
-  .plan b{display:block; font-size:12px; color:#1F6E58; margin-bottom:4px; letter-spacing:-.01em;}
+  .plan > b{display:block; font-size:12px; color:#1F6E58; margin-bottom:4px; letter-spacing:-.01em;}
   .plan p{margin:0; font-size:11.5px; color:var(--ink-2); line-height:1.65; letter-spacing:-.01em;}
+  /* 문장 안 강조는 줄바꿈 없이 흐름 안에서 이어져요 */
+  .plan p b{display:inline; font-size:inherit; font-weight:800; color:#1F6E58; margin:0; letter-spacing:inherit;}
   .plan .pace{display:flex; gap:10px; margin-top:9px;}
   .pace div{flex:1; background:#fff; border-radius:11px; padding:8px 9px; border:1px solid var(--line-2);}
   .pace span{display:block; font-size:9.5px; color:var(--ink-3); font-weight:700;}
-  .pace b{font-size:12px; margin:2px 0 0; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .pace b{display:block; font-size:12px; margin:2px 0 0; color:var(--ink); font-variant-numeric:tabular-nums;}
   /* donut */
   .donutwrap{display:flex; align-items:center; gap:14px;}
   .donutwrap svg{width:150px; height:150px; flex:none;}
@@ -1252,6 +1265,15 @@
             </select>
           </div>
         </div>
+        <div class="field">
+          <label for="fExpAcct">출금 통장</label>
+          <select id="fExpAcct"></select>
+        </div>
+        <p class="fieldnote" id="expAcctHint"></p>
+        <label class="inc-link" for="fExpApply">
+          <input type="checkbox" id="fExpApply" checked />
+          <span>이 통장 잔액에도 함께 반영</span>
+        </label>
       </div>
       <div id="incFields" hidden>
         <div class="field">
@@ -1375,6 +1397,15 @@
           </select>
         </div>
       </div>
+      <div class="field">
+        <label for="rAcct">출금 통장</label>
+        <select id="rAcct"></select>
+      </div>
+      <p class="fieldnote" id="rAcctHint"></p>
+      <label class="inc-link" for="rApply">
+        <input type="checkbox" id="rApply" checked />
+        <span>이 통장 잔액에서도 함께 빠지게 하기</span>
+      </label>
       <label class="switchrow"><input type="checkbox" id="rOn" checked /> 이 규칙 켜기 (매월 자동 생성)</label>
       <p class="err" id="ruleErr" hidden></p>
       <div class="acts">
@@ -2443,7 +2474,7 @@
       out.push({
         id: 'fix#' + r.id + '#' + ym, ym: ym, ruleId: r.id,
         d: ym.slice(5, 7) + '-' + String(day).padStart(2, '0'),
-        n: r.name, c: resolveCat(r.cat), m: r.method, a: ruleAmount(r, ym), k: 'f'
+        n: r.name, c: resolveCat(r.cat), m: expPayEncode(r.method, r.acct, false), a: ruleAmount(r, ym), k: 'f'
       });
     });
     return out;
@@ -2801,6 +2832,7 @@
           '<span class="pct-share">비중 ' + pct(share) + '%</span></div>' +
         pfDetail(r, ym) + '</div>';
     }).join('');
+    applyCashFold();
 
     // 부채
     const debtD = pv ? snap.debt - pv.debt : 0;
@@ -2836,7 +2868,7 @@
           '<div><span class="k">수익</span><span class="v ' + cls + '">' + signedWon(g.g) + ' 원</span>' +
             '<i class="pbadge ' + cls + '">' + rateSign(g.rate) + '</i></div>' +
         '</div>' +
-        '<div class="pcaption">' + (r.key === 'stock' ? '일반 계좌' : 'ISA·연금저축·IRP·퇴직연금') + '</div>';
+        '<div class="pcaption">' + (r.key === 'stock' ? '일반 계좌' : 'ISA·연금저축·IRP·퇴직연금·청약') + '</div>';
     }
     if (r.key === 'real') {
       const v = propView(ym);
@@ -2850,12 +2882,35 @@
                 '<i class="pbadge ' + cls + '">' + signedPct(v.rate) + '</i>') +
           '</div></div>';
     }
-    /* 현금·예적금 : 계좌 하나당 한 줄 */
+    /* 현금·예적금 : 계좌 하나당 한 줄 — 기본은 접혀 있고 탭하면 펼쳐져요 */
     if (ym !== LAST_YM || !SUBS.cash.length) return '';
-    return '<div class="pdetail">' + SUBS.cash.map(function(s) {
-      return '<div class="pitem"><span class="pn">' + esc(s[0]) + '</span>' +
-        '<span class="pv">' + won(s[1]) + '</span></div>';
-    }).join('') + '</div>';
+    const cashKey = 'view-asset:현금·예적금 계좌 목록';
+    const cashOpen = !isCollapsed(cashKey);
+    return '<div class="cashfold' + (cashOpen ? '' : ' is-collapsed') + '" data-cashfold="' + esc(cashKey) + '">' +
+        '<button type="button" class="cash-toggle" data-cash-key="' + esc(cashKey) + '"' +
+          ' aria-expanded="' + (cashOpen ? 'true' : 'false') + '"' +
+          ' aria-label="현금·예적금 계좌 목록 ' + (cashOpen ? '접기' : '펼치기') + '">' +
+          '💧 계좌 목록 <b>' + SUBS.cash.length + '개</b>' + CHEV_SVG +
+        '</button>' +
+        '<div class="pdetail">' + SUBS.cash.map(function(s) {
+          return '<div class="pitem"><span class="pn">' + esc(s[0]) + '</span>' +
+            '<span class="pv">' + won(s[1]) + '</span></div>';
+        }).join('') + '</div>' +
+      '</div>';
+  }
+  /* 현금·예적금 계좌 목록 접기 상태를 화면에 반영 */
+  function applyCashFold() {
+    const box = el('pfList');
+    if (!box) return;
+    const key = 'view-asset:현금·예적금 계좌 목록';
+    const on = isCollapsed(key);
+    Array.prototype.forEach.call(box.querySelectorAll('[data-cashfold]'), function(fold) {
+      fold.classList.toggle('is-collapsed', on);
+      const btn = fold.querySelector('.cash-toggle');
+      if (!btn) return;
+      btn.setAttribute('aria-expanded', on ? 'false' : 'true');
+      btn.setAttribute('aria-label', '현금·예적금 계좌 목록 ' + (on ? '펼치기' : '접기'));
+    });
   }
 
   /* ────────────── 6-1. 투자 상세 ────────────── */
@@ -3538,7 +3593,7 @@
         '<button class="icon-btn" data-mfix="' + t.ruleId + '" title="이번 달만 수정" aria-label="' + esc(t.n) + ' 이번 달만 수정">✎</button>' : editBtn;
       return '<div class="tx ' + (t.k === 'f' ? 'tx-fix' : 'tx-edit') + '">' +
         '<span class="te" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
-        '<span class="tm"><b>' + (t.k === 'f' ? '<span class="ttag exp">고정</span>' : '') + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(t.m) + '</span></span>' +
+        '<span class="tm"><b>' + (t.k === 'f' ? '<span class="ttag exp">고정</span>' : '') + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + esc(expPayText(t.m)) + '</span></span>' +
         '<span class="ta">' + nf.format(t.a) + '원</span>' +
         fixBtn +
         '<button class="tx-btn" data-id="' + t.id + '" data-k="e" title="공동 지출에서 제외" aria-label="' + esc(t.n) + ' 공동 지출에서 제외">−</button>' +
@@ -3556,8 +3611,13 @@
         const id = b.getAttribute('data-id');
         const k = b.getAttribute('data-k');
         if (k === 'i' && DB.mode === 'live') { DB.excludeIncome(id, true); return; }
+        if (k !== 'i' && DB.mode === 'live') { state.excluded[id] = true; DB.excludeExpense(id, true); return; }
         state.excluded[id] = true;
-        if (DB.mode === 'live') DB.setExcluded(id, true);
+        const src = (k === 'i' ? monthIncomeTxs(ym) : monthTxs(ym)).filter(function(x){ return x.id === id; })[0];
+        if (k !== 'i' && src) {
+          const pp = expPayParse(src.m);
+          if (pp.l && pp.acct && src.a) expBalApply(pp.acct, src.a, ym);
+        }
         save();
         renderAll();
         const t = (k === 'i' ? monthIncomeTxs(ym) : monthTxs(ym)).filter(function(x){ return x.id === id; })[0];
@@ -3600,7 +3660,7 @@
       const c = catOf(t.c);
       return '<div class="fixrow">' +
         '<span class="fe" style="background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
-        '<span class="fn"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + c.label + ' · ' + esc(t.m) + '</span></span>' +
+        '<span class="fn"><b>' + esc(t.n) + '</b><span>' + t.d.replace('-', '.') + ' · ' + c.label + ' · ' + esc(expPayText(t.m)) + '</span></span>' +
         '<span class="fa">' + nf.format(t.a) + '원</span>' +
         '<button class="icon-btn" data-mfix="' + t.ruleId + '" title="이번 달만 수정" aria-label="' + esc(t.n) + ' 이번 달만 수정">✎</button>' +
         '<button class="icon-btn del" data-fdel="' + t.id + '" title="이번 달에서 빼기" aria-label="' + esc(t.n) + ' 이번 달에서 빼기">−</button>' +
@@ -3614,7 +3674,7 @@
           const c = catOf(u.rule.cat);
           return '<div class="fixrow fixup">' +
             '<span class="fe" style="background:' + hexA(c.color, .1) + '">' + c.emoji + '</span>' +
-            '<span class="fn"><b>' + esc(u.rule.name) + '</b><span>' + ym.slice(5, 7) + '.' + String(u.day).padStart(2, '0') + ' 예정 · ' + esc(u.rule.method) + '</span></span>' +
+            '<span class="fn"><b>' + esc(u.rule.name) + '</b><span>' + ym.slice(5, 7) + '.' + String(u.day).padStart(2, '0') + ' 예정 · ' + esc(rulePayText(u.rule)) + '</span></span>' +
             '<span class="fa">' + nf.format(u.a) + '원</span>' +
             '<button class="icon-btn" data-mfix="' + u.rule.id + '" title="이번 달만 수정" aria-label="' + esc(u.rule.name) + ' 이번 달만 수정">✎</button>' +
           '</div>';
@@ -3626,7 +3686,7 @@
       const c = catOf(r.cat);
       return '<div class="rule-row' + (r.on ? '' : ' off') + '">' +
         '<span class="fe" style="width:26px; height:26px; border-radius:9px; display:grid; place-items:center; font-size:13px; flex:none; background:' + hexA(c.color, .13) + '">' + c.emoji + '</span>' +
-        '<span class="rn">' + esc(r.name) + '<small>매월 ' + r.day + '일 · ' + c.label + ' · ' + esc(r.method) + '</small></span>' +
+        '<span class="rn">' + esc(r.name) + '<small>매월 ' + r.day + '일 · ' + c.label + ' · ' + esc(rulePayText(r)) + '</small></span>' +
         '<span class="ra">' + nf.format(r.amount) + '원</span>' +
         '<button class="sw' + (r.on ? ' on' : '') + '" data-rule-on="' + r.id + '" aria-pressed="' + (r.on ? 'true' : 'false') + '" aria-label="' + esc(r.name) + ' 규칙 ' + (r.on ? '끄기' : '켜기') + '"><i></i></button>' +
         '<button class="icon-btn" data-rule-edit="' + r.id + '" aria-label="' + esc(r.name) + ' 규칙 수정">✎</button>' +
@@ -3637,8 +3697,16 @@
 
     Array.prototype.forEach.call(el('fixedList').querySelectorAll('[data-fdel]'), function(b) {
       b.addEventListener('click', function() {
-        state.excluded[b.getAttribute('data-fdel')] = true;
-        if (DB.mode === 'live') DB.setExcluded(b.getAttribute('data-fdel'), true);
+        const id = b.getAttribute('data-fdel');
+        state.excluded[id] = true;
+        if (DB.mode === 'live') {
+          /* 빼면 출금 통장 잔액도 다시 돌아와요 */
+          DB.excludeExpense(id, true);
+          return;
+        }
+        const t = monthTxs(state.ym).filter(function(x){ return x.id === id; })[0];
+        const p = t ? expPayParse(t.m) : null;
+        if (p && p.l && p.acct && t.a) expBalApply(p.acct, t.a, state.ym);
         save();
         renderAll();
         toast('이번 달 고정 지출에서 뺐어요 · 규칙은 그대로예요');
@@ -4716,6 +4784,7 @@
     b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
   });
   el('fAccount').addEventListener('change', updateIncAcctHint);
+  el('fExpAcct').addEventListener('change', updateExpAcctHint);
   function openModal() {
     const meta = LEDGER[state.ym];
     const lastDay = Math.min(meta.elapsed, meta.days);
@@ -4732,12 +4801,16 @@
     el('fCat').innerHTML = catOptions();
     el('fIncCat').innerHTML = incomeCatOptions();
     el('fAccount').innerHTML = incomeAccountOptions();
+    el('fExpAcct').innerHTML = expenseAccountOptions();
+    el('fExpAcct').value = '';
     if (el('fIncApply')) el('fIncApply').checked = true;
+    if (el('fExpApply')) el('fExpApply').checked = true;
     el('addErr').hidden = true;
     el('modal').hidden = false;
     setModalKind(state.kind === 'inc' ? 'inc' : 'exp');
     setEditChrome(false, modalKind);
     updateIncAcctHint();
+    updateExpAcctHint();
   }
 
   /* ────────────── 8-3. 수입 입금처 ↔ 자산 계좌 잔액 연동 ────────────── */
@@ -4854,8 +4927,8 @@
       t.row.value = (Number(t.row.value) || 0) + delta;
     }
   }
-  /* 계좌 잔액에 delta 반영 : {ok, matched} */
-  async function incomeBalApply(name, delta, ym) {
+  /* 계좌 잔액에 delta 반영 : {ok, matched} (tag 는 실패 로그에만 써요) */
+  async function incomeBalApply(name, delta, ym, tag) {
     if (!delta) return { ok: true, matched: false };
     const t = acctTargetOf(name, ym);
     if (!t) return { ok: true, matched: false };
@@ -4864,7 +4937,7 @@
     for (let i = 0; i < ops.length; i++) {
       const r = await DB.sb.from(ops[i].table).update(ops[i].patch).eq('id', ops[i].id);
       if (r.error) {
-        console.error('[ledger] 수입 입금처 잔액 반영 실패', r.error);
+        console.error('[ledger] ' + (tag || '수입 입금처') + ' 잔액 반영 실패', r.error);
         for (let j = 0; j < i; j++) await DB.sb.from(ops[j].table).update(ops[j].back).eq('id', ops[j].id);
         return { ok: false, matched: true };
       }
@@ -4889,6 +4962,113 @@
       hint.textContent = '자산에 등록되지 않은 이름이라 잔액에는 반영되지 않아요 · 자산 탭 ✎ 현금·부채에서 계좌를 추가하면 목록에 나와요';
       hint.className = 'fieldnote';
     }
+  }
+
+  /* ────────────── 8-3b. 지출 출금 통장 ↔ 자산 계좌 잔액 연동 ────────────── */
+  /* 지출의 결제수단과 출금 통장은 pay_method 한 칸에 'EXP:{...}' JSON 으로 같이 담아요(스키마 변경 없음).
+     통장을 고르지 않았거나 예전에 넣은 내역은 지금처럼 '공동카드' 같은 평문이라 잔액은 건드리지 않아요.
+     l:true = 그 계좌 잔액에 이 지출이 이미 반영됐다는 표시 (나중에 빼거나 지울 때 정확히 되돌리려고). */
+  const EXP_PREFIX = 'EXP:';
+  /* 자주 쓰는 출금 통장 — 실제 계좌명에 들어가는 키워드로 찾아 목록 맨 위에 올려요
+     (생활비·LOVE BANK / SC제일 / 오토·경조사 / 여행) */
+  const EXP_ACCT_HINT = [
+    { re: /생활비|LOVE\s*BANK/i, label: '생활비' },
+    { re: /SC\s*제일|에스씨제일|SC\s*은행/i, label: '대출 연계' },
+    { re: /오토|경조사/i, label: '경조사·오토' },
+    { re: /여행/i, label: '여행' }
+  ];
+  function expPayParse(v) {
+    const s = String(v === null || v === undefined ? '' : v);
+    if (s.indexOf(EXP_PREFIX) === 0) {
+      try {
+        const o = JSON.parse(s.slice(EXP_PREFIX.length)) || {};
+        return { m: String(o.m || ''), acct: String(o.a || ''), l: !!o.l };
+      } catch (e) { /* 값이 깨졌으면 평문으로 취급 */ }
+    }
+    return { m: s, acct: '', l: false };
+  }
+  function expPayEncode(method, acct, linked) {
+    if (!acct) return method || '';
+    return EXP_PREFIX + JSON.stringify({ m: method || '', a: acct, l: !!linked });
+  }
+  /* 화면에 보여줄 결제수단 문구 : '공동카드 · 토스뱅크 생활비+비상급' */
+  function expPayText(v) {
+    const p = expPayParse(v);
+    return p.acct ? (p.m ? p.m + ' · ' + p.acct : p.acct) : p.m;
+  }
+  function expAcctRank(name) {
+    const n = String(name || '');
+    for (let i = 0; i < EXP_ACCT_HINT.length; i++) if (EXP_ACCT_HINT[i].re.test(n)) return i;
+    return EXP_ACCT_HINT.length;
+  }
+  /* 출금 통장 후보 : 자산 탭의 현금·입출금·예적금 계좌 (자주 쓰는 4종은 위로) */
+  function expenseAccountList() {
+    const out = [], seen = {};
+    trCashAccounts().forEach(function(a) {
+      if (!a || !a.name || seen[a.name]) return;
+      seen[a.name] = 1;
+      out.push({ name: a.name, amount: a.amount, rank: expAcctRank(a.name) });
+    });
+    out.sort(function(a, b){ return a.rank - b.rank; });
+    return out;
+  }
+  function expenseAccountOptions(keep) {
+    const list = expenseAccountList();
+    const top = list.filter(function(a){ return a.rank < EXP_ACCT_HINT.length; });
+    const rest = list.filter(function(a){ return a.rank >= EXP_ACCT_HINT.length; });
+    function opt(a) {
+      return '<option value="' + esc(a.name) + '">' + esc(a.name) +
+        (typeof a.amount === 'number' ? ' · ' + won(a.amount) : '') + '</option>';
+    }
+    let html = '<option value="">통장 선택 안 함 (기록만)</option>';
+    if (keep && !list.some(function(a){ return a.name === keep; })) {
+      html += '<option value="' + esc(keep) + '">' + esc(keep) + ' (자산에 없음)</option>';
+    }
+    if (top.length) html += '<optgroup label="⭐ 자주 쓰는 통장">' + top.map(opt).join('') + '</optgroup>';
+    if (rest.length) html += '<optgroup label="그 외 통장">' + rest.map(opt).join('') + '</optgroup>';
+    return html;
+  }
+  /* 지출 출금 통장 잔액 반영 — 수입 입금처와 같은 함수(방향만 반대)를 써요 */
+  function expBalApply(name, delta, ym) {
+    return incomeBalApply(name, delta, ym, '지출 출금 통장');
+  }
+  /* 샘플 체험 모드 : 지출 수정 시 통장·금액 차이만큼 화면 잔액을 맞춰요 (실 DB 모드는 DB.updateExpense 가 처리) */
+  function mirrorExpenseBal(old, nextM, nextA, apply) {
+    if (!old) return;
+    const op = expPayParse(old.m), np = expPayParse(nextM);
+    const oldAcct = op.l ? op.acct : '';
+    const newAcct = (apply && np.acct) ? np.acct : '';
+    if (!oldAcct && !newAcct) return;
+    if (oldAcct && newAcct && oldAcct === newAcct) {
+      if (old.a !== nextA) expBalApply(newAcct, old.a - nextA, state.ym);
+      return;
+    }
+    if (oldAcct) expBalApply(oldAcct, old.a, state.ym);
+    if (newAcct) expBalApply(newAcct, -nextA, state.ym);
+  }
+  function updateExpAcctHint() {
+    const sel = el('fExpAcct'), hint = el('expAcctHint');
+    if (!sel || !hint) return;
+    const nm = sel.value;
+    if (!nm) {
+      hint.textContent = '출금 통장을 고르면 그 통장 잔액에서도 같이 빠져요';
+      hint.className = 'fieldnote';
+      return;
+    }
+    const t = acctTargetOf(nm, state.ym);
+    if (t) {
+      hint.textContent = '✓ ' + nm + ' · 지금 ' + nf.format(acctBalOf(t)) + '원 → 지출한 만큼 줄어요' +
+        (t.ym && t.ym !== state.ym ? ' (' + ymLabel(state.ym) + ' 자산 기록이 없어 ' + ymLabel(t.ym) + ' 기준)' : '');
+      hint.className = 'fieldnote ok';
+    } else {
+      hint.textContent = '자산에 등록되지 않은 이름이라 잔액에는 반영되지 않아요';
+      hint.className = 'fieldnote';
+    }
+  }
+  /* 고정 지출 규칙에 적어 둔 출금 통장 문구 */
+  function rulePayText(r) {
+    if (!r) return '';
+    return r.acct ? (r.method ? r.method + ' · ' + r.acct : r.acct) : (r.method || '');
   }
 
   /* ── 내역 수정 (일반 변동 지출·수입) ── */
@@ -4932,11 +5112,16 @@
       }
       updateIncAcctHint();
     } else {
+      const pay = expPayParse(t.m);
       el('fName').value = t.n;
       el('fCat').value = t.c;
-      el('fMethod').value = t.m;
+      el('fMethod').value = pay.m || '';
       if (!el('fCat').value) el('fCat').value = 'etc';
       if (!el('fMethod').value) el('fMethod').value = '공동카드';
+      el('fExpAcct').innerHTML = expenseAccountOptions(pay.acct || '');
+      el('fExpAcct').value = pay.acct || '';
+      if (el('fExpApply')) el('fExpApply').checked = pay.acct ? !!pay.l : true;
+      updateExpAcctHint();
     }
     el('expFields').hidden = isInc;
     el('incFields').hidden = !isInc;
@@ -4984,6 +5169,16 @@
     el('rCat').innerHTML = ruleCatOptions();
     el('rCat').value = r ? r.cat : 'home';
     el('rMethod').value = r ? r.method : '자동이체';
+    el('rAcct').innerHTML = expenseAccountOptions(r ? (r.acct || '') : '');
+    el('rAcct').value = r ? (r.acct || '') : '';
+    if (el('rApply')) {
+      el('rApply').checked = r && r.acct ? !!r.linked : true;
+      const t = r && r.acct ? acctTargetOf(r.acct, state.ym) : null;
+      el('rAcctHint').textContent = r && r.acct
+        ? (t ? '✓ 이번 달 자동 생성되는 고정 지출만큼 이 통장 잔액도 줄어요' : '자산에 등록되지 않은 이름이라 잔액에는 반영되지 않아요')
+        : '출금 통장을 고르면 매달 자동으로 생기는 고정 지출만큼 그 통장 잔액도 줄어요';
+      el('rAcctHint').className = 'fieldnote' + (r && r.acct && t ? ' ok' : '');
+    }
     el('rOn').checked = r ? !!r.on : true;
     el('ruleErr').hidden = true;
     el('ruleDelete').hidden = !r;
@@ -5015,6 +5210,14 @@
     b.addEventListener('click', closeMonthFix);
   });
 
+  el('rAcct').addEventListener('change', function() {
+    const nm = el('rAcct').value;
+    const t = nm ? acctTargetOf(nm, state.ym) : null;
+    el('rAcctHint').textContent = !nm
+      ? '출금 통장을 고르면 매달 자동으로 생기는 고정 지출만큼 그 통장 잔액도 줄어요'
+      : (t ? '✓ 이번 달 자동 생성되는 고정 지출만큼 이 통장 잔액도 줄어요' : '자산에 등록되지 않은 이름이라 잔액에는 반영되지 않아요');
+    el('rAcctHint').className = 'fieldnote' + (nm && t ? ' ok' : '');
+  });
   el('ruleForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const name = el('rName').value.trim();
@@ -5026,7 +5229,9 @@
     if (!amount || amount <= 0) { err.textContent = '금액을 넣어주세요.'; err.hidden = false; return; }
     const data = {
       name: name, cat: el('rCat').value, day: day, amount: amount,
-      method: el('rMethod').value, on: el('rOn').checked
+      method: el('rMethod').value, on: el('rOn').checked,
+      acct: el('rAcct') ? el('rAcct').value : '',
+      linked: el('rApply') ? el('rApply').checked : true
     };
     const editing = !!ruleEditingId;
     if (DB.mode === 'live') {
@@ -5143,12 +5348,20 @@
         errEl.hidden = false;
         return;
       }
+      const expAcct = el('fExpAcct') ? el('fExpAcct').value : '';
+      const expApply = el('fExpApply') ? el('fExpApply').checked : true;
       const patch = isInc
         ? { d: v.slice(5, 10), n: nm, c: el('fIncCat').value, m: el('fAccount').value, a: amt }
-        : { d: v.slice(5, 10), n: nm, c: el('fCat').value, m: el('fMethod').value, a: amt };
+        : { d: v.slice(5, 10), n: nm, c: el('fCat').value, m: expPayEncode(el('fMethod').value, expAcct, expApply), a: amt };
       if (isInc && DB.mode === 'live') {
         /* 입금처가 바뀌거나 금액이 바뀌면 그 차이만큼 계좌 잔액도 같이 고쳐요 */
         DB.updateIncome(editTarget.id, patch, el('fIncApply') ? el('fIncApply').checked : true);
+        closeModal();
+        return;
+      }
+      if (!isInc && DB.mode === 'live') {
+        /* 출금 통장이 바뀌거나 금액이 바뀌면 그 차이만큼 통장 잔액도 같이 고쳐요 */
+        DB.updateExpense(editTarget.id, patch, expApply);
         closeModal();
         return;
       }
@@ -5164,6 +5377,10 @@
             if (bT) incomeBalApply(patch.m, patch.a, state.ym);
           }
         }
+      } else {
+        /* 샘플 체험 모드 : 출금 통장을 바꾸면 그 통장 잔액만 맞춮요 */
+        const old = findTxById(editTarget.id);
+        if (old) mirrorExpenseBal(old, patch.m, patch.a, expApply);
       }
       patchTx(editTarget.id, patch);
       save();
@@ -5216,6 +5433,8 @@
     const name = el('fName').value.trim();
     const cat = el('fCat').value;
     const method = el('fMethod').value;
+    const expAcct = el('fExpAcct') ? el('fExpAcct').value : '';
+    const applyExp = el('fExpApply') ? el('fExpApply').checked : true;
     if (!name) {
       errEl.textContent = '가맹점을 적어주세요.';
       errEl.hidden = false;
@@ -5227,17 +5446,24 @@
       d: v.slice(5, 10),
       n: name,
       c: cat,
-      m: method,
+      m: expPayEncode(method, expAcct, applyExp),
       a: amt
     };
-    if (DB.mode === 'live') DB.insertTx(expRow, 'var');
-    else state.added.push(expRow);
-    save();
-    closeModal();
     state.tab = 'spend';
     state.kind = 'exp';
+    if (DB.mode === 'live') {
+      /* 지출 기록 + 고른 출금 통장 잔액을 한 번에 반영 (실패하면 기록도 되돌려요) */
+      DB.insertExpense(expRow, applyExp, 'var');
+      closeModal();
+      return;
+    }
+    state.added.push(expRow);
+    const matched = applyExp && !!acctTargetOf(expAcct, state.ym);
+    if (matched) expBalApply(expAcct, -amt, state.ym);
+    save();
+    closeModal();
     renderAll();
-    toast('추가했어요 · 공동 생활비 ' + nf.format(amt) + '원 반영');
+    toast('추가했어요 · 공동 생활비 ' + nf.format(amt) + '원' + (matched ? ' · ' + expAcct + ' 잔액에서 차감' : ''));
   });
 
   /* ────────────── 11. 복사 버튼 / 초기화 ────────────── */
@@ -6276,6 +6502,8 @@
     'view-asset:연금·절세·청약통장 상세': true,
     'view-asset:부동산 상세': true,
     'view-asset:부채': true,
+    /* 자산 포트폴리오 > 현금·예적금 세부 계좌 목록도 기본 접힘 (헤더·총액·비중은 항상 보임) */
+    'view-asset:현금·예적금 계좌 목록': true,
     'view-spend:이번 달 수입 내역': true,
     'view-spend:고정 지출 · 자동 규칙': true,
     'view-spend:🔄 고정 저축 · 이체 규칙': true
@@ -6327,6 +6555,19 @@
       setCollapsed('view-spend:이번 달 수입 내역', !isCollapsed('view-spend:이번 달 수입 내역'));
     });
     applyIncomeFold();
+  }
+  /* 자산 포트폴리오 > 현금·예적금 세부 계좌 목록 접기/펼치기 (기본 접힘) */
+  function initCashFold() {
+    const box = el('pfList');
+    if (!box) return;
+    box.addEventListener('click', function(e) {
+      const t = e.target;
+      if (!t || !t.closest || !t.closest('.cash-toggle')) return;
+      const key = 'view-asset:현금·예적금 계좌 목록';
+      setCollapsed(key, !isCollapsed(key));
+      applyCashFold();
+    });
+    applyCashFold();
   }
   function initCardToggles() {
     Array.prototype.forEach.call(document.querySelectorAll('#view-asset > .card, #view-spend > .card'), function(card) {
@@ -6468,9 +6709,11 @@
   /* ── DB → 화면 모델 ── */
   function txObj(row) {
     const d = String(row.tx_date || '').slice(5, 10) || (row.ym ? row.ym.slice(5) + '-01' : '');
+    const pay = expPayParse(row.pay_method || '');
     return {
       id: row.id, ym: row.ym, d: d, n: row.title,
       c: row.category_key || 'etc', m: row.pay_method || '',
+      pm: pay.m, pa: pay.acct, pl: pay.l,
       a: Number(row.amount) || 0,
       k: row.kind === 'fixed' ? 'f' : (row.kind === 'income' ? 'i' : 'e'),
       ruleId: row.rule_id || null
@@ -6587,10 +6830,11 @@
     /* 6) 고정 지출 규칙 / 고정 저축·이체 규칙 (category_key = 'transfer') */
     state.transfers = (DB.rules || []).filter(function(r){ return r.category_key === 'transfer'; }).map(parseTrRule);
     state.rules = (DB.rules || []).filter(function(r){ return r.category_key !== 'transfer'; }).map(function(r) {
+      const pay = expPayParse(r.pay_method);
       return {
         id: r.id, name: r.title, cat: r.category_key || 'etc',
         day: r.day_of_month || 25, amount: Number(r.amount) || 0,
-        method: r.pay_method || '자동이체', on: ruleOn(r),
+        method: pay.m || '자동이체', acct: pay.acct || '', linked: !!pay.l, on: ruleOn(r),
         activeFrom: r.active_from || '', activeTo: r.active_to || null
       };
     });
@@ -6731,23 +6975,46 @@
     const lim = meta.status === 'ongoing' ? meta.elapsed : meta.days;
     const have = {};
     (DB.txs || []).forEach(function(t){ if (t.ym === ym && t.rule_id) have[t.rule_id] = 1; });
-    const rows = (DB.rules || []).filter(function(r) {
+    const rows = [], links = [];
+    (DB.rules || []).filter(function(r) {
       return r.category_key !== 'transfer'
         && ruleActiveIn({ activeFrom: r.active_from || '', activeTo: r.active_to || null }, ym)
         && (r.day_of_month || 0) <= lim && !have[r.id];
-    }).map(function(r) {
+    }).forEach(function(r) {
       const day = Math.min(Math.max(r.day_of_month || 1, 1), daysIn(ym));
-      return {
+      const amt = Number(r.amount) || 0;
+      const pay = expPayParse(r.pay_method);
+      /* 잔액 연동은 이번 달(최신월) 자산 기록이 있을 때만 — 지난 달 내역을 만들면서 지금 잔액을 건드리지 않아요 */
+      const tgt = (pay.acct && pay.l && ym === LAST_YM) ? acctTargetOf(pay.acct, ym) : null;
+      const link = !!(tgt && tgt.ym === ym && amt);
+      rows.push({
         household_id: DB.hhId, ym: ym, tx_date: toTxDate(ym, day),
         kind: 'fixed', category_key: r.category_key || 'etc', title: r.title,
-        amount: Number(r.amount) || 0, pay_method: r.pay_method || '자동이체',
+        amount: amt, pay_method: expPayEncode(pay.m || '자동이체', pay.acct, link),
         is_excluded: false, rule_id: r.id, created_by: DB.uid
-      };
+      });
+      links.push(link ? { acct: pay.acct, a: amt } : null);
     });
     if (!rows.length) return false;
     DB.lastWrite = Date.now();
-    const r = await DB.sb.from('transactions').insert(rows);
-    if (r.error) { console.error('[ledger] 고정 지출 자동 생성 실패', r.error); return false; }
+    const ins = await DB.sb.from('transactions').insert(rows).select('id');
+    if (ins.error) { console.error('[ledger] 고정 지출 자동 생성 실패', ins.error); return false; }
+    const ids = (ins.data || []).map(function(x){ return x.id; });
+    /* 생긴 고정 지출만큼 출금 통장 잔액도 같이 줄여요 (실패하면 되돌리고 연동 표시를 꺼요) */
+    const done = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (!links[i]) continue;
+      const res = await expBalApply(links[i].acct, -links[i].a, ym);
+      if (res.ok) { done.push(links[i]); continue; }
+      for (let j = done.length - 1; j >= 0; j--) await expBalApply(done[j].acct, done[j].a, ym);
+      for (let j = 0; j < rows.length; j++) {
+        if (!ids[j]) continue;
+        const pay = expPayParse(rows[j].pay_method);
+        await DB.sb.from('transactions').update({ pay_method: expPayEncode(pay.m, pay.acct, false) }).eq('id', ids[j]).then(function(){}, function(){});
+      }
+      toast('출금 통장 잔액 반영에 실패해 이번 달 고정 지출은 잔액 연동 없이 만들었어요');
+      return true;
+    }
     return true;
   }
 
@@ -6940,24 +7207,218 @@
       return true;
     })();
   };
+  /* ── 지출 ↔ 출금 통장 잔액 연동 (추가 · 수정 · 제외/복원) ──
+     transactions 한 행 + asset_snapshots/investments 한 행을 같이 고쳐야 해서 commit() 대신 직접 다룹니다.
+     잔액 반영이 실패하면 지출 기록 변경도 되돌려서 반쪽 상태를 만들지 않아요. */
+  function expRowOf(id) {
+    return (DB.txs || []).filter(function(x){ return x.id === id; })[0] || null;
+  }
+  function expRowBackup(row) {
+    if (!row) return {};
+    return {
+      tx_date: row.tx_date, title: row.title, category_key: row.category_key,
+      amount: row.amount, pay_method: row.pay_method, is_excluded: row.is_excluded,
+      updated_at: row.updated_at || null
+    };
+  }
+  DB.insertExpense = function(o, applyBal, kind) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const date = toTxDate(o.ym || state.ym, o.d);
+      const ym = o.ym || date.slice(0, 7);
+      const pay = expPayParse(o.m);
+      /* 잔액에 실제로 반영했을 때만 l:true 로 남겨요 (나중에 빼거나 지울 때 정확히 되돌리려고) */
+      const target = (applyBal && pay.acct && o.a) ? acctTargetOf(pay.acct, ym) : null;
+      const row = {
+        household_id: DB.hhId, ym: ym, tx_date: date,
+        kind: kind || 'var', category_key: o.c || null, title: o.n, amount: o.a,
+        pay_method: expPayEncode(pay.m, pay.acct, !!target), is_excluded: false, created_by: DB.uid
+      };
+      let insId = null;
+      try {
+        const ins = await DB.sb.from('transactions').insert(row).select('id');
+        if (ins.error) throw ins.error;
+        insId = (ins.data && ins.data[0]) ? ins.data[0].id : null;
+      } catch (e) {
+        console.error('[ledger] 지출 저장 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        setBadge('off', '🔴 저장 실패');
+        return false;
+      }
+      let res = { ok: true, matched: false };
+      if (target && o.a) res = await expBalApply(pay.acct, -Math.round(o.a), ym);
+      if (!res.ok) {
+        if (insId) await DB.sb.from('transactions').delete().eq('id', insId);
+        toast('출금 통장 잔액 반영에 실패해 지출 기록을 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 지출 저장 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast('추가했어요 · 공동 생활비 ' + nf.format(o.a) + '원' +
+        (res.matched ? ' · ' + pay.acct + ' 잔액에서 차감' : ' (출금 통장 미지정이라 잔액은 그대로)'));
+      return true;
+    })();
+  };
+  DB.updateExpense = function(id, patch, applyBal) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const row = expRowOf(id);
+      if (!row) { toast('지출 내역을 찾지 못했어요 · 새로고침 후 다시 시도해 주세요'); return false; }
+      const ym = row.ym || state.ym;
+      const wasExcluded = !!row.is_excluded;
+      const oldPay = expPayParse(row.pay_method);
+      const oldA = Number(row.amount) || 0;
+      const nextM = (patch.m === undefined) ? (row.pay_method || '') : patch.m;
+      const nextPay = expPayParse(nextM);
+      const nextA = (typeof patch.a === 'number') ? patch.a : oldA;
+      const target = (!wasExcluded && applyBal && nextPay.acct && nextA) ? acctTargetOf(nextPay.acct, ym) : null;
+      const nextStr = expPayEncode(nextPay.m, nextPay.acct, !!target);
+      try {
+        const r = await DB.sb.from('transactions').update(txPatchToRow(Object.assign({ ym: ym }, patch, { m: nextStr }))).eq('id', id);
+        if (r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] 지출 수정 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      /* 같은 통장이면 차액만, 통장이 바뀌면 예전 통장 + / 새 통장 − (연동을 껐으면 예전 금액만 되돌려요) */
+      let res = { ok: true, matched: false };
+      const undo = [];
+      if (!wasExcluded) {
+        const oldAcct = oldPay.l ? oldPay.acct : '';
+        const newAcct = target ? nextPay.acct : '';
+        if (oldAcct && newAcct && oldAcct === newAcct) {
+          if (nextA !== oldA) {
+            res = await expBalApply(newAcct, oldA - nextA, ym);
+            if (res.ok) undo.push({ acct: newAcct, d: nextA - oldA });
+          } else {
+            res.matched = true;
+          }
+        } else {
+          if (oldAcct && oldA) {
+            res = await expBalApply(oldAcct, oldA, ym);
+            if (res.ok) undo.push({ acct: oldAcct, d: -oldA });
+          }
+          if (res.ok && newAcct && nextA) {
+            res = await expBalApply(newAcct, -nextA, ym);
+            if (res.ok) undo.push({ acct: newAcct, d: nextA });
+          }
+        }
+      }
+      if (!res.ok) {
+        for (let i = undo.length - 1; i >= 0; i--) await expBalApply(undo[i].acct, undo[i].d, ym);
+        const back = expRowBackup(row);
+        await DB.sb.from('transactions').update(back).eq('id', id).then(function(){}, function(){});
+        toast('출금 통장 잔액 반영에 실패해 수정을 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      if (undo.length) res.matched = true;
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 지출 수정 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast('내역을 수정했어요 · 결산·예산·연간 누적 다시 계산됨' +
+        (res.matched ? ' · 출금 통장 잔액도 반영' : ''));
+      return true;
+    })();
+  };
+  DB.excludeExpense = function(id, val) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
+      const row = expRowOf(id);
+      if (!row) { toast('지출 내역을 찾지 못했어요 · 새로고침 후 다시 시도해 주세요'); return false; }
+      const pay = expPayParse(row.pay_method);
+      const a = Number(row.amount) || 0;
+      const ym = row.ym || state.ym;
+      try {
+        const r = await DB.sb.from('transactions').update({ is_excluded: !!val, updated_at: new Date().toISOString() }).eq('id', id);
+        if (r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] 지출 제외 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      /* 지출을 빼면 그 통장에 다시 들어오고, 되돌리면 다시 빠져요 */
+      const linked = pay.l && pay.acct && a;
+      const res = linked ? await expBalApply(pay.acct, val ? a : -a, ym) : { ok: true, matched: false };
+      if (!res.ok) {
+        await DB.sb.from('transactions').update({ is_excluded: !val }).eq('id', id).then(function(){}, function(){});
+        toast('출금 통장 잔액 반영에 실패해 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+        await refresh().catch(function(){});
+        renderAll();
+        return false;
+      }
+      try { await refresh(); renderAll(); } catch (e) { console.error('[ledger] 지출 제외 후 새로고침 실패', e); }
+      setBadge(DB.subs ? 'live' : 'wait');
+      toast((val ? '공동 지출에서 뺐어요' : '공동 지출에 다시 넣었어요') + ' · ' + nf.format(a) + '원' +
+        (res.matched ? ' · ' + pay.acct + ' 잔액에도 반영' : ''));
+      return true;
+    })();
+  };
+  /* 규칙에 출금 통장을 새로 지정·변경하면 이번 달 이미 생긴 고정 지출에도 잔액을 맞춰요 */
+  async function syncRuleLinkNow(ruleId, payMethod) {
+    if (!ruleId || DB.mode !== 'live' || !DB.sb) return;
+    const ym = LAST_YM;
+    const row = (DB.txs || []).filter(function(t){ return t.rule_id === ruleId && t.ym === ym; })[0];
+    if (!row || row.is_excluded) return;
+    const old = expPayParse(row.pay_method);
+    const next = expPayParse(payMethod);
+    const oldAcct = old.l ? old.acct : '';
+    const tgt = (next.acct && next.l) ? acctTargetOf(next.acct, ym) : null;
+    const newAcct = (tgt && tgt.ym === ym) ? next.acct : '';
+    if (oldAcct === newAcct) return;
+    const amt = Number(row.amount) || 0;
+    if (!amt) return;
+    let ok = true, moved = null;
+    if (oldAcct) { ok = (await expBalApply(oldAcct, amt, ym)).ok; if (ok) moved = { acct: oldAcct, d: amt }; }
+    if (ok && newAcct) ok = (await expBalApply(newAcct, -amt, ym)).ok;
+    if (!ok) {
+      if (moved) await expBalApply(moved.acct, -moved.d, ym);
+      await DB.sb.from('transactions').update({ pay_method: expPayEncode(next.m, next.acct, false) }).eq('id', row.id).then(function(){}, function(){});
+      toast('출금 통장 잔액 반영에 실패해 이번 달 내역은 연동 없이 저장했어요');
+      return;
+    }
+    await DB.sb.from('transactions').update({
+      pay_method: expPayEncode(next.m, next.acct, !!newAcct), updated_at: new Date().toISOString()
+    }).eq('id', row.id).then(function(){}, function(){});
+    await refresh().catch(function(){});
+    renderAll();
+  }
   DB.saveRule = function(data, id) {
+    const payStr = expPayEncode(data.method, data.acct, data.linked);
     return commit(function(){
       if (id) {
         return DB.sb.from('recurring_rules').update({
           title: data.name, amount: data.amount, category_key: data.cat,
-          pay_method: data.method, day_of_month: data.day,
+          pay_method: payStr, day_of_month: data.day,
           active_to: data.on ? null : relYM(CUR_YM, -1)
         }).eq('id', id);
       }
       return DB.sb.from('recurring_rules').insert({
         household_id: DB.hhId, title: data.name, amount: data.amount,
-        category_key: data.cat, pay_method: data.method, day_of_month: data.day,
+        category_key: data.cat, pay_method: payStr, day_of_month: data.day,
         active_from: CUR_YM, active_to: data.on ? null : relYM(CUR_YM, -1)
       });
-    }).then(afterRuleChange);
+    }).then(function(ok) {
+      afterRuleChange(ok);
+      if (ok && id) syncRuleLinkNow(id, payStr);
+      return ok;
+    });
   };
   DB.deleteRule = function(id) {
     return commit(async function(){
+      /* 규칙을 지우면 그 규칙으로 나간 이번 달 고정 지출 금액도 출금 통장에 되돌려 놓아요 */
+      const rows = (DB.txs || []).filter(function(t){ return t.rule_id === id && !t.is_excluded; });
+      for (let i = 0; i < rows.length; i++) {
+        const p = expPayParse(rows[i].pay_method);
+        const a = Number(rows[i].amount) || 0;
+        if (p.l && p.acct && a) await expBalApply(p.acct, a, rows[i].ym || state.ym);
+      }
       const t = await DB.sb.from('transactions').delete().eq('household_id', DB.hhId).eq('rule_id', id);
       if (t.error) return t;
       return DB.sb.from('recurring_rules').delete().eq('id', id);
@@ -6991,34 +7452,107 @@
       return DB.sb.from('recurring_rules').update({ active_to: on ? null : relYM(CUR_YM, -1) }).eq('id', id);
     });
   };
+  /* 이번 달만 금액·날짜를 바꾸면 출금 통장 잔액도 그 차이만큼 같이 움직여요 */
   DB.setMonthFix = function(ruleId, ym, day, amount) {
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
     const rule = (DB.rules || []).filter(function(r){ return r.id === ruleId; })[0];
-    return commit(function(){
+    const pay = expPayParse(rule ? rule.pay_method : '');
+    const date = toTxDate(ym, day);
+    DB.lastWrite = Date.now();
+    return (async function() {
       const found = (DB.txs || []).filter(function(t){ return t.rule_id === ruleId && t.ym === ym; })[0];
-      const date = toTxDate(ym, day);
       if (found) {
-        return DB.sb.from('transactions').update({ amount: amount, tx_date: date, updated_at: new Date().toISOString() }).eq('id', found.id);
+        const oldA = Number(found.amount) || 0;
+        const fpay = expPayParse(found.pay_method);
+        try {
+          const r = await DB.sb.from('transactions').update({ amount: amount, tx_date: date, updated_at: new Date().toISOString() }).eq('id', found.id);
+          if (r.error) throw r.error;
+        } catch (e) {
+          console.error('[ledger] 이번 달만 수정 실패', e);
+          toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+          return false;
+        }
+        if (fpay.l && fpay.acct && !found.is_excluded && oldA !== amount) {
+          const res = await expBalApply(fpay.acct, oldA - amount, ym);
+          if (!res.ok) {
+            await DB.sb.from('transactions').update({ amount: oldA, tx_date: found.tx_date }).eq('id', found.id).then(function(){}, function(){});
+            toast('출금 통장 잔액 반영에 실패해 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+            await refresh().catch(function(){});
+            renderAll();
+            return false;
+          }
+        }
+        try { await refresh(); renderAll(); } catch (e) {}
+        return true;
       }
-      return DB.sb.from('transactions').insert({
-        household_id: DB.hhId, ym: ym, tx_date: date, kind: 'fixed',
-        category_key: rule ? rule.category_key : 'etc', title: rule ? rule.title : '고정 지출',
-        amount: amount, pay_method: rule ? rule.pay_method : '자동이체',
-        is_excluded: false, rule_id: ruleId, created_by: DB.uid
-      });
-    });
+      /* 아직 안 생긴 고정 지출을 이 달만 금액을 바꿔 만들면, 이번 달 자산 기록이 있을 때만 잔액에서도 빼요 */
+      const tgt = (pay.acct && pay.l && ym === LAST_YM) ? acctTargetOf(pay.acct, ym) : null;
+      const link = !!(tgt && tgt.ym === ym);
+      let insId = null;
+      try {
+        const ins = await DB.sb.from('transactions').insert({
+          household_id: DB.hhId, ym: ym, tx_date: date, kind: 'fixed',
+          category_key: rule ? rule.category_key : 'etc', title: rule ? rule.title : '고정 지출',
+          amount: amount, pay_method: expPayEncode(pay.m, pay.acct, link),
+          is_excluded: false, rule_id: ruleId, created_by: DB.uid
+        }).select('id');
+        if (ins.error) throw ins.error;
+        insId = (ins.data && ins.data[0]) ? ins.data[0].id : null;
+      } catch (e) {
+        console.error('[ledger] 이번 달만 추가 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      if (link && amount) {
+        const res = await expBalApply(pay.acct, -amount, ym);
+        if (!res.ok) {
+          if (insId) await DB.sb.from('transactions').delete().eq('id', insId);
+          toast('출금 통장 잔액 반영에 실패해 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+          await refresh().catch(function(){});
+          renderAll();
+          return false;
+        }
+      }
+      try { await refresh(); renderAll(); } catch (e) {}
+      return true;
+    })();
   };
   DB.resetMonthFix = function(ruleId, ym) {
     const rule = (DB.rules || []).filter(function(r){ return r.id === ruleId; })[0];
     if (!rule) return Promise.resolve(false);
-    return commit(function(){
+    if (DB.mode !== 'live' || !DB.sb) return Promise.resolve(false);
+    DB.lastWrite = Date.now();
+    return (async function() {
       const found = (DB.txs || []).filter(function(t){ return t.rule_id === ruleId && t.ym === ym; })[0];
-      if (!found) return Promise.resolve({ error: null });
-      return DB.sb.from('transactions').update({
-        amount: Number(rule.amount) || 0,
-        tx_date: toTxDate(ym, rule.day_of_month || 1),
-        updated_at: new Date().toISOString()
-      }).eq('id', found.id);
-    });
+      if (!found) return false;
+      const oldA = Number(found.amount) || 0;
+      const nextA = Number(rule.amount) || 0;
+      const fpay = expPayParse(found.pay_method);
+      try {
+        const r = await DB.sb.from('transactions').update({
+          amount: nextA,
+          tx_date: toTxDate(ym, rule.day_of_month || 1),
+          updated_at: new Date().toISOString()
+        }).eq('id', found.id);
+        if (r.error) throw r.error;
+      } catch (e) {
+        console.error('[ledger] 이번 달만 되돌리기 실패', e);
+        toast('DB에 저장하지 못했어요 · ' + (e && e.message ? e.message : '네트워크를 확인해 주세요'));
+        return false;
+      }
+      if (fpay.l && fpay.acct && !found.is_excluded && oldA !== nextA) {
+        const res = await expBalApply(fpay.acct, oldA - nextA, ym);
+        if (!res.ok) {
+          await DB.sb.from('transactions').update({ amount: oldA }).eq('id', found.id).then(function(){}, function(){});
+          toast('출금 통장 잔액 반영에 실패해 되돌렸어요 · 잠시 뒤 다시 시도해 주세요');
+          await refresh().catch(function(){});
+          renderAll();
+          return false;
+        }
+      }
+      try { await refresh(); renderAll(); } catch (e) {}
+      return true;
+    })();
   };
   DB.saveCats = function(next, gone, fallback) {
     return commit(async function(){
@@ -7353,6 +7887,7 @@
   }
   initCardToggles();
   initIncomeFold();
+  initCashFold();
   renderAll();
   applyCollapsed();
   bootGate();
