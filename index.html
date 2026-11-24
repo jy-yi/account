@@ -3391,11 +3391,11 @@
       const top = changes.length ? changes[0] : null;
       plan.innerHTML =
         '<b>' + ymLabel(ym) + ' 마감 결과</b>' +
-        '<p>예산 ' + won(bTotal) + ' 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요. ' +
+        '<p>예산 ' + won(bTotal) + ' 중 <b>' + pct(budgetPct, 0) + '%</b>를 썼어요.<br>' +
         (over > 0
           ? '예산을 <b>' + won(over) + '</b> 넘었어요.'
           : '<b>' + won(-over) + '</b> 남겼어요.') +
-        (top ? ' 다음 달엔 <b>' + top.c.label + '</b>을 먼저 봐요.' : '') +
+        (top ? '<br>다음 달엔 <b>' + top.c.label + '</b>을 먼저 봐요.' : '') +
         '</p>' +
         '<div class="pace">' +
           '<div><span>예산 대비 지출</span><b>' + won(bSpent) + '</b></div>' +
