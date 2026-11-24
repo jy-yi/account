@@ -367,7 +367,7 @@
     background:linear-gradient(140deg,#F4F9F6,#FBF8F1); border:1px solid #E4EFE8;
   }
   .plan > b{display:block; font-size:12px; color:#1F6E58; margin-bottom:4px; letter-spacing:-.01em;}
-  .plan p{margin:0; font-size:11.5px; color:var(--ink-2); line-height:1.65; letter-spacing:-.01em;}
+  .plan p{margin:0; font-size:11.5px; color:var(--ink-2); line-height:1.65; letter-spacing:-.01em; word-break:keep-all;}
   /* 문장 안 강조는 줄바꿈 없이 흐름 안에서 이어져요 */
   .plan p b{display:inline; font-size:inherit; font-weight:800; color:#1F6E58; margin:0; letter-spacing:inherit;}
   .plan .pace{display:flex; gap:10px; margin-top:9px;}
@@ -3378,9 +3378,9 @@
         '<b>남은 ' + remainDays + '일 플랜</b>' +
         '<p>' +
         (overPace > 0
-          ? '기간 대비 예산을 <b>' + won(overPace) + '</b> 더 썼어요. '
-          : '기간 대비 예산보다 <b>' + won(Math.abs(overPace)) + '</b> 덜 썼어요. ') +
-        (top ? '가장 크게 늘어난 <b>' + top.c.label + '</b>만 줄여도 분위기가 바뀌어요.' : '') +
+          ? '기간 대비 예산을 <b>' + won(overPace) + '</b> 더 썼어요.'
+          : '기간 대비 예산보다 <b>' + won(Math.abs(overPace)) + '</b> 덜 썼어요.') +
+        (top ? '<br>가장 크게 늘어난 <b>' + top.c.label + '</b>만 줄여도 분위기가 바뀌어요.' : '') +
         '</p>' +
         '<div class="pace">' +
           '<div><span>하루 평균 (현재)</span><b>' + won(Math.round(dailyNow)) + '</b></div>' +
