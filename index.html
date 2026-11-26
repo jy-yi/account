@@ -549,6 +549,21 @@
   .kindtoggle button.on{background:#fff; color:var(--ink); box-shadow:0 6px 14px -12px rgba(35,38,43,.7), inset 0 0 0 1px var(--line-2);}
   .kindtoggle button.on[data-kind="inc"]{color:var(--teal);}
   .kindtoggle button.on[data-kind="tr"]{color:#2E6FA8;}
+  .kindtoggle button.on[data-kind="lr"]{color:#9E5A34;}
+  /* 대출 상환 */
+  .lrtotal{display:flex; align-items:center; justify-content:space-between; gap:8px; margin:0 0 12px; padding:11px 13px; border-radius:14px; background:#FBF3EC; border:1px solid #F0DFD2;}
+  .lrtotal .lt{font-size:10.5px; font-weight:800; color:#8A6248; line-height:1.45;}
+  .lrtotal .lt small{display:block; font-size:9px; font-weight:700; color:#A98B75;}
+  .lrtotal .lv{flex:none; font-size:15.5px; font-weight:850; color:#9E5A34; font-variant-numeric:tabular-nums; letter-spacing:-.03em; white-space:nowrap;}
+  .lrtotal + .fieldnote{margin-bottom:12px;}
+  .lr-row .tr-ico{background:rgba(158,90,52,.13);}
+  .lr-row .tr-amt{color:#9E5A34;}
+  .lr-row .tr-nm{color:#7A462A;}
+  .lr-empty{font-size:11px; color:var(--ink-3); font-weight:600; line-height:1.6; padding:8px 2px 0;}
+  @media (max-width:420px){
+    .kindtoggle{gap:3px; padding:3px;}
+    .kindtoggle button{font-size:11.5px; padding:9px 3px; letter-spacing:-.04em;}
+  }
   .tr-actions{display:flex; gap:8px; margin-top:12px;}
   .tr-actions .btn-ruleadd{margin-top:0; flex:1 1 0; padding:12px 10px;}
   .tr-once-amt{color:#2E6FA8;}
@@ -1163,6 +1178,18 @@
 
     <div class="card">
       <div class="card-head">
+        <h2>🏦 대출 상환</h2>
+        <span class="muted" id="lrNote"></span>
+      </div>
+      <div id="lrList"></div>
+      <div class="tr-actions">
+        <button class="btn ghost btn-ruleadd" id="btnLrOpen">🏦 대출 상환 기록</button>
+      </div>
+      <p class="trnote">원금은 <b>부채 잔액</b>에서, 원금+이자는 <b>출금 통장</b>에서 빠져요. 지출 합계·예산·차트·저축률에는 잡히지 않고, <b>[↩]</b>로 되돌리면 두 잔액이 기록 전으로 돌아가요.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
         <h2>어디를 줄여야 할까?</h2>
         <span class="chip-mini warn" id="insChip">전월 대비</span>
       </div>
@@ -1227,10 +1254,11 @@
     <div class="grab"></div>
     <h2 id="sheetTitle">내역 추가</h2>
     <p class="hint" id="sheetHint">공동 가계부에 넣을 지출이나 수입을 적어요. 개인 용돈은 넣지 않아요.</p>
-    <div class="kindtoggle" id="kindToggle" role="tablist" aria-label="지출 · 수입 · 이체">
+    <div class="kindtoggle" id="kindToggle" role="tablist" aria-label="지출 · 수입 · 이체 · 대출 상환">
       <button type="button" role="tab" data-kind="exp" class="on" aria-selected="true">🧾 지출</button>
       <button type="button" role="tab" data-kind="inc" aria-selected="false">💰 수입</button>
       <button type="button" role="tab" data-kind="tr" aria-selected="false">🔄 이체</button>
+      <button type="button" role="tab" data-kind="lr" aria-selected="false">🏦 대출 상환</button>
     </div>
     <form id="addForm" novalidate>
       <div class="frow" id="commonFields">
@@ -1324,6 +1352,42 @@
           </div>
         </div>
         <p class="fieldnote" id="trOnceHint"></p>
+      </div>
+      <div id="lrFields" hidden>
+        <div class="field">
+          <label for="fLrDate">날짜</label>
+          <input type="date" id="fLrDate" required />
+        </div>
+        <div class="field">
+          <label for="fLrAcct">출금 통장</label>
+          <select id="fLrAcct"></select>
+        </div>
+        <div class="field">
+          <label for="fLrDebt">상환할 부채</label>
+          <select id="fLrDebt"></select>
+        </div>
+        <div class="frow">
+          <div class="field">
+            <label for="fLrPrincipal">원금 상환액 (원)</label>
+            <input type="text" id="fLrPrincipal" inputmode="numeric" data-money autocomplete="off" placeholder="200,000" />
+          </div>
+          <div class="field">
+            <label for="fLrInterest">이자 (원)</label>
+            <input type="text" id="fLrInterest" inputmode="numeric" data-money autocomplete="off" placeholder="50,000" />
+          </div>
+        </div>
+        <div class="lrtotal" aria-live="polite">
+          <span class="lt">총 상환액<small>원금 + 이자</small></span>
+          <b class="lv" id="lrTotalVal">0원</b>
+        </div>
+        <p class="fieldnote" id="lrBalanceHint"></p>
+        <div class="field">
+          <label for="fLrNote">메모 (선택)</label>
+          <div class="input-clear-wrap">
+            <input type="text" id="fLrNote" placeholder="예: 주담대 원리금 상환" maxlength="24" />
+            <button type="button" class="input-clear-btn" data-clear="fLrNote" aria-label="메모 지우기">×</button>
+          </div>
+        </div>
       </div>
       <p class="err" id="addErr" hidden></p>
       <div class="acts">
@@ -1881,6 +1945,9 @@
   /* 샘플 현금 계좌 기본 금액 (샘플 모드 이체 실행을 되돌릴 때 쓰는 기준값) */
   const CASH_BASE = {};
   SUBS.cash.forEach(function(s){ CASH_BASE[s[0]] = s[1]; });
+  /* 샘플 부채 기본 금액 (샘플 모드 대출 상환을 되돌릴 때 쓰는 기준값) */
+  const DEBT_BASE = {};
+  SUBS.debt.forEach(function(s){ DEBT_BASE[s[0]] = s[1]; });
 
   // 2024.01 ~ 2026.11 (35개월) 가상 데이터
   const MONTHS = (function() {
@@ -2160,8 +2227,11 @@
     rules: FIXED_RULES.map(function(r){ return Object.assign({}, r); }),
     transfers: TR_SAMPLE.map(function(r){ return Object.assign({}, r); }),   // 고정 저축·이체 규칙 (샘플 기본값)
     transferLog: [],   // 샘플 모드 이체 실행 기록 {id, ym, ruleId, amount, from, to, toKind, toItem, ts}
+    loanLog: [],       // 샘플 모드 대출 상환 기록 {id, ym, acct, debt, principal, interest, amount, pApplied, ts}
     trCash: null,      // 샘플 현금 계좌 금액 덮어쓰기 (계좌명 -> 금액)
+    trDebt: null,      // 샘플 부채 금액 덮어쓰기 (부채명 -> 금액)
     trSnap: null,      // 샘플 순자산 덮어쓰기 (ym -> {cash, stock})
+    trSnapDebt: null,  // 샘플 순자산 부채 덮어쓰기 (ym -> 금액)
     overrides: JSON.parse(JSON.stringify(FIXED_OVERRIDE)),
     range: '6m',      // 6m | 1y | all
     pickerYear: 2026,
@@ -2242,6 +2312,41 @@
             if (typeof v.cash === 'number' && isFinite(v.cash)) SNAP[k].cash = Math.round(v.cash);
             if (typeof v.stock === 'number' && isFinite(v.stock)) SNAP[k].stock = Math.round(v.stock);
             state.trSnap[k] = { cash: SNAP[k].cash, stock: SNAP[k].stock };
+          });
+        }
+        /* 샘플 모드 대출 상환으로 바뀐 부채 금액 복원 */
+        if (s.trDebt && typeof s.trDebt === 'object') {
+          state.trDebt = {};
+          Object.keys(s.trDebt).forEach(function(k) {
+            const v = s.trDebt[k];
+            if (typeof v !== 'number' || !isFinite(v)) return;
+            const row = SUBS.debt.filter(function(x){ return x[0] === k; })[0];
+            if (!row) return;
+            row[1] = Math.max(0, Math.round(v));
+            state.trDebt[k] = row[1];
+          });
+        }
+        if (s.trSnapDebt && typeof s.trSnapDebt === 'object') {
+          state.trSnapDebt = {};
+          Object.keys(s.trSnapDebt).forEach(function(k) {
+            const v = s.trSnapDebt[k];
+            if (!SNAP[k] || typeof v !== 'number' || !isFinite(v)) return;
+            SNAP[k].debt = Math.max(0, Math.round(v));
+            state.trSnapDebt[k] = SNAP[k].debt;
+          });
+        }
+        if (Array.isArray(s.loanLog)) {
+          state.loanLog = s.loanLog.filter(function(l) {
+            return l && typeof l === 'object' && /^\d{4}-\d{2}$/.test(String(l.ym || '')) && Number(l.amount) > 0;
+          }).map(function(l) {
+            return {
+              id: String(l.id || ('lrl' + Math.random().toString(36).slice(2, 7))), ym: l.ym,
+              acct: String(l.acct || ''), debt: String(l.debt || ''),
+              principal: Math.round(Number(l.principal) || 0), interest: Math.round(Number(l.interest) || 0),
+              amount: Math.round(Number(l.amount) || 0),
+              pApplied: Math.round(Number(l.pApplied === undefined ? (Number(l.principal) || 0) : l.pApplied) || 0),
+              note: String(l.note || '').slice(0, 24), d: String(l.d || '').slice(0, 5), ts: Number(l.ts) || 0
+            };
           });
         }
         if (s.overrides && typeof s.overrides === 'object') state.overrides = s.overrides;
@@ -2351,8 +2456,8 @@
         prop: state.prop, edits: state.edits,
         cats: state.cats, catRemap: state.catRemap, invView: state.invView,
         invest: state.invest,
-        transfers: state.transfers, transferLog: state.transferLog,
-        trCash: state.trCash, trSnap: state.trSnap
+        transfers: state.transfers, transferLog: state.transferLog, loanLog: state.loanLog,
+        trCash: state.trCash, trDebt: state.trDebt, trSnap: state.trSnap, trSnapDebt: state.trSnapDebt
       }));
     } catch (e) {}
   }
@@ -3262,6 +3367,7 @@
         '<span class="val">' + won(remain) + '</span></div>';
     renderFixedCard(ym, fixedList, upcoming);
     renderTransferCard(ym);
+    renderLoanCard(ym);
 
     /* 선택 연도 누적 */
     const ys = yearSummary(ym);
@@ -4461,6 +4567,334 @@
     else trOneRunSample(t);
   }
 
+  /* ────────────── 8-4. 대출 상환 ────────────── */
+  /* 스키마는 그대로 둡니다. 기존 이체 마커와 같은 자리(transactions kind='var' ·
+     category_key='transfer' · is_excluded=true)에 pay_method='LR1:{...}' 로
+     출금 통장·부채·원금·이자를 담고, 잔액은 asset_snapshots 를 직접 고쳐요.
+     is_excluded=true 라서 지출 합계·예산·차트·저축률에는 잡히지 않습니다. */
+  const LR1_PREFIX = 'LR1:';
+  let lrCashList = [], lrDebtList = [];
+
+  /* 상환 후보 : 자산에 등록된 부채 (이 달 스냅샷, 없으면 가장 최근 달) */
+  function lrDebtAccounts(ym) {
+    if (DB.mode !== 'live') {
+      return SUBS.debt.map(function(d){ return { name: d[0], amount: Number(d[1]) || 0 }; });
+    }
+    const months = [];
+    (DB.snaps || []).forEach(function(s){ if (s.kind === 'debt' && months.indexOf(s.ym) < 0) months.push(s.ym); });
+    months.sort();
+    const use = months.indexOf(ym) >= 0 ? ym : (months.length ? months[months.length - 1] : null);
+    if (!use) return [];
+    return (DB.snaps || []).filter(function(s){ return s.kind === 'debt' && s.ym === use; })
+      .map(function(s){ return { name: s.name || '부채', amount: Number(s.amount) || 0 }; });
+  }
+  function lrPick(sel) {
+    const o = sel && sel.selectedOptions && sel.selectedOptions[0];
+    if (!o || !String(o.value || '').length) return null;
+    return { name: o.getAttribute('data-name') || '', amount: Number(o.getAttribute('data-amount')) || 0 };
+  }
+  function lrFillSelects() {
+    lrCashList = trCashAccounts();
+    lrDebtList = lrDebtAccounts(state.ym);
+    const meta = LEDGER[state.ym];
+    el('fLrDate').min = state.ym + '-01';
+    if (meta) el('fLrDate').max = state.ym + '-' + String(meta.days).padStart(2, '0');
+    if (lrCashList.length) {
+      el('fLrAcct').innerHTML = lrCashList.map(function(a, i){
+        return '<option value="c|' + i + '" data-name="' + esc(a.name) + '" data-amount="' + (Number(a.amount) || 0) + '">' +
+          esc(a.name) + ' · ' + won(a.amount) + '</option>';
+      }).join('');
+      /* 편의 : 생활비가 빠져나가는 입출금 통장을 먼저 골라 둡니다 (없으면 첫 계좌) */
+      let di = 0;
+      for (let i = 0; i < lrCashList.length; i++) {
+        if (/입출금/.test(lrCashList[i].name)) { di = i; break; }
+      }
+      el('fLrAcct').value = 'c|' + di;
+    } else {
+      el('fLrAcct').innerHTML = '<option value="">현금·입출금 계좌 없음 · 자산 탭 ✎ 현금·부채에서 추가</option>';
+    }
+    if (lrDebtList.length) {
+      el('fLrDebt').innerHTML = lrDebtList.map(function(d, i){
+        return '<option value="d|' + i + '" data-name="' + esc(d.name) + '" data-amount="' + (Number(d.amount) || 0) + '">' +
+          esc(d.name) + ' · ' + won(d.amount) + '</option>';
+      }).join('');
+      el('fLrDebt').value = 'd|0';
+    } else {
+      el('fLrDebt').innerHTML = '<option value="">등록된 부채 없음 · 자산 탭 ✎ 현금·부채에서 추가</option>';
+    }
+    lrSyncTotal();
+  }
+  function lrSyncTotal() {
+    const out = el('lrTotalVal');
+    if (!out) return;
+    const p = moneyNum(el('fLrPrincipal').value);
+    const i = moneyNum(el('fLrInterest').value);
+    const tot = p + i;
+    out.textContent = nf.format(tot) + '원';
+    const hint = el('lrBalanceHint');
+    const d = lrPick(el('fLrDebt'));
+    if (!hint) return;
+    if (!d) {
+      hint.textContent = '상환할 부채를 고르면 남은 부채도 같이 줄어요';
+      hint.className = 'fieldnote';
+      return;
+    }
+    const after = Math.max(0, d.amount - p);
+    hint.textContent = p > 0
+      ? '✓ ' + d.name + ' ' + nf.format(d.amount) + '원 → ' + nf.format(after) + '원' + (p > d.amount ? ' (부채는 0원까지만 줄어요)' : '')
+      : d.name + ' · 지금 ' + nf.format(d.amount) + '원';
+    hint.className = p > 0 ? 'fieldnote ok' : 'fieldnote';
+  }
+  /* 그 달 대출 상환 기록 (샘플: state.loanLog / 라이브: LR1 마커 행) */
+  function lrLogs(ym) {
+    if (DB.mode === 'live') {
+      const out = [];
+      (DB.txs || []).forEach(function(row) {
+        if (!row.is_excluded || row.ym !== ym) return;
+        const s = String(row.pay_method || '');
+        if (s.indexOf(LR1_PREFIX) !== 0) return;
+        let m = {};
+        try { m = JSON.parse(s.slice(LR1_PREFIX.length)) || {}; } catch (e) { m = {}; }
+        out.push({
+          id: row.id, row: row, info: m, ym: row.ym, amount: Number(row.amount) || 0,
+          principal: Number(m.principal) || 0, interest: Number(m.interest) || 0,
+          pApplied: (m.pApplied === undefined || m.pApplied === null) ? (Number(m.principal) || 0) : (Number(m.pApplied) || 0),
+          acct: m.acct || '', debt: m.debt || '', note: m.note || '',
+          d: String(row.tx_date || '').slice(5, 10), ts: Number(m.ts) || 0
+        });
+      });
+      return out.sort(function(a, b){ return String(b.d).localeCompare(String(a.d)) || (b.ts - a.ts); });
+    }
+    return (state.loanLog || []).filter(function(l){ return l.ym === ym; }).slice().reverse();
+  }
+
+  /* 샘플 모드 : 화면 상태의 통장·부채 금액을 직접 고쳐요 */
+  function lrRunSample(t) {
+    const p = Math.round(Number(t.principal) || 0);
+    const it = Math.round(Number(t.interest) || 0);
+    const tot = p + it;
+    if (!(tot > 0)) { toast('금액을 확인해 주세요'); return false; }
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === t.acct; })[0];
+    if (!fromRow) { toast(t.acct + ' 통장을 자산에서 찾지 못했어요'); return false; }
+    const debtRow = SUBS.debt.filter(function(s){ return s[0] === t.debt; })[0];
+    if (!debtRow) { toast(t.debt + ' 부채를 자산에서 찾지 못했어요'); return false; }
+    const pApplied = Math.min(p, Number(debtRow[1]) || 0);
+    fromRow[1] -= tot;
+    debtRow[1] = Math.max(0, (Number(debtRow[1]) || 0) - pApplied);
+    if (SNAP[t.ym]) SNAP[t.ym].debt = Math.max(0, (Number(SNAP[t.ym].debt) || 0) - pApplied);
+    state.loanLog.push({
+      id: 'lr' + Date.now().toString(36) + Math.floor(Math.random() * 100).toString(36),
+      ym: t.ym, acct: t.acct, debt: t.debt, principal: p, interest: it, amount: tot, pApplied: pApplied,
+      note: t.note || '', d: String(t.date).slice(5, 10), ts: Date.now()
+    });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    state.trDebt = {};
+    SUBS.debt.forEach(function(s){ state.trDebt[s[0]] = s[1]; });
+    state.trSnapDebt = state.trSnapDebt || {};
+    if (SNAP[t.ym]) state.trSnapDebt[t.ym] = SNAP[t.ym].debt;
+    save();
+    renderAll();
+    toast('🏦 ' + t.debt + ' 상환 기록 완료 · ' + t.acct + ' −' + nf.format(tot) + '원 · 부채 −' + nf.format(pApplied) + '원');
+    return true;
+  }
+  function lrUndoSample(log) {
+    if (!log) return;
+    const fromRow = SUBS.cash.filter(function(s){ return s[0] === log.acct; })[0];
+    if (!fromRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    const debtRow = SUBS.debt.filter(function(s){ return s[0] === log.debt; })[0];
+    if (!debtRow) { toast('부채를 찾지 못해 되돌리지 못했어요'); return; }
+    const tot = Number(log.amount) || 0;
+    const pBack = (log.pApplied === undefined) ? (Number(log.principal) || 0) : (Number(log.pApplied) || 0);
+    fromRow[1] = (Number(fromRow[1]) || 0) + tot;
+    debtRow[1] = (Number(debtRow[1]) || 0) + pBack;
+    if (SNAP[log.ym]) SNAP[log.ym].debt = (Number(SNAP[log.ym].debt) || 0) + pBack;
+    state.loanLog = (state.loanLog || []).filter(function(l){ return l.id !== log.id; });
+    state.trCash = {};
+    SUBS.cash.forEach(function(s){ state.trCash[s[0]] = s[1]; });
+    state.trDebt = {};
+    SUBS.debt.forEach(function(s){ state.trDebt[s[0]] = s[1]; });
+    state.trSnapDebt = state.trSnapDebt || {};
+    if (SNAP[log.ym]) state.trSnapDebt[log.ym] = SNAP[log.ym].debt;
+    save();
+    renderAll();
+    toast('대출 상환을 되돌렸어요 · 통장·부채가 기록 전으로 돌아갔어요');
+  }
+
+  /* 라이브 모드 : 마커 1행 + 잔액 patch (스키마 변경 없음) */
+  async function lrRunLive(t) {
+    const ym = t.ym;
+    const p = Math.round(Number(t.principal) || 0);
+    const it = Math.round(Number(t.interest) || 0);
+    const tot = p + it;
+    if (!DB.sb || !DB.hhId) { toast('DB 연결이 없어 대출 상환을 기록하지 못했어요'); return; }
+    if (!(tot > 0)) { toast('금액을 확인해 주세요'); return; }
+    const outRow = trFindSnap('cash', t.acct, ym);
+    if (!outRow) { toast(t.acct + ' 통장을 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+    const debtRow = trFindSnap('debt', t.debt, ym);
+    if (!debtRow) { toast(t.debt + ' 부채를 자산에서 찾지 못했어요 · 자산 탭 ✎ 현금·부채에서 확인해 주세요'); return; }
+    const outAmt = Number(outRow.amount) || 0;
+    const debtAmt = Number(debtRow.amount) || 0;
+    const pApplied = Math.min(p, debtAmt);
+    const day = Math.min(Math.max(parseInt(String(t.date).slice(8, 10), 10) || 1, 1), daysIn(ym));
+    const info = {
+      acct: t.acct, acctId: outRow.id, debt: t.debt, debtId: debtRow.id,
+      principal: p, interest: it, total: tot, pApplied: pApplied, note: t.note || '', ts: Date.now()
+    };
+    DB.lastWrite = Date.now();
+    let mid = null;
+    try { if (window.crypto && window.crypto.randomUUID) mid = window.crypto.randomUUID(); } catch (e) { mid = null; }
+    const markerRow = {
+      household_id: DB.hhId, ym: ym, tx_date: toTxDate(ym, day),
+      kind: 'var', category_key: 'transfer',
+      title: '[대출 상환] ' + t.debt + (t.note ? ' · ' + t.note : ''),
+      amount: tot,
+      pay_method: LR1_PREFIX + JSON.stringify(info),
+      is_excluded: true, rule_id: null, created_by: DB.uid
+    };
+    if (mid) markerRow.id = mid;
+    const ins = await DB.sb.from('transactions').insert(markerRow).select('id');
+    if (ins.error) {
+      console.error('[ledger] 대출 상환 기록 실패', ins.error);
+      toast('대출 상환 기록을 남기지 못했어요 · 잔액은 그대로예요');
+      return;
+    }
+    if (!mid) mid = (ins.data && ins.data.length) ? ins.data[0].id : null;
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: outAmt - tot }, back: { amount: outAmt } },
+      { table: 'asset_snapshots', id: debtRow.id, patch: { amount: debtAmt - pApplied }, back: { amount: debtAmt } }
+    ];
+    const ok = await trApplyOps(ops);
+    if (!ok) {
+      if (mid) await DB.sb.from('transactions').delete().eq('id', mid);
+      toast('잔액 반영에 실패해 대출 상환을 취소했어요 · 잠시 뒤 다시 시도해 주세요');
+      refresh().then(function(){ renderAll(); }).catch(function(){});
+      return;
+    }
+    const alt = (debtRow.ym && debtRow.ym !== ym) ? debtRow.ym : (outRow.ym && outRow.ym !== ym ? outRow.ym : null);
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 대출 상환 후 새로고침 실패', e); }
+    toast('🏦 ' + t.debt + ' 상환 기록 완료 · ' + t.acct + ' −' + nf.format(tot) + '원 · 부채 −' + nf.format(pApplied) + '원' +
+      (alt ? ' (' + ymLabel(ym) + ' 자산 기록이 없어 ' + ymLabel(alt) + ' 기준에 반영)' : ''));
+  }
+  async function lrUndoLive(log) {
+    if (!log || !log.row) { toast('대출 상환 기록을 찾지 못했어요'); return; }
+    const info = log.info || {};
+    const byId = function(table, id) {
+      if (!id) return null;
+      const arr = table === 'asset_snapshots' ? (DB.snaps || []) : (DB.invs || []);
+      return arr.filter(function(r){ return r.id === id; })[0] || null;
+    };
+    const outRow = byId('asset_snapshots', info.acctId) || trFindSnap('cash', info.acct || log.acct, log.ym);
+    if (!outRow) { toast('출금 통장을 찾지 못해 되돌리지 못했어요'); return; }
+    const debtRow = byId('asset_snapshots', info.debtId) || trFindSnap('debt', info.debt || log.debt, log.ym);
+    if (!debtRow) { toast('부채를 찾지 못해 되돌리지 못했어요'); return; }
+    const tot = Number(log.amount) || 0;
+    const pBack = (info.pApplied === undefined) ? (Number(info.principal) || 0) : (Number(info.pApplied) || 0);
+    const ops = [
+      { table: 'asset_snapshots', id: outRow.id, patch: { amount: (Number(outRow.amount) || 0) + tot }, back: { amount: Number(outRow.amount) || 0 } },
+      { table: 'asset_snapshots', id: debtRow.id, patch: { amount: (Number(debtRow.amount) || 0) + pBack }, back: { amount: Number(debtRow.amount) || 0 } }
+    ];
+    DB.lastWrite = Date.now();
+    const ok = await trApplyOps(ops);
+    if (!ok) { toast('잔액을 되돌리지 못했어요 · 잠시 뒤 다시 시도해 주세요'); return; }
+    const del = await DB.sb.from('transactions').delete().eq('id', log.row.id);
+    if (del.error) {
+      console.error('[ledger] 대출 상환 기록 삭제 실패', del.error);
+      await trApplyOps(ops.map(function(o){ return { table: o.table, id: o.id, patch: o.back, back: o.patch }; }));
+      toast('기록을 지우지 못해 되돌리기를 취소했어요');
+      return;
+    }
+    try {
+      await refresh();
+      renderAll();
+      setBadge(DB.subs ? 'live' : 'wait');
+    } catch (e) { console.error('[ledger] 대출 상환 되돌리기 후 새로고침 실패', e); }
+    toast('대출 상환을 되돌렸어요 · 통장·부채가 기록 전으로 돌아갔어요');
+  }
+  function lrConfirmUndo(id) {
+    const log = lrLogs(state.ym).filter(function(l){ return l.id === id; })[0];
+    if (!log) { toast('대출 상환 기록을 찾지 못했어요'); return; }
+    const nm = log.debt || '부채';
+    const msg = '↩ [대출 상환] ' + nm + ' ' + nf.format(log.amount) + '원 기록을 되돌릴까요?\n' +
+      log.acct + ' +' + nf.format(log.amount) + '원 · ' + nm + ' +' + nf.format(log.pApplied === undefined ? log.principal : log.pApplied) + '원 돌아가고 이 기록이 지워져요.';
+    if (!window.confirm(msg)) return;
+    if (DB.mode === 'live') lrUndoLive(log);
+    else lrUndoSample(log);
+  }
+
+  /* 대출 상환 탭 저장 */
+  function submitLoan() {
+    const errEl = el('addErr');
+    const fail = function(msg) { errEl.textContent = msg; errEl.hidden = false; };
+    const dv = el('fLrDate').value;
+    const p = moneyNum(el('fLrPrincipal').value);
+    const it = moneyNum(el('fLrInterest').value);
+    const tot = p + it;
+    const acct = lrPick(el('fLrAcct'));
+    const debt = lrPick(el('fLrDebt'));
+    if (!dv) { fail('날짜를 골라주세요.'); return; }
+    if (dv.slice(0, 7) !== state.ym) { fail(ymLabel(state.ym) + ' 날짜로 넣어주세요.'); return; }
+    if (!acct) { fail('출금 통장을 골라주세요. 자산 탭 ✎ 현금·부채에서 통장을 먼저 넣어 주세요.'); return; }
+    if (!debt) { fail('상환할 부채를 골라주세요. 자산 탭 ✎ 현금·부채에서 부채를 먼저 넣어 주세요.'); return; }
+    if (!(tot > 0)) { fail('원금이나 이자를 1원 이상 넣어주세요.'); return; }
+    if (p > debt.amount && !window.confirm(debt.name + ' 잔액(' + won(debt.amount) + ')보다 원금이 커요.\n부채는 0원까지만 줄고, 그래도 ' + won(tot) + '원 상환으로 기록할까요?')) return;
+    errEl.hidden = true;
+    const t = {
+      ym: state.ym, date: dv, acct: acct.name, debt: debt.name,
+      principal: p, interest: it, total: tot, note: el('fLrNote').value.trim().slice(0, 24)
+    };
+    closeModal();
+    state.tab = 'spend';
+    if (DB.mode === 'live') lrRunLive(t);
+    else lrRunSample(t);
+  }
+
+  /* 대출 상환 카드 */
+  function renderLoanCard(ym) {
+    const box = el('lrList');
+    if (!box) return;
+    const logs = lrLogs(ym);
+    const pSum = logs.reduce(function(s, l){ return s + (Number(l.principal) || 0); }, 0);
+    const iSum = logs.reduce(function(s, l){ return s + (Number(l.interest) || 0); }, 0);
+    const tSum = logs.reduce(function(s, l){ return s + (Number(l.amount) || 0); }, 0);
+    el('lrNote').textContent = logs.length
+      ? ymLabel(ym) + ' ' + logs.length + '건 · 이자 ' + won(iSum)
+      : ymLabel(ym) + ' 기록 없음';
+    let html = '';
+    if (logs.length) {
+      html += logs.map(function(l) {
+        const nm = l.debt || '부채';
+        const desc = (l.d ? l.d.replace('-', '.') + ' · ' : '') + esc(l.acct || '') +
+          ' · 원금 ' + nf.format(l.principal) + '원 + 이자 ' + nf.format(l.interest) + '원' +
+          (l.note ? ' · ' + esc(l.note) : '');
+        return '<div class="tr-row lr-row">' +
+          '<span class="tr-ico" aria-hidden="true">🏦</span>' +
+          '<div class="tr-main">' +
+            '<div class="tr-head">' +
+              '<span class="tr-nm">[대출 상환] ' + esc(nm) + '</span>' +
+              '<span class="tr-amt">' + nf.format(l.amount) + '원</span>' +
+            '</div>' +
+            '<span class="tr-desc">' + desc + '</span>' +
+          '</div>' +
+          '<div class="tr-act">' +
+            '<button type="button" class="icon-btn" data-lr-undo="' + esc(l.id) + '" title="대출 상환 되돌리기" aria-label="' + esc(nm) + ' 대출 상환 되돌리기">↩</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+      html += '<div class="fixsub"><span>이 달 원금 ' + nf.format(pSum) + ' · 이자 ' + nf.format(iSum) + ' · 지출 아님</span><b>' + nf.format(tSum) + '원</b></div>';
+    } else {
+      html = '<div class="lr-empty">' + ymLabel(ym) + '에 기록한 대출 상환이 없어요. 아래 [🏦 대출 상환 기록]으로 원금과 이자를 나눠 남겨 보세요.</div>';
+    }
+    box.innerHTML = html;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-lr-undo]'), function(b) {
+      b.addEventListener('click', function() { lrConfirmUndo(b.getAttribute('data-lr-undo')); });
+    });
+  }
+
   /* ── 이체 규칙 모달 ── */
   function openTrModal(id) {
     trEditingId = id || null;
@@ -4728,7 +5162,7 @@
     btn.classList.toggle('show', inp.value.trim() !== '');
   }
   (function bindClearButtons() {
-    ['fName', 'fIncName', 'fTrNote'].forEach(function(id) {
+    ['fName', 'fIncName', 'fTrNote', 'fLrNote'].forEach(function(id) {
       const inp = el(id);
       const btn = document.querySelector('.input-clear-btn[data-clear="' + id + '"]');
       if (!inp || !btn) return;
@@ -4751,40 +5185,53 @@
   }
   function setModalKind(k) {
     modalKind = k;
-    const exp = k === 'exp', inc = k === 'inc', tr = k === 'tr';
-    el('commonFields').hidden = tr;
+    const exp = k === 'exp', inc = k === 'inc', tr = k === 'tr', lr = k === 'lr';
+    el('commonFields').hidden = tr || lr;
     el('expFields').hidden = !exp;
     el('incFields').hidden = !inc;
     el('trFields').hidden = !tr;
+    el('lrFields').hidden = !lr;
     Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
       const on = b.getAttribute('data-kind') === k;
       b.classList.toggle('on', on);
       b.setAttribute('aria-selected', on ? 'true' : 'false');
     });
-    el('sheetHint').textContent = tr
-      ? ymLabel(state.ym) + ' 계좌 사이로 금액만 옮겨요. 지출·수입 합계·저축률은 건드리지 않아요.'
-      : exp
-        ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
-        : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·남은 돈·저축률이 바로 다시 계산돼요.';
+    el('sheetHint').textContent = lr
+      ? ymLabel(state.ym) + ' 대출 원금과 이자를 나눠 기록해요. 출금 통장·부채 잔액에 바로 반영되고 지출 합계·저축률은 건드리지 않아요.'
+      : tr
+        ? ymLabel(state.ym) + ' 계좌 사이로 금액만 옮겨요. 지출·수입 합계·저축률은 건드리지 않아요.'
+        : exp
+          ? ymLabel(state.ym) + ' 공동 지출로 추가돼요. 개인 용돈은 넣지 않아요.'
+          : ymLabel(state.ym) + ' 공동 수입으로 추가돼요. 결산·남은 돈·저축률이 바로 다시 계산돼요.';
     el('fAmount').placeholder = exp ? '32000' : '200000';
     el('addErr').hidden = true;
     if (!editTarget) {
-      el('sheetTitle').textContent = tr ? '이체 추가' : '내역 추가';
-      el('addSubmit').textContent = tr ? '이체하기' : '추가하기';
+      el('sheetTitle').textContent = lr ? '대출 상환 기록' : (tr ? '이체 추가' : '내역 추가');
+      el('addSubmit').textContent = lr ? '상환 기록하기' : (tr ? '이체하기' : '추가하기');
     }
     if (tr) trOnceFillSelects();
+    if (lr) lrFillSelects();
     if (inc) updateIncAcctHint();
     setTimeout(function(){
-      if (tr) el('fTrAmt').focus();
+      if (lr) el('fLrPrincipal').focus();
+      else if (tr) el('fTrAmt').focus();
       else (exp ? el('fName') : el('fIncName')).focus();
     }, 40);
-    syncClear('fName'); syncClear('fIncName'); syncClear('fTrNote');
+    syncClear('fName'); syncClear('fIncName'); syncClear('fTrNote'); syncClear('fLrNote');
   }
   Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
     b.addEventListener('click', function(){ setModalKind(b.getAttribute('data-kind')); });
   });
   el('fAccount').addEventListener('change', updateIncAcctHint);
   el('fExpAcct').addEventListener('change', updateExpAcctHint);
+  ['fLrPrincipal', 'fLrInterest'].forEach(function(id) {
+    el(id).addEventListener('input', lrSyncTotal);
+  });
+  el('fLrDebt').addEventListener('change', lrSyncTotal);
+  el('btnLrOpen').addEventListener('click', function() {
+    openModal();
+    setModalKind('lr');
+  });
   function openModal() {
     const meta = LEDGER[state.ym];
     const lastDay = Math.min(meta.elapsed, meta.days);
@@ -4798,6 +5245,10 @@
     el('fTrAmt').value = '';
     el('fTrNote').value = '';
     el('fTrDate').value = state.ym + '-' + String(lastDay).padStart(2, '0');
+    el('fLrDate').value = state.ym + '-' + String(lastDay).padStart(2, '0');
+    el('fLrPrincipal').value = '';
+    el('fLrInterest').value = '';
+    el('fLrNote').value = '';
     el('fCat').innerHTML = catOptions();
     el('fIncCat').innerHTML = incomeCatOptions();
     el('fAccount').innerHTML = incomeAccountOptions();
@@ -5125,9 +5576,10 @@
     }
     el('expFields').hidden = isInc;
     el('incFields').hidden = !isInc;
-    /* 이체 탭을 먼저 열어 둔 상태에서 ✎ 수정으로 들어와도 날짜·금액이 살아 있도록 되돌려요 */
+    /* 이체·대출 상환 탭을 먼저 열어 둔 상태에서 ✎ 수정으로 들어와도 날짜·금액이 살아 있도록 되돌려요 */
     el('commonFields').hidden = false;
     el('trFields').hidden = true;
+    el('lrFields').hidden = true;
     Array.prototype.forEach.call(el('kindToggle').querySelectorAll('button'), function(b) {
       const on = b.getAttribute('data-kind') === modalKind;
       b.classList.toggle('on', on);
@@ -5327,6 +5779,7 @@
   el('addForm').addEventListener('submit', function(e) {
     e.preventDefault();
     if (modalKind === 'tr' && !editTarget) { submitTransfer(); return; }
+    if (modalKind === 'lr' && !editTarget) { submitLoan(); return; }
     const v = el('fDate').value;
     const amt = moneyNum(el('fAmount').value);
     const errEl = el('addErr');
@@ -5482,9 +5935,13 @@
     state.rules = FIXED_RULES.map(function(r){ return Object.assign({}, r); });
     state.transfers = TR_SAMPLE.map(function(r){ return Object.assign({}, r); });
     state.transferLog = [];
+    state.loanLog = [];
     state.trCash = null;
+    state.trDebt = null;
     state.trSnap = null;
+    state.trSnapDebt = null;
     SUBS.cash.forEach(function(s){ if (typeof CASH_BASE[s[0]] === 'number') s[1] = CASH_BASE[s[0]]; });
+    SUBS.debt.forEach(function(s){ if (typeof DEBT_BASE[s[0]] === 'number') s[1] = DEBT_BASE[s[0]]; });
     Object.keys(SNAP).forEach(function(k){ if (SNAP_BASE[k]) SNAP[k] = Object.assign({}, SNAP_BASE[k]); });
     state.overrides = JSON.parse(JSON.stringify(FIXED_OVERRIDE));
     state.cat = null;

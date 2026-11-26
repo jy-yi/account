@@ -69,6 +69,36 @@ const SB_KEY = '<anon 또는 sb_publishable 키>';
 
 | 줄 범위 | 내용 |
 | --- | --- |
+| 1~31 | `<head>` — viewport, 테마 컬러, OG/Twitter 카드, canonical, 아이콘 |
+| 32~964 | **CSS** — `:root` 색·간격 토큰, 카드, 접힘(`.card.is-collapsed`), 게이트, 모달, 도크, 대출 상환(`.lrtotal`) |
+| 965~1028 | 로그인 게이트 (`#gate`, `#loginForm`, `#memberNotice`) + 앱 헤더 시작 |
+| 1029~1143 | **자산 & 증식 탭 마크업** (`#view-asset`) |
+| 1144~1249 | **지출 & 분석 탭 마크업** (`#view-spend`, 🏦 대출 상환 카드 포함) + 하단 도크(`#dockRoot`) |
+| 1250~1783 | 모달들 — 내역 추가/수정(지출·수입·이체·**대출 상환** 탭), 고정 규칙, 이번 달만 수정, 예산, 이름, 부동산, 종목, 스냅 |
+| 1784~2217 | **샘플 데이터** — `DEFAULT_CATS`, `INCOME_CATS`, `FIXED_RULES`, `TR_SAMPLE`, `INVEST_SEED`, `PROP_DEFAULT`, 가상 월별 데이터 생성 |
+| 2218~2485 | **상태 & 저장** — `state`, `STORE_KEY`, `save()` (localStorage) |
+| 2486~2675 | 숫자 포맷(`won`, `pct`, `relYM`)·계산(`visible`, `sum`, `byCat`, `sameWindow`, `dayLimit`) |
+| 2676~2869 | 헤더·브랜드 렌더(`openBrandModal`), 연/월 피커 |
+| 2870~3218 | 자산 탭 렌더 — `renderAsset`, `renderProp`, `renderInvest`, `renderPension` |
+| 3219~3333 | SVG 차트 — `chartMonths`, `drawGrowth` |
+| 3334~3739 | 지출 탭 렌더 — `renderSpend` (결산·인사이트·도넛·예산·내역) |
+| 3740~3757 | 선택 연도 누적 |
+| 3758~3848 | 고정 지출 카드 — `renderFixedCard`, `upcomingFixed` |
+| 3849~4246 | **고정 저축·이체 규칙** — `parseTrRule`, `renderTransferCard`, `trRunLive`, `trUndoLive`, `trRunSample`, `trUndoSample` |
+| 4247~4578 | **단순(1회성) 이체** — `trOneRunLive`/`trOneUndoLive`, `trOneRunSample`/`trOneUndoSample`, `trOneLogs`, `submitTransfer`, `trOnceFillSelects` |
+| 4579~4898 | **대출 상환** — `lrDebtAccounts`, `lrFillSelects`, `lrSyncTotal`, `lrLogs`, `lrRunLive`/`lrUndoLive`, `lrRunSample`/`lrUndoSample`, `lrConfirmUndo`, `submitLoan`, `renderLoanCard` |
+| 4899~5004 | 이체 규칙 모달 — `openTrModal`, `trForm` 제출·삭제 |
+| 5005~5157 | 유틸(`row`, `deltaShort`, `hexA`, `esc`, `toast`) · `buildMessage`(요약 복사) · `copyText` |
+| 5158~5185 | 모달 공통 유틸 — `syncClear`, `catOptions`, `incomeCatOptions` |
+| 5186~6049 | 모달 로직 — `setModalKind`, `openModal`, `openTransferModal`, `openEditModal`, `patchTx`, `openRuleModal`, `openMonthFix` + 수입/지출 계좌 연동 헬퍼 |
+| 6050~6302 | 예산·카테고리 모달 (`renderBudgetFields`, `applyCats`) |
+| 6303~6668 | 부동산 매수가·시세 모달, 종목 추가·수정 모달 |
+| 6669~6973 | 실시간 시세(`refreshQuotes`), 국토부 실거래(`refreshRealEstate`) |
+| 6974~7089 | 카드 접기(`DEFAULT_COLLAPSED`, `isCollapsed`, `applyCollapsed`), 월 네비게이터·기간 토글 |
+| 7090~8339 | **Supabase** — 로그인 게이트, `DB` 객체, `applyModel`, `refresh`, `ensureSeed`, `ensureFixed`, `commit`, `subscribe`, `insert/updateExpense`·`insertIncome` |
+| 8340~8354 | 12. 시작 — `renderAll`, 게이트 부팅 |
+
+--- | --- |
 | 1~30 | `<head>` — viewport, 테마 컬러, OG/Twitter 카드, canonical, 아이콘 |
 | 30~915 | **CSS** — `:root` 색·간격 토큰, 카드, 접힘(`.card.is-collapsed`), 게이트, 모달, 도크 |
 | 916~1000 | 로그인 게이트 (`#gate`, `#loginForm`, `#memberNotice`) + 앱 헤더 시작 |
